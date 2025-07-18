@@ -2,6 +2,6 @@
 
 
 def classFactory(iface):
-    from .plugin import Plugin
+    from .green_infra_plugin import GreenInfraPlugin
 
-    return Plugin(iface)
+    return GreenInfraPlugin(iface)

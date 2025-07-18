@@ -9,7 +9,7 @@ from .ui.sub_dialog import SubDialog
 PLUGIN_NAME = "sample"
 
 
-class Plugin:
+class GreenInfraPlugin:
     def __init__(self, iface):
         self.iface = iface
         self.win = self.iface.mainWindow()

@@ -22,14 +22,7 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
         self.checkBox_land: QCheckBox = self.checkBox_land
 
         # シグナルとスロットの接続
-        self.pushButton_execute.clicked.connect(self.execute_planning)
-        # self.pushButton_cancel.clicked.connect(self.close)
+        # TODO: pushButton_executeした時の処理を実装する
+        # self.pushButton_execute.clicked.connect(self.execute_planning)
 
-    def execute_planning(self):
-        # # テキストボックス値取得
-        # text_value = self.lineEdit.text()
-        # # テキストボックス値をメッセージ表示
-        # QMessageBox.information(self, "ウィンドウ名", text_value)
-
-        prefecture = self.comboBox_prefecture.currentText()
-        municipality = self.comboBox_municipality.currentText()
+    # def execute_planning(self):

@@ -3,12 +3,9 @@ import os
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
-from .ui.dialog import GreenInfraPlanningDockwidget
-
-# from .ui.sub_dialog import SubDialog
+from .ui.dockwidget import GreenInfraPlanningDockwidget
 
 PLUGIN_NAME = "Green Infra Plugin"
-
 
 class GreenInfraPlugin:
     def __init__(self, iface):
@@ -51,8 +48,8 @@ class GreenInfraPlugin:
     def initGui(self):
         # メニュー設定
         self.add_action(
-            icon_path=None,
-            text="Menu01",
+            icon_path=os.path.join(self.plugin_dir, "imgs", "icon.svg"),
+            text=None,
             callback=self.show_dock_widget,
             parent=self.win,
         )

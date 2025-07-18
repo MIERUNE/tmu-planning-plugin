@@ -1,6 +1,6 @@
 import unittest
 
-from ui.dialog import Dialog
+from ui.dockwidget import Dialog
 
 from .utilities import get_qgis_app
 

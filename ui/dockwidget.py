@@ -1,8 +1,15 @@
 import os
 
 from qgis.PyQt import uic
+
 # from qgis.PyQt.QtWidgets import QDockWidget, QComboBox, QMessageBox, QPushButton
-from qgis.PyQt.QtWidgets import QDockWidget, QPushButton, QComboBox, QCheckBox, QToolButton
+from qgis.PyQt.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QDockWidget,
+    QPushButton,
+    QToolButton,
+)
 
 ui_dockwidget, _ = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "green_infra_planning_dockwidget.ui")

@@ -7,6 +7,7 @@ from .ui.dockwidget import GreenInfraPlanningDockwidget
 
 PLUGIN_NAME = "Green Infra Plugin"
 
+
 class GreenInfraPlugin:
     def __init__(self, iface):
         self.iface = iface
@@ -58,7 +59,7 @@ class GreenInfraPlugin:
         # DockWidgetが存在する場合は削除
         if self.dockwidget:
             self.iface.removeDockWidget(self.dockwidget)
-            self.dockwidget = None 
+            self.dockwidget = None
 
         for action in self.actions:
             self.iface.removePluginMenu(PLUGIN_NAME, action)

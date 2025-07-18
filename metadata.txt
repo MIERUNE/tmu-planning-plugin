@@ -1,15 +1,15 @@
 [general]
-name=Sample
+name=Green Infra Plugin
 qgisMinimumVersion=3.0
-about=QGIS Sample Plugin
-description=QGIS Sample Plugin
+description=グリーンインフラ計画を容易に策定できるQGISプラグイン
+about=国土交通データプラットフォーム、各省庁が公開しているオープンデータをWebAPIと連携し可視化できます。
 # Version will be updated with release tag on Github workflow
 version={{PLUGIN_VERSION}}
 
 supportsQt6=True
 
 #Plugin main icon
-icon=imgs/icon.png
+icon=imgs/icon.svg
 
 author=MIERUNE Inc.
 email=info@mierune.co.jp

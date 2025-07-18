@@ -1,0 +1,1061 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GreenInfraPlanningDockwidget</class>
+ <widget class="QDockWidget" name="GreenInfraPlanningDockwidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>500</width>
+    <height>613</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>土地利用計画支援</string>
+  </property>
+  <widget class="QWidget" name="dockWidgetContents">
+   <layout class="QVBoxLayout" name="verticalLayout_main">
+    <property name="spacing">
+     <number>6</number>
+    </property>
+    <property name="leftMargin">
+     <number>6</number>
+    </property>
+    <property name="topMargin">
+     <number>6</number>
+    </property>
+    <property name="rightMargin">
+     <number>6</number>
+    </property>
+    <property name="bottomMargin">
+     <number>6</number>
+    </property>
+    <item>
+     <widget class="QGroupBox" name="groupBox_basic">
+      <property name="styleSheet">
+       <string>QGroupBox { font-weight: bold; }</string>
+      </property>
+      <property name="title">
+       <string>基本設定（必須）</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_basic">
+       <item>
+        <widget class="QLabel" name="label_area_title">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>■ 対象地域</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QGridLayout" name="gridLayout_area">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_prefecture">
+           <property name="text">
+            <string>都道府県:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="comboBox_prefecture">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_municipality">
+           <property name="text">
+            <string>市区町村:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="comboBox_municipality">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="Line" name="line_1">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_basemap_title">
+         <item>
+          <widget class="QLabel" name="label_basemap_title">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>■ ベースマップ設定</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="toolButton_basemap_info">
+           <property name="maximumSize">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>国土地理院ベクトルタイル提供サイト</string>
+           </property>
+           <property name="styleSheet">
+            <string>QToolButton {
+    border: none;
+    background-color: transparent;
+    color: #2196F3;
+    font-weight: bold;
+}
+QToolButton:hover {
+    color: #1976D2;
+}</string>
+           </property>
+           <property name="text">
+            <string>ⓘ</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_basemap">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QGridLayout" name="gridLayout_basemap">
+         <property name="horizontalSpacing">
+          <number>10</number>
+         </property>
+         <property name="verticalSpacing">
+          <number>4</number>
+         </property>
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="checkBox_land">
+           <property name="text">
+            <string>国土</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QgsColorButton" name="colorButton_land">
+           <property name="minimumSize">
+            <size>
+             <width>80</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="color">
+            <color>
+             <red>240</red>
+             <green>240</green>
+             <blue>240</blue>
+            </color>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="QCheckBox" name="checkBox_water">
+           <property name="text">
+            <string>水域</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="3">
+          <widget class="QgsColorButton" name="colorButton_water">
+           <property name="minimumSize">
+            <size>
+             <width>80</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="color">
+            <color>
+             <red>150</red>
+             <green>200</green>
+             <blue>255</blue>
+            </color>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="checkBox_highway">
+           <property name="text">
+            <string>高速道路</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QgsColorButton" name="colorButton_highway">
+           <property name="minimumSize">
+            <size>
+             <width>80</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="color">
+            <color>
+             <red>255</red>
+             <green>100</green>
+             <blue>100</blue>
+            </color>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QCheckBox" name="checkBox_major_road">
+           <property name="text">
+            <string>主要道路</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="3">
+          <widget class="QgsColorButton" name="colorButton_major_road">
+           <property name="minimumSize">
+            <size>
+             <width>80</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="color">
+            <color>
+             <red>255</red>
+             <green>200</green>
+             <blue>100</blue>
+            </color>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QCheckBox" name="checkBox_building">
+           <property name="text">
+            <string>建物ポリゴン</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QgsColorButton" name="colorButton_building">
+           <property name="minimumSize">
+            <size>
+             <width>80</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="color">
+            <color>
+             <red>200</red>
+             <green>200</green>
+             <blue>200</blue>
+            </color>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QTabWidget" name="tabWidget_layers">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="tab_disaster">
+       <attribute name="title">
+        <string>災害リスク</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_disaster">
+        <item>
+         <widget class="QScrollArea" name="scrollArea_disaster">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents_disaster">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>462</width>
+             <height>256</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_disaster_content">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_hazardmap">
+              <item>
+               <widget class="QLabel" name="label_hazardmap">
+                <property name="font">
+                 <font>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>ハザードマップ</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="toolButton_hazardmap_info">
+                <property name="maximumSize">
+                 <size>
+                  <width>20</width>
+                  <height>20</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>国土交通省ハザードマップポータルサイト</string>
+                </property>
+                <property name="styleSheet">
+                 <string>QToolButton {
+    border: none;
+    background-color: transparent;
+    color: #2196F3;
+    font-weight: bold;
+}
+QToolButton:hover {
+    color: #1976D2;
+}</string>
+                </property>
+                <property name="text">
+                 <string>ⓘ</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_hazardmap">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_flood">
+              <property name="text">
+               <string>洪水浸水想定区域</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_tsunami">
+              <property name="text">
+               <string>津波災害警戒区域</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_landslide">
+              <property name="text">
+               <string>土砂災害警戒区域</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_steep_slope">
+              <property name="text">
+               <string>急傾斜地崩壊危険区域</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="Line" name="line_disaster">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_earthquake">
+              <item>
+               <widget class="QLabel" name="label_earthquake">
+                <property name="font">
+                 <font>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>地震リスク（J-SHIS）</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="toolButton_jshis_info">
+                <property name="maximumSize">
+                 <size>
+                  <width>20</width>
+                  <height>20</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>防災科学技術研究所 J-SHIS</string>
+                </property>
+                <property name="styleSheet">
+                 <string>QToolButton {
+    border: none;
+    background-color: transparent;
+    color: #2196F3;
+    font-weight: bold;
+}
+QToolButton:hover {
+    color: #1976D2;
+}</string>
+                </property>
+                <property name="text">
+                 <string>ⓘ</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_earthquake">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_seismic_intensity">
+              <property name="text">
+               <string>地震ハザード情報</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_liquefaction">
+              <property name="text">
+               <string>液状化の発生傾向図</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_disaster">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_population">
+       <attribute name="title">
+        <string>人口・社会</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_population">
+        <item>
+         <widget class="QScrollArea" name="scrollArea_population">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents_population">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>462</width>
+             <height>256</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_population_content">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_estat">
+              <item>
+               <widget class="QLabel" name="label_estat">
+                <property name="font">
+                 <font>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>政府統計</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="toolButton_estat_info">
+                <property name="maximumSize">
+                 <size>
+                  <width>20</width>
+                  <height>20</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>政府統計の総合窓口 e-Stat</string>
+                </property>
+                <property name="styleSheet">
+                 <string>QToolButton {
+    border: none;
+    background-color: transparent;
+    color: #2196F3;
+    font-weight: bold;
+}
+QToolButton:hover {
+    color: #1976D2;
+}</string>
+                </property>
+                <property name="text">
+                 <string>ⓘ</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_estat">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_population_mesh">
+              <property name="text">
+               <string>人口メッシュ（3次メッシュ）</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_aging_rate">
+              <property name="text">
+               <string>人口メッシュ（4次メッシュ）</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_household">
+              <property name="text">
+               <string>世帯数（3次メッシュ）</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_population_change">
+              <property name="text">
+               <string>世帯数（4次メッシュ）</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="Line" name="line_population">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_future">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>将来推計</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_future_population">
+              <property name="text">
+               <string>将来推計人口</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_population">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_realestate">
+       <attribute name="title">
+        <string>土地・不動産</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_realestate">
+        <item>
+         <widget class="QScrollArea" name="scrollArea_realestate">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents_realestate">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>462</width>
+             <height>256</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_realestate_content">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_realestate">
+              <item>
+               <widget class="QLabel" name="label_realestate_library">
+                <property name="font">
+                 <font>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>不動産</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="toolButton_realestate_info">
+                <property name="maximumSize">
+                 <size>
+                  <width>20</width>
+                  <height>20</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>国土交通省 不動産情報ライブラリ</string>
+                </property>
+                <property name="styleSheet">
+                 <string>QToolButton {
+    border: none;
+    background-color: transparent;
+    color: #2196F3;
+    font-weight: bold;
+}
+QToolButton:hover {
+    color: #1976D2;
+}</string>
+                </property>
+                <property name="text">
+                 <string>ⓘ</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_realestate">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_land_price">
+              <property name="text">
+               <string>地価公示・地価調査</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_transaction_price">
+              <property name="text">
+               <string>不動産価格（取引価格・成約価格）</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="Line" name="line_realestate">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_realestate">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_urban_planning">
+       <attribute name="title">
+        <string>都市計画</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_urban">
+        <item>
+         <widget class="QScrollArea" name="scrollArea_urban">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents_urban">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>462</width>
+             <height>256</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_urban_content">
+            <item>
+             <widget class="QLabel" name="label_zoning">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>区域区分</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_urban_area">
+              <property name="text">
+               <string>都市計画区域</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_use_district">
+              <property name="text">
+               <string>用途地域</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_forest_area">
+              <property name="text">
+               <string>立地適正化計画</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_current_landuse">
+              <property name="text">
+               <string>防火・準防火地域</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="Line" name="line_urban">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_urban">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_infrastructure">
+       <attribute name="title">
+        <string>インフラ・施設</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_infra">
+        <item>
+         <widget class="QScrollArea" name="scrollArea_infra">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents_infra">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>462</width>
+             <height>256</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_infra_content">
+            <item>
+             <widget class="QLabel" name="label_public_facility">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>公共施設</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_school">
+              <property name="text">
+               <string>学校（小中高）</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_hospital">
+              <property name="text">
+               <string>医療機関</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_welfare">
+              <property name="text">
+               <string>福祉施設</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="Line" name="line_infra">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_infra">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_environment">
+       <attribute name="title">
+        <string>環境・その他</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_env">
+        <item>
+         <widget class="QScrollArea" name="scrollArea_env">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents_env">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>462</width>
+             <height>256</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_env_content">
+            <item>
+             <widget class="QLabel" name="label_green">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>緑地・自然環境</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_nature_park">
+              <property name="text">
+               <string>自然公園地域</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="Line" name="line_env">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_env">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="pushButton_execute">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string>QPushButton {
+    background-color: #2196F3;
+    color: white;
+    border-radius: 4px;
+    border: none;
+}
+QPushButton:hover {
+    background-color: #1976D2;
+}
+QPushButton:pressed {
+    background-color: #0D47A1;
+}</string>
+      </property>
+      <property name="text">
+       <string>データ取得・可視化実行</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QgsColorButton</class>
+   <extends>QToolButton</extends>
+   <header>qgscolorbutton.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

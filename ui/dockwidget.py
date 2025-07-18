@@ -20,9 +20,3 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
         self.comboBox_municipality: QComboBox = self.comboBox_municipality
         self.toolButton_basemap_info: QToolButton = self.toolButton_basemap_info
         self.checkBox_land: QCheckBox = self.checkBox_land
-
-        # シグナルとスロットの接続
-        # TODO: pushButton_executeした時の処理を実装する
-        # self.pushButton_execute.clicked.connect(self.execute_planning)
-
-    # def execute_planning(self):

@@ -1,12 +1,12 @@
 import os
 
+from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
-from .ui.dialog import Dialog
-from .ui.sub_dialog import SubDialog
+from .ui.dockwidget import GreenInfraPlanningDockwidget
 
-PLUGIN_NAME = "sample"
+PLUGIN_NAME = "Green Infra Plugin"
 
 
 class GreenInfraPlugin:
@@ -18,6 +18,7 @@ class GreenInfraPlugin:
         self.menu = PLUGIN_NAME
         self.toolbar = self.iface.addToolBar(PLUGIN_NAME)
         self.toolbar.setObjectName(PLUGIN_NAME)
+        self.dockwidget = None
 
     def add_action(
         self,
@@ -49,25 +50,26 @@ class GreenInfraPlugin:
     def initGui(self):
         # メニュー設定
         self.add_action(
-            icon_path=None, text="Menu01", callback=self.show_dialog, parent=self.win
-        )
-        self.add_action(
-            icon_path=None,
-            text="Menu02",
-            callback=self.show_sub_dialog,
+            icon_path=os.path.join(self.plugin_dir, "imgs", "icon.svg"),
+            text="土地利用計画支援",
+            callback=self.show_dock_widget,
             parent=self.win,
         )
 
     def unload(self):
+        # DockWidgetが存在する場合は削除
+        if self.dockwidget:
+            self.iface.removeDockWidget(self.dockwidget)
+            self.dockwidget = None
+
         for action in self.actions:
             self.iface.removePluginMenu(PLUGIN_NAME, action)
             self.iface.removeToolBarIcon(action)
         del self.toolbar
 
-    def show_dialog(self):
-        self.dialog = Dialog()
-        self.dialog.show()
-
-    def show_sub_dialog(self):
-        self.sub_dialog = SubDialog()
-        self.sub_dialog.show()
+    def show_dock_widget(self):
+        # DockWidgetが作成されていない場合のみ作成
+        if self.dockwidget is None:
+            self.dockwidget = GreenInfraPlanningDockwidget()
+            self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
+        self.dockwidget.show()

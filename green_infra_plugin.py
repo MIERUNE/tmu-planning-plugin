@@ -1,5 +1,6 @@
 import os
 
+from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
@@ -70,5 +71,5 @@ class GreenInfraPlugin:
         # DockWidgetが作成されていない場合のみ作成
         if self.dockwidget is None:
             self.dockwidget = GreenInfraPlanningDockwidget()
-            self.iface.addDockWidget(2, self.dockwidget)
+            self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
         self.dockwidget.show()

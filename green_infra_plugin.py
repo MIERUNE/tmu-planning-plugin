@@ -51,7 +51,7 @@ class GreenInfraPlugin:
         # メニュー設定
         self.add_action(
             icon_path=os.path.join(self.plugin_dir, "imgs", "icon.svg"),
-            text=None,
+            text="土地利用計画支援",
             callback=self.show_dock_widget,
             parent=self.win,
         )

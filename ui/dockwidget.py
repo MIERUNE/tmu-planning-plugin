@@ -1,6 +1,5 @@
 import os
 
-from .apikey_dialog import ApikeyDialog
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import (
     QCheckBox,
@@ -9,6 +8,8 @@ from qgis.PyQt.QtWidgets import (
     QPushButton,
     QToolButton,
 )
+
+from .apikey_dialog import ApikeyDialog
 
 ui_dockwidget, _ = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "green_infra_planning_dockwidget.ui")
@@ -32,7 +33,9 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
         if self.apikey_keep:
             self.apikey_keep.clicked.connect(self.open_apikey_dialog)
         else:
-            print("Warning: 'apikey_keep' QPushButton not found or is not a QPushButton.")
+            print(
+                "Warning: 'apikey_keep' QPushButton not found or is not a QPushButton."
+            )
 
     def open_apikey_dialog(self):
         """鍵の絵文字を押したらダイアログを開く"""

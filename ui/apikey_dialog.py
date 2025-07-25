@@ -11,46 +11,66 @@ ui_dialog, _ = uic.loadUiType(os.path.join(os.path.dirname(__file__), "apikey_ke
 
 class ApikeyDialog(QDialog, ui_dialog):
     def __init__(self, parent=None):
-        """APIキーを入力する"""
+        """ApikeyDialogを初期化"""
         super().__init__(parent)
+
+        # ui_dialogが正しくロードされているか確認
+        if ui_dialog is None:
+            QMessageBox.critical(
+                self, "エラー", "APIキーダイアログをロードできませんでした。"
+            )
+            self.close()
+            return
+
         self.setupUi(self)
 
-        # QLineEditのリストを初期化
-        self.api_key_line_edits = {}
+        # QLineEditウィジェットを辞書に保存
+        self.api_key_line_edits: dict[str, QLineEdit] = {}
 
-        for api_key in API_KEY_LIST:
-            line_edit: QLineEdit = self.findChild(QLineEdit, api_key["line_edit_name"])
+        for api_key_info in API_KEY_LIST:
+            line_edit_name = api_key_info.get("line_edit_name")
+            api_key_id = api_key_info.get("id")
 
-            self.api_key_line_edits[api_key["id"]] = line_edit
-            print(self.api_key_line_edits)
+            # API_KEY_LISTのオブジェクトが不完全でないかチェック
+            if not line_edit_name or not api_key_id:
+                print(f"警告: API_KEY_LISTに不完全なエントリがあります: {api_key_info}")
+                continue
+
+            line_edit: QLineEdit = self.findChild(QLineEdit, line_edit_name)
+
+            if line_edit:
+                self.api_key_line_edits[api_key_id] = line_edit
+            else:
+                print(
+                    f"警告: UIファイルにQLineEdit '{line_edit_name}' が見つかりませんでした。"
+                )
 
         self.buttonBox.accepted.connect(self.save_api_key)
         self.buttonBox.rejected.connect(self.reject)
-
         self.load_api_key()
 
     def load_api_key(self):
         """QGISの設定からAPI Keyを読み込む"""
         settings = QgsSettings()
 
-        for api_key in API_KEY_LIST:
-            line_edit: QLineEdit = self.findChild(QLineEdit, api_key["line_edit_name"])
-            if line_edit:  # line_editが空でないことを確認
-                setting_key = f"{BASE_SETTING_PATH}/{api_key['setting_key']}"
+        for api_key_info in API_KEY_LIST:
+            api_key_id = api_key_info.get("id")
+            if api_key_id in self.api_key_line_edits:
+                line_edit = self.api_key_line_edits[api_key_id] 
+                setting_key = f"{BASE_SETTING_PATH}/{api_key_info['setting_key']}"
                 api_key_value = settings.value(setting_key, "", type=str)
                 line_edit.setText(api_key_value)
-
-        print("APIキーの読み込み完了")
 
     def save_api_key(self):
         """API Keyの内容をQGISの設定に保存する"""
         settings = QgsSettings()
-        for api_key in API_KEY_LIST:
-            line_edit: QLineEdit = self.findChild(QLineEdit, api_key["line_edit_name"])
-            if line_edit:
+        for api_key_info in API_KEY_LIST:
+            api_key_id = api_key_info.get("id")
+            if api_key_id in self.api_key_line_edits:
+                line_edit = self.api_key_line_edits[api_key_id]
                 api_key_value = line_edit.text().strip()
 
-                setting_key = f"{BASE_SETTING_PATH}/{api_key['setting_key']}"
+                setting_key = f"{BASE_SETTING_PATH}/{api_key_info['setting_key']}"
                 settings.setValue(setting_key, api_key_value)
 
         QMessageBox.information(self, "保存完了", "APIキーが保存されました。")

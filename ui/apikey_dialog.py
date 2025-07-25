@@ -1,6 +1,6 @@
 import os
 
-from qgis.core import QgsSettings
+from qgis.core import Qgis, QgsSettings
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import QDialog, QLineEdit, QMessageBox
 
@@ -33,16 +33,24 @@ class ApikeyDialog(QDialog, ui_dialog):
 
             # API_KEY_LISTのオブジェクトが不完全でないかチェック
             if not line_edit_name or not api_key_id:
-                print(f"警告: API_KEY_LISTに不完全なエントリがあります: {api_key_info}")
+                from qgis.core import QgsMessageLog
+
+                QgsMessageLog.logMessage(
+                    f"API_KEY_LISTに不完全なエントリがあります: {api_key_info}",
+                    "GreenInfraPlanning",
+                    level=Qgis.Warning,
+                )
                 continue
 
             line_edit: QLineEdit = self.findChild(QLineEdit, line_edit_name)
 
             if line_edit:
-                self.api_key_line_edits[api_key_id] = line_edit
+                self.api_key_line_edits[str(api_key_id)] = line_edit
             else:
-                print(
-                    f"警告: UIファイルにQLineEdit '{line_edit_name}' が見つかりませんでした。"
+                QgsMessageLog.logMessage(
+                    f"API_KEY_LISTに不完全なエントリがあります: {api_key_info}",
+                    "ApikeyDialog",
+                    Qgis.Warning,
                 )
 
         self.buttonBox.accepted.connect(self.save_api_key)

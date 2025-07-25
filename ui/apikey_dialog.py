@@ -56,7 +56,7 @@ class ApikeyDialog(QDialog, ui_dialog):
         for api_key_info in API_KEY_LIST:
             api_key_id = api_key_info.get("id")
             if api_key_id in self.api_key_line_edits:
-                line_edit = self.api_key_line_edits[api_key_id] 
+                line_edit = self.api_key_line_edits[api_key_id]
                 setting_key = f"{BASE_SETTING_PATH}/{api_key_info['setting_key']}"
                 api_key_value = settings.value(setting_key, "", type=str)
                 line_edit.setText(api_key_value)

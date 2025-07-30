@@ -1,6 +1,6 @@
 import os
 
-from qgis.core import Qgis, QgsSettings
+from qgis.core import Qgis, QgsMessageLog, QgsSettings
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import QDialog, QLineEdit, QMessageBox
 
@@ -33,8 +33,6 @@ class ApikeyDialog(QDialog, ui_dialog):
 
             # API_KEY_LISTのオブジェクトが不完全でないかチェック
             if not line_edit_name or not api_key_id:
-                from qgis.core import QgsMessageLog
-
                 QgsMessageLog.logMessage(
                     f"API_KEY_LISTに不完全なエントリがあります: {api_key_info}",
                     "GreenInfraPlanning",

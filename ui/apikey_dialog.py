@@ -27,6 +27,14 @@ class ApikeyDialog(QDialog, ui_dialog):
         # QLineEditウィジェットを辞書に保存
         self.api_key_line_edits: dict[str, QLineEdit] = {}
 
+        self._create_line_edits_dict()
+
+        self.buttonBox.accepted.connect(self.save_api_key)
+        self.buttonBox.rejected.connect(self.reject)
+        self.load_api_key()
+
+    def _create_line_edits_dict(self):
+        """API_KEY_LISTからQLineEditウィジェットを辞書データを作成"""
         for api_key_info in API_KEY_LIST:
             line_edit_name = api_key_info.get("line_edit_name")
             api_key_id = api_key_info.get("id")
@@ -50,10 +58,6 @@ class ApikeyDialog(QDialog, ui_dialog):
                     "ApikeyDialog",
                     Qgis.Warning,
                 )
-
-        self.buttonBox.accepted.connect(self.save_api_key)
-        self.buttonBox.rejected.connect(self.reject)
-        self.load_api_key()
 
     def load_api_key(self):
         """QGISの設定からAPI Keyを読み込む"""

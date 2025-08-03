@@ -33,7 +33,7 @@ class BasemapWorkflow(BaseWorkflow):
         Args:
             selected_features: 選択された地物と色の辞書
         Returns:
-            Dict[str, Any]: 実行結果
+            bool :実行が成功した場合はTrue 、失敗した場合はFalse
         """
         try:
             # Step 1: ベースマップグループを設定
@@ -129,12 +129,11 @@ class BasemapWorkflow(BaseWorkflow):
                     tile_zoom_max=settings["zoom_max"],
                     group=group,
                 )
-
-                if layer is not None:
-                    # デフォルトで非表示に設定
-                    self.basemap_manager.set_layer_visibility(layer, False)
-                else:
+                if not layer:
                     raise Exception(f"レイヤー「{layer_name}」の作成に失敗しました")
+
+                # デフォルトで非表示に設定
+                self.basemap_manager.set_layer_visibility(layer, False)
 
     # ==================
     # 4. シンボロジ管理

@@ -3,7 +3,7 @@
 国土地理院のベクトルタイルレイヤーをQGISに追加し、地物の可視化を管理する機能を提供
 """
 
-from typing import Optional
+from typing import List, Optional
 
 from qgis.core import (
     Qgis,
@@ -37,7 +37,7 @@ class BaseMapAlgorithm:
         root = QgsProject.instance().layerTreeRoot()
         return root.insertGroup(0, group_name)
 
-    def get_layer_groups(self, group_name: str) -> list[QgsLayerTreeGroup]:
+    def get_layer_groups(self, group_name: str) -> List[QgsLayerTreeGroup]:
         """指定された名前の全グループを検索
         Args:
             group_name (str): 検索するグループ名
@@ -54,10 +54,10 @@ class BaseMapAlgorithm:
 
         return found_groups
 
-    def remove_duplicate_groups(self, existing_groups: list[QgsLayerTreeGroup]) -> bool:
+    def remove_duplicate_groups(self, existing_groups: List[QgsLayerTreeGroup]) -> bool:
         """重複グループを削除
         Args:
-            existing_groups (list): 削除対象のグループリスト
+            existing_groups (List[QgsLayerTreeGroup]): 削除対象のグループリスト
         Returns:
             bool: 成功した場合はTrue、失敗した場合はFalse
         """
@@ -121,12 +121,12 @@ class BaseMapAlgorithm:
                 f"地理院ベクトルタイルレイヤーの作成に失敗しました: {str(e)}"
             ) from e
 
-    def get_layers_from_group(self, group: QgsLayerTreeGroup) -> list:
+    def get_layers_from_group(self, group: QgsLayerTreeGroup) -> List[QgsVectorTileLayer]:
         """グループ内から全てのレイヤーを取得
         Args:
             group (QgsLayerTreeGroup): レイヤーグループオブジェクト
         Returns:
-            list: 見つかったレイヤーのリスト
+            List[QgsVectorTileLayer]: 見つかったレイヤーのリスト
         """
         if not group:
             return []
@@ -176,13 +176,6 @@ class BaseMapAlgorithm:
             bool: 成功した場合はTrue、失敗した場合はFalse
         """
         try:
-            if not basemap_layer:
-                self.iface.messageBar().pushWarning(
-                    "警告",
-                    f"レイヤー「{basemap_layer.name()}」はグループに存在しません",
-                )
-                return False
-
             root = QgsProject.instance().layerTreeRoot()
             layer_tree_layer = root.findLayer(basemap_layer.id())
 
@@ -215,8 +208,8 @@ class BaseMapAlgorithm:
             return
 
         existing_layers = self.get_layers_from_group(group)
-        if existing_layers:
-            for layer in existing_layers:
+        for layer in existing_layers:
+            if layer:
                 self.set_layer_visibility(layer, False)
 
     # ====================
@@ -228,7 +221,14 @@ class BaseMapAlgorithm:
         feature_color: QColor,
         feature_settings: dict,
     ) -> bool:
-        """ベクトルタイルレイヤーに地物シンボロジーを追加"""
+        """地物シンボロジを追加
+        Args:
+            basemap_layer (QgsVectorTileLayer): 対象のベースマップレイヤー
+            feature_color (QColor): 地物の色
+            feature_settings (dict): 地物設定辞書
+        Returns:
+            bool: 成功した場合はTrue、失敗した場合はFalse
+        """
         if not isinstance(basemap_layer, QgsVectorTileLayer):
             self.iface.messageBar().pushCritical(
                 "エラー", "ベースマップレイヤーが正しく設定されていません"
@@ -253,8 +253,14 @@ class BaseMapAlgorithm:
 
     def create_feature_style(
         self, color: QColor, feature_settings: dict
-    ) -> list[QgsVectorTileBasicRendererStyle]:
-        """地物用スタイルを作成"""
+    ) -> List[QgsVectorTileBasicRendererStyle]:
+        """地物スタイルを生成
+        Args:
+            color (QColor): 地物の色
+            feature_settings (dict): 地物設定辞書
+        Returns:
+            List[QgsVectorTileBasicRendererStyle]: 作成されたスタイルのリスト
+        """
         try:
             styles = []
             features = feature_settings.get("features", [])
@@ -270,7 +276,13 @@ class BaseMapAlgorithm:
     def _create_renderer_style(
         self, feature_item: dict, color: QColor
     ) -> QgsVectorTileBasicRendererStyle:
-        """個々の地物アイテムからレンダラースタイルを生成"""
+        """地物のレンダラースタイルを作成
+        Args:
+            feature_item (dict): 地物設定辞書の1項目
+            color (QColor): 地物の色
+        Returns:
+            QgsVectorTileBasicRendererStyle: 作成されたスタイル
+        """
         style = QgsVectorTileBasicRendererStyle()
         style.setStyleName(feature_item.get("description", ""))
         style.setLayerName(feature_item.get("source_layer", ""))

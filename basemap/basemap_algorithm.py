@@ -24,9 +24,9 @@ class BaseMapAlgorithm:
     def __init__(self, iface):
         self.iface = iface
 
-# ====================
-# 1. グループ管理機能
-# ====================
+    # ====================
+    # 1. グループ管理機能
+    # ====================
     def create_layer_group(self, group_name: str) -> QgsLayerTreeGroup:
         """新しいレイヤーグループを作成
         Args:
@@ -78,9 +78,9 @@ class BaseMapAlgorithm:
                 f"重複グループの削除中にエラーが発生しました: {str(e)}"
             ) from e
 
-# ====================
-# 2. レイヤー管理機能
-# ====================
+    # ====================
+    # 2. レイヤー管理機能
+    # ====================
     def add_basemap_layer(
         self,
         gsi_tile_url: str,
@@ -162,9 +162,9 @@ class BaseMapAlgorithm:
                     return layer
         return None
 
-# ====================
-# 3. レイヤー可視化機能
-# ====================
+    # ====================
+    # 3. レイヤー可視化機能
+    # ====================
     def set_layer_visibility(
         self, basemap_layer: QgsVectorTileLayer, visible: bool
     ) -> bool:
@@ -211,9 +211,7 @@ class BaseMapAlgorithm:
             group (QgsLayerTreeGroup): 対象のレイヤーグループ
         """
         if not group:
-            self.iface.messageBar().pushWarning(
-                "警告", "グループが指定されていません"
-            )
+            self.iface.messageBar().pushWarning("警告", "グループが指定されていません")
             return
 
         existing_layers = self.get_layers_from_group(group)
@@ -221,9 +219,9 @@ class BaseMapAlgorithm:
             for layer in existing_layers:
                 self.set_layer_visibility(layer, False)
 
-# ====================
-# 4. 地物シンボロジ機能
-# ====================
+    # ====================
+    # 4. 地物シンボロジ機能
+    # ====================
     def add_feature_symbology(
         self,
         basemap_layer: QgsVectorTileLayer,
@@ -269,15 +267,15 @@ class BaseMapAlgorithm:
                 f"地物スタイルの作成中にエラーが発生しました: {str(e)}"
             ) from e
 
-    def _create_renderer_style(self, feature_item: dict, color: QColor) -> QgsVectorTileBasicRendererStyle:
+    def _create_renderer_style(
+        self, feature_item: dict, color: QColor
+    ) -> QgsVectorTileBasicRendererStyle:
         """個々の地物アイテムからレンダラースタイルを生成"""
         style = QgsVectorTileBasicRendererStyle()
         style.setStyleName(feature_item.get("description", ""))
         style.setLayerName(feature_item.get("source_layer", ""))
         style.setEnabled(True)
-        style.setFilterExpression(
-            f'"ftCode" = {feature_item.get("ft_code", 0)}'
-        )
+        style.setFilterExpression(f'"ftCode" = {feature_item.get("ft_code", 0)}')
 
         geometry_type = feature_item.get("geometry_type", "Polygon")
         if geometry_type == "Polygon":

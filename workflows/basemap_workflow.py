@@ -25,9 +25,9 @@ class BasemapWorkflow(BaseWorkflow):
         super().__init__(iface)
         self.basemap_manager = BaseMapAlgorithm(iface)
 
-# ==================
-# 1. メイン実行関数
-# ==================
+    # ==================
+    # 1. メイン実行関数
+    # ==================
     def execute(self, selected_features: Optional[Dict] = None) -> bool:
         """ベースマップワークフローを実行
         Args:
@@ -51,7 +51,6 @@ class BasemapWorkflow(BaseWorkflow):
                 # Step 3: グループ内のレイヤーに地物シンボロジを追加
                 self._configure_layer_symbologies(group)
 
-
             # Step 4: 選択された地物レイヤーの表示状態＆色を変更
             self.basemap_manager.reset_layer_visibility(group)
             if selected_features:
@@ -65,9 +64,9 @@ class BasemapWorkflow(BaseWorkflow):
             self.iface.messageBar().pushCritical("ベースマップ処理エラー", str(e))
             return False
 
-# ==================
-# 2. グループ管理
-# ==================
+    # ==================
+    # 2. グループ管理
+    # ==================
     def _setup_basemap_group(self) -> QgsLayerTreeGroup:
         """ベースマップグループを設定
         Returns:
@@ -92,9 +91,9 @@ class BasemapWorkflow(BaseWorkflow):
 
         return group
 
-# ==================
-# 3. レイヤー管理
-# ==================
+    # ==================
+    # 3. レイヤー管理
+    # ==================
     def _get_missing_layers(self, group: QgsLayerTreeGroup) -> list:
         """グループ内の不足しているレイヤーを取得
         Args:
@@ -103,7 +102,8 @@ class BasemapWorkflow(BaseWorkflow):
             list: 不足しているレイヤー名のリスト
         """
         existing_layer_names = {
-            layer.name() for layer in self.basemap_manager.get_layers_from_group(group) or []
+            layer.name()
+            for layer in self.basemap_manager.get_layers_from_group(group) or []
         }
         required_layer_names = {
             settings["layer_name"] for settings in LAYER_FEATURE_SETTINGS.values()
@@ -136,9 +136,9 @@ class BasemapWorkflow(BaseWorkflow):
                 else:
                     raise Exception(f"レイヤー「{layer_name}」の作成に失敗しました")
 
-# ==================
-# 4. シンボロジ管理
-# ==================
+    # ==================
+    # 4. シンボロジ管理
+    # ==================
     def _configure_layer_symbologies(self, group: QgsLayerTreeGroup) -> None:
         """グループ内のレイヤーに地物シンボロジを追加
         Args:
@@ -152,7 +152,9 @@ class BasemapWorkflow(BaseWorkflow):
             )
 
             if basemap_layer:
-                default_color = DEFAULT_COLOR.get(feature_type, QColor(128, 128, 128, 100))
+                default_color = DEFAULT_COLOR.get(
+                    feature_type, QColor(128, 128, 128, 100)
+                )
 
                 # レイヤーに地物シンボロジを追加
                 success = self.basemap_manager.add_feature_symbology(
@@ -162,15 +164,19 @@ class BasemapWorkflow(BaseWorkflow):
                 )
 
                 if not success:
-                    raise Exception(f"地物「{settings['layer_name']}」のシンボロジ設定に失敗しました")
+                    raise Exception(
+                        f"地物「{settings['layer_name']}」のシンボロジ設定に失敗しました"
+                    )
 
             else:
                 raise Exception(f"レイヤー「{settings['layer_name']}」が見つかりません")
 
-# ==================
-# 5. 可視化処理
-# ==================
-    def _visualize_selected_features(self, group: QgsLayerTreeGroup, selected_features: dict) -> None:
+    # ==================
+    # 5. 可視化処理
+    # ==================
+    def _visualize_selected_features(
+        self, group: QgsLayerTreeGroup, selected_features: dict
+    ) -> None:
         """選択された地物レイヤーの表示状態＆色を変更
         Args:
             group (QgsLayerTreeGroup): 対象のレイヤーグループ
@@ -195,9 +201,13 @@ class BasemapWorkflow(BaseWorkflow):
                     )
 
                     if not success:
-                        raise Exception(f"地物「{feature_settings['layer_name']}」の可視化に失敗しました")
+                        raise Exception(
+                            f"地物「{feature_settings['layer_name']}」の可視化に失敗しました"
+                        )
 
                     # レイヤーを表示状態にする
                     self.basemap_manager.set_layer_visibility(basemap_layer, True)
                 else:
-                    raise Exception(f"レイヤー「{feature_settings['layer_name']}」が見つかりません")
+                    raise Exception(
+                        f"レイヤー「{feature_settings['layer_name']}」が見つかりません"
+                    )

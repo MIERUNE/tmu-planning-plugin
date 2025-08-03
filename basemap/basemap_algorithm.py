@@ -121,7 +121,9 @@ class BaseMapAlgorithm:
                 f"地理院ベクトルタイルレイヤーの作成に失敗しました: {str(e)}"
             ) from e
 
-    def get_layers_from_group(self, group: QgsLayerTreeGroup) -> List[QgsVectorTileLayer]:
+    def get_layers_from_group(
+        self, group: QgsLayerTreeGroup
+    ) -> List[QgsVectorTileLayer]:
         """グループ内から全てのレイヤーを取得
         Args:
             group (QgsLayerTreeGroup): レイヤーグループオブジェクト

@@ -4,8 +4,7 @@ from qgis.core import QgsNetworkAccessManager, QgsProject, QgsVectorLayer
 
 # 1. リクエスト情報の設定
 # TODO : パラメーターとAPIキーはユーザーが選択したものに置き換える
-# url_string = "https://www.reinfolib.mlit.go.jp/ex-api/external/XPT001?response_format=geojson&z=13&x=7312&y=3008&from=20223&to=20234"
-
+# TODO : 指定した自治体のデータに必要なタイル分を取得するようにする
 url_string = "https://www.reinfolib.mlit.go.jp/ex-api/external/XKT016?response_format=geojson&z=11&x=1819&y=806&administrativeAreaCode=12203"  # 千葉県
 api_key = (
     "b112ca22671841f5b8f82727f2ffdaf3"  # <-- ここに実際のAPIキーを入力してください

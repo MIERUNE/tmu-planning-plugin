@@ -55,7 +55,7 @@ LAYER_FEATURE_SETTINGS = {
             },
         ],
         "layer_name": "水域",
-        "zoom_min": 4,
+        "zoom_min": 9,
         "zoom_max": 16,
     },
     "highway": {
@@ -124,7 +124,7 @@ LAYER_FEATURE_SETTINGS = {
             },
         ],
         "layer_name": "建物ポリゴン",
-        "zoom_min": 14,
+        "zoom_min": 0,
         "zoom_max": 16,
     },
 }

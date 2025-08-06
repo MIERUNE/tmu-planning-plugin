@@ -1,8 +1,8 @@
 import json
 
-from PyQt5.QtCore import QEventLoop, QUrl
+from PyQt5.QtCore import QEventLoop, QUrl, QVariant
 from PyQt5.QtNetwork import QNetworkReply, QNetworkRequest
-from qgis.core import Qgis, QgsMessageLog, QgsNetworkAccessManager, QgsProject
+from qgis.core import Qgis, QgsField, QgsMessageLog, QgsNetworkAccessManager, QgsProject
 
 # 1. リクエスト情報の設定
 # TODO : パラメーターとAPIキーはユーザーが選択したものに置き換える
@@ -29,6 +29,7 @@ loop = QEventLoop()
 reply = nam.get(request)
 reply.finished.connect(loop.quit)
 loop.exec_()
+
 
 # 5. 応答の処理とコンソール出力
 if reply.error() == QNetworkReply.NoError:
@@ -85,18 +86,99 @@ else:
 
 
 # 人口データと行政区域のデータを結合
+if area_code and population_value_str:
+    try:
+        population_value = int(population_value_str)
+    except (ValueError, TypeError) as e:
+        QgsMessageLog.logMessage(
+            f"人口データ '{population_value_str}' を数値に変換できませんでした: {e}",
+            "e-Stat API",
+            Qgis.Critical,
+        )
+        population_value = None
 
+    layer = QgsProject.instance().mapLayersByName("hokkaido_prefecture")
+    if not layer:
+        QgsMessageLog.logMessage(
+            "レイヤー 'hokkaido_prefecture' が見つかりませんでした。",
+            "e-Stat API",
+            Qgis.Critical,
+        )
 
-layer = QgsProject.instance().mapLayersByName("hokkaido_prefecture")
-if not layer:
-    QgsMessageLog.logMessage(
-        "レイヤー 'hokkaido_prefecture' が見つかりませんでした。",
-        "e-Stat API",
-        Qgis.Critical,
-    )
+    else:
+        layer = layer[0]
+        layer_provider = layer.dataProvider()
+        layer.startEditing()
+        QgsMessageLog.logMessage(
+            f"レイヤー '{layer.name()}' の編集を開始しました。", "e-Stat API", Qgis.Info
+        )
+        print("Editing started for layer:", layer.name())
 
+        # 'POPULATION' フィールドが存在しない場合は追加
+        if layer.fields().indexOf("POPULATION") == -1:
+            success = layer_provider.addAttributes(
+                [QgsField("POPULATION", QVariant.Int)]
+            )
+            if success:
+                layer.updateFields()
+                QgsMessageLog.logMessage(
+                    "新しいカラム 'POPULATION' を作成しました。",
+                    "e-Stat API",
+                    Qgis.Info,
+                )
+            else:
+                QgsMessageLog.logMessage(
+                    "カラム 'POPULATION' の作成に失敗しました。",
+                    "e-Stat API",
+                    Qgis.Critical,
+                )
+                layer.rollBack()
+                raise Exception("Failed to add new field.")
 
-layer = layer[0]
-layer_provider = layer.dataProvider()
-layer.startEditing()
-print("Editing started for layer:", layer.name())
+        population_field_idx = layer.fields().indexOf("POPULATION")
+        administra_field_idx = layer.fields().indexOf("administra")
+
+        if population_field_idx == -1 or administra_field_idx == -1:
+            QgsMessageLog.logMessage(
+                "必要なカラム 'POPULATION' または 'administra' が見つかりません。",
+                "e-Stat API",
+                Qgis.Critical,
+            )
+            layer.rollBack()
+        else:
+            changes = {}
+            for feature in layer.getFeatures():
+                # administraカラムの値を取得（文字列として取得）
+                administra_value = feature["administra"]
+
+                if str(administra_value) == str(area_code):
+                    new_value = population_value
+                    QgsMessageLog.logMessage(
+                        f"一致: administra='{administra_value}' に人口データ '{population_value}' を設定します。",
+                        "e-Stat API",
+                        Qgis.Info,
+                    )
+                else:
+                    new_value = None
+                    QgsMessageLog.logMessage(
+                        f"不一致: administra='{administra_value}' にはNULLを設定します。",
+                        "e-Stat API",
+                        Qgis.Info,
+                    )
+
+                # 変更を辞書に格納: {フィーチャID: {フィールドインデックス: 新しい値}}
+                changes[feature.id()] = {population_field_idx: new_value}
+
+            # データプロバイダを使って変更をまとめて更新
+            layer.dataProvider().changeAttributeValues(changes)
+            QgsMessageLog.logMessage(
+                "属性テーブルの更新が完了しました。", "e-Stat API", Qgis.Info
+            )
+
+            # 変更を確定
+            layer.commitChanges()
+            QgsMessageLog.logMessage(
+                f"レイヤー '{layer.name()}' の編集を確定しました。",
+                "e-Stat API",
+                Qgis.Info,
+            )

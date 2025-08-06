@@ -4,8 +4,9 @@ from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
-from .workflows.basemap_workflow import BasemapWorkflow
 from .ui.dockwidget import GreenInfraPlanningDockwidget
+from .workflows.area_workflow import AreaWorkflow
+from .workflows.basemap_workflow import BasemapWorkflow
 
 PLUGIN_NAME = "Green Infra Plugin"
 
@@ -20,6 +21,7 @@ class GreenInfraPlugin:
         self.toolbar = self.iface.addToolBar(PLUGIN_NAME)
         self.toolbar.setObjectName(PLUGIN_NAME)
         self.dockwidget = None
+        self.area_workflow = AreaWorkflow(iface)
         self.basemap_workflow = BasemapWorkflow(iface)
 
     def add_action(
@@ -74,6 +76,9 @@ class GreenInfraPlugin:
         if self.dockwidget is None:
             self.dockwidget = GreenInfraPlanningDockwidget()
             self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
+
+            # 都道府県リストを読み込み
+            self.area_workflow.load_prefecture_dropdown(self.dockwidget)
 
             # 実行ボタンにイベントを接続
             self.dockwidget.pushButton_execute.clicked.connect(

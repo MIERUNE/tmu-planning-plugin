@@ -73,3 +73,17 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
             selected_features["building"] = self.colorButton_building.color()
 
         return selected_features
+
+    def set_prefecture_combobox(self, prefectures: list):
+        """都道府県のコンボボックスを設定
+        Args:
+            prefectures (list): 都道府県リスト [(code, name), ...]
+        """
+        self.comboBox_prefecture.clear()
+
+        # 初期項目を追加
+        self.comboBox_prefecture.addItem("選択してください", "")
+
+        # 都道府県リストを追加
+        for code, name in prefectures:
+            self.comboBox_prefecture.addItem(f"{code}：{name}", code)

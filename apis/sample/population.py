@@ -6,7 +6,6 @@ from qgis.core import Qgis, QgsField, QgsMessageLog, QgsNetworkAccessManager, Qg
 
 # 1. リクエスト情報の設定
 # TODO : パラメーターとAPIキーはユーザーが選択したものに置き換える
-# TODO : 指定した自治体のデータに必要なタイル分を取得するようにする
 API_KEY = "826caa70ecafc235546d72631891eb6d13d2028e"
 STATS_DATA_ID = "0003433219"
 AREA_CODE = "01101"  # 北海道
@@ -14,30 +13,25 @@ CLASS_CODE_TOTAL_POPULATION = "0"  # 総人口の分類項目コード
 BASE_URL = "https://api.e-stat.go.jp/rest/3.0/app/json/getStatsData"
 url_string = f"{BASE_URL}?appId={API_KEY}&statsDataId={STATS_DATA_ID}&cdArea={AREA_CODE}&cdCat01={CLASS_CODE_TOTAL_POPULATION}"
 
-
 # 2. リクエストの作成とヘッダーの設定
 url = QUrl(url_string)
 request = QNetworkRequest(url)
-
-
 nam = QgsNetworkAccessManager.instance()
 reply = nam.get(request)
 
-# 4. レスポンスの待機と取得
+# 3. レスポンスの待機と取得
 loop = QEventLoop()
-# 応答を待つためのスロットを接続
 reply = nam.get(request)
 reply.finished.connect(loop.quit)
 loop.exec_()
 
-
-# 5. 応答の処理とコンソール出力
+# 4. 応答の処理とコンソール出力
 if reply.error() == QNetworkReply.NoError:
     # 応答データをバイト配列から文字列にデコード
     response_data = reply.readAll().data().decode("utf-8")
-
-    # JSONデータをパース
+    
     try:
+        # JSONデータをパース
         json_data = json.loads(response_data)
 
         # json_dataから@areaの値を取得
@@ -47,15 +41,10 @@ if reply.error() == QNetworkReply.NoError:
         data_inf = statistical_data.get("DATA_INF", {})
         value = data_inf.get("VALUE", {})
 
-        # @area の値を取得
-        area_code = value.get("@area")
-        print(f"Area Code from JSON: {area_code}")
-        # 人口データの値を取得
-        population_value_str = value.get("$")
-        print(f"Population Value: {population_value_str}")
+        area_code = value.get("@area") # @areaの値コード
+        population_value_str = value.get("$")  # 人口データの値
 
         if area_code and population_value_str:
-            # データ取得の成功をQGISのメッセージログに表示
             QgsMessageLog.logMessage(
                 "e-Stat APIからのJSONデータの取得に成功しました。Pythonコンソールを確認してください。",
                 "e-Stat API",
@@ -84,7 +73,6 @@ else:
     # リプライオブジェクトを破棄
     reply.deleteLater()
 
-
 # 人口データと行政区域のデータを結合
 if area_code and population_value_str:
     try:
@@ -108,7 +96,7 @@ if area_code and population_value_str:
     else:
         layer = layer[0]
         layer_provider = layer.dataProvider()
-        layer.startEditing()
+        layer.startEditing() 
         QgsMessageLog.logMessage(
             f"レイヤー '{layer.name()}' の編集を開始しました。", "e-Stat API", Qgis.Info
         )
@@ -136,7 +124,7 @@ if area_code and population_value_str:
                 raise Exception("Failed to add new field.")
 
         population_field_idx = layer.fields().indexOf("POPULATION")
-        administra_field_idx = layer.fields().indexOf("administra")
+        administra_field_idx = layer.fields().indexOf("administra") 
 
         if population_field_idx == -1 or administra_field_idx == -1:
             QgsMessageLog.logMessage(

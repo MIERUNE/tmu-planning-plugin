@@ -86,4 +86,4 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
 
         # 都道府県リストを追加
         for code, name in prefectures:
-            self.comboBox_prefecture.addItem(f"{code}：{name}", code)
+            self.comboBox_prefecture.addItem(f"{code} : {name}", code)

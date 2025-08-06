@@ -19,14 +19,6 @@ class AreaWorkflow:
     def load_prefecture_dropdown(self, dockwidget):
         """都道府県プルダウンを初期化"""
         try:
-            if not PREFECTURE_LIST:
-                QgsMessageLog.logMessage(
-                    "都道府県リストが空です。APIの設定を確認してください。",
-                    "Green Infra Plugin",
-                    level=Qgis.Critical,
-                )
-                return False
-
             dockwidget.set_prefecture_combobox(PREFECTURE_LIST)
 
             return True

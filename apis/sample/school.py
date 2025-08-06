@@ -1,23 +1,22 @@
-import json
-
 from PyQt5.QtCore import QEventLoop, QUrl
-from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
-from qgis.core import QgsMessageLog, QgsNetworkAccessManager
+from PyQt5.QtNetwork import QNetworkRequest
+from qgis.core import QgsNetworkAccessManager
 
 # 1. リクエスト情報の設定
 # TODO : パラメーターとAPIキーはユーザーが選択したものに置き換える
 # TODO : 指定した自治体のデータに必要なタイル分を取得するようにする
-API_KEY = "826caa70ecafc235546d72631891eb6d13d2028e"
-STATS_DATA_ID = "0003433219"  
-AREA_CODE = "01000" # 北海道
-CLASS_CODE_TOTAL_POPULATION = "0" # 総人口の分類項目コード
-BASE_URL = "https://api.e-stat.go.jp/rest/3.0/app/json/getStatsData"
-url_string = f"{BASE_URL}?appId={API_KEY}&statsDataId={STATS_DATA_ID}&cdArea={AREA_CODE}&cdCat01={CLASS_CODE_TOTAL_POPULATION}"
-
+url_string = "https://www.reinfolib.mlit.go.jp/ex-api/external/XKT006?response_format=geojson&z=13&x=7272&y=3225"  # 千葉県
+api_key = (
+    "b112ca22671841f5b8f82727f2ffdaf3"  # <-- ここに実際のAPIキーを入力してください
+)
 
 # 2. リクエストの作成とヘッダーの設定
 url = QUrl(url_string)
 request = QNetworkRequest(url)
+
+# ヘッダーにAPIキーを設定します
+# キーとバリューはバイト文字列 (b"") にする必要があります
+request.setRawHeader(b"Ocp-Apim-Subscription-Key", api_key.encode("utf-8"))
 
 # 3. APIリクエストの実行
 nam = QgsNetworkAccessManager.instance()
@@ -25,48 +24,30 @@ reply = nam.get(request)
 
 # 4. レスポンスの待機と取得
 loop = QEventLoop()
-# 応答を待つためのスロットを接続
-reply = nam.get(request)
 reply.finished.connect(loop.quit)
 loop.exec_()
 
-# 5. 応答の処理とコンソール出力
-# if reply.error() == QNetworkRequest.NoError:
-if reply.error() == QNetworkReply.NoError:
-    # 応答データをバイト配列から文字列にデコード
-    response_data = reply.readAll().data().decode("utf-8")
-
-    # JSONデータをパース
-    try:
-        json_data = json.loads(response_data)
-
-        # 取得したJSONデータを整形してコンソールに出力
-        # コンソールに表示されるデータが膨大になる可能性があるため、一部抜粋または整形して表示するのが良いでしょう
-        # 今回は簡略化のため、そのまま表示します
-        print("=====================================================================")
-        print("e-Stat APIからの応答データ (JSON):")
-        print("=====================================================================")
-        print(json.dumps(json_data, indent=2, ensure_ascii=False))
-        print("=====================================================================")
-
-        # データ取得の成功をQGISのメッセージログに表示
-        QgsMessageLog.logMessage(
-            "e-Stat APIからのJSONデータの取得に成功しました。Pythonコンソールを確認してください。",
-            "e-Stat API",
-            QgsMessageLog.INFO,
-        )
-
-    except json.JSONDecodeError as e:
-        error_message = f"JSONのパース中にエラーが発生しました: {e}"
-        print(f"Error: {error_message}")
-        QgsMessageLog.logMessage(error_message, "e-Stat API", QgsMessageLog.CRITICAL)
-
+# エラーチェック
+if reply.error():
+    print(f"エラーが発生しました: {reply.errorString()}")
+# （前のコードから続く...）
 else:
-    # エラーが発生した場合の処理
-    error_string = reply.errorString()
-    error_message = f"ネットワークリクエスト中にエラーが発生しました: {error_string}"
-    print(f"Error: {error_message}")
-    QgsMessageLog.logMessage(error_message, "e-Stat API", QgsMessageLog.CRITICAL)
+    # 正常に取得できた場合、レスポンスをUTF-8でデコードして表示
+    response_data = reply.readAll()
+    response_string = response_data.data().decode("utf-8-sig")
 
-# リプライオブジェクトを破棄
+    layer = QgsVectorLayer(response_string, "学校", "ogr")
+
+    # レイヤーが正しく作成されたかチェック
+    if not layer.isValid():
+        print("レイヤーの作成に失敗しました。GeoJSONデータを確認してください。")
+        # デバッグ用に受信したテキストを表示してみるのも有効です
+        # print(response_string)
+    else:
+        # QGISプロジェクトにレイヤーを追加
+        QgsProject.instance().addMapLayer(layer)
+        print("レイヤーが正常にQGISに追加されました。")
+
+
+# オブジェクトを解放
 reply.deleteLater()

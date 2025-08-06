@@ -9,6 +9,7 @@ from ..area.area_settings import (
     PREFECTURE_LIST,
 )
 
+
 class AreaWorkflow:
     """エリア選択・管理のワークフロークラス"""
 
@@ -22,7 +23,7 @@ class AreaWorkflow:
                 QgsMessageLog.logMessage(
                     "都道府県リストが空です。APIの設定を確認してください。",
                     "Green Infra Plugin",
-                    level=Qgis.Critical
+                    level=Qgis.Critical,
                 )
                 return False
 
@@ -34,6 +35,6 @@ class AreaWorkflow:
             QgsMessageLog.logMessage(
                 f"都道府県リストの読み込み中にエラーが発生: {str(e)}",
                 "Green Infra Plugin",
-                level=Qgis.Critical
+                level=Qgis.Critical,
             )
             return False

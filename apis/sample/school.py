@@ -1,6 +1,6 @@
 from PyQt5.QtCore import QEventLoop, QUrl
 from PyQt5.QtNetwork import QNetworkRequest
-from qgis.core import QgsNetworkAccessManager
+from qgis.core import QgsNetworkAccessManager, QgsProject, QgsVectorLayer
 
 # 1. リクエスト情報の設定
 # TODO : パラメーターとAPIキーはユーザーが選択したものに置き換える

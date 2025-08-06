@@ -1,16 +1,16 @@
 import json
 
 from PyQt5.QtCore import QEventLoop, QUrl
-from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
+from PyQt5.QtNetwork import QNetworkReply, QNetworkRequest
 from qgis.core import QgsMessageLog, QgsNetworkAccessManager
 
 # 1. リクエスト情報の設定
 # TODO : パラメーターとAPIキーはユーザーが選択したものに置き換える
 # TODO : 指定した自治体のデータに必要なタイル分を取得するようにする
 API_KEY = "826caa70ecafc235546d72631891eb6d13d2028e"
-STATS_DATA_ID = "0003433219"  
-AREA_CODE = "01000" # 北海道
-CLASS_CODE_TOTAL_POPULATION = "0" # 総人口の分類項目コード
+STATS_DATA_ID = "0003433219"
+AREA_CODE = "01000"  # 北海道
+CLASS_CODE_TOTAL_POPULATION = "0"  # 総人口の分類項目コード
 BASE_URL = "https://api.e-stat.go.jp/rest/3.0/app/json/getStatsData"
 url_string = f"{BASE_URL}?appId={API_KEY}&statsDataId={STATS_DATA_ID}&cdArea={AREA_CODE}&cdCat01={CLASS_CODE_TOTAL_POPULATION}"
 

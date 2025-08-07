@@ -4,7 +4,7 @@
 """
 
 import json
-from typing import List, Tuple
+from typing import List, Tuple, Dict, Any
 
 from PyQt5.QtCore import QEventLoop, QUrl, QByteArray
 from PyQt5.QtNetwork import QNetworkRequest
@@ -94,7 +94,7 @@ class AreaAlgorithm:
 
     def _decode_response(
         self, response_data: QByteArray, response_encoding: str, prefecture_code: str
-    ) -> dict[str, str]:
+    ) -> Dict[str, Any]:
         try:
             response_string = response_data.data().decode(response_encoding)
             return json.loads(response_string)

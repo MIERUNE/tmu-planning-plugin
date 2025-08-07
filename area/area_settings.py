@@ -1,6 +1,18 @@
 """
-都道府県内市区町村一覧取得APIの設定ファイル
+都道府県市区町村一覧取得APIの設定ファイル
 """
+# 不動産情報ライブラリAPIエンドポイント
+REAL_ESTATE_API_BASE_URL = "https://www.reinfolib.mlit.go.jp/ex-api/external/XIT002"
+
+# 不動産情報ライブラリAPIキー
+# TODO: 次の段階でAPIキー入力フォームと連携させる
+REAL_ESTATE_API_KEY = "8ef021ba2e7241158260dc2de39d650b"
+
+# ログメッセージ用プラグイン名
+PLUGIN_NAME = "Green Infra Plugin"
+
+# レスポンス文字エンコーディング
+RESPONSE_ENCODING = 'utf-8-sig'
 
 # 都道府県一覧（マニュアル記載の固定リスト）
 PREFECTURE_LIST = [

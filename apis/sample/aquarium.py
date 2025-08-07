@@ -6,7 +6,6 @@ from qgis.core import QgsNetworkAccessManager, QgsProject, QgsVectorLayer
 # TODO : パラメーターとAPIキーはユーザーが選択したものに置き換える
 LayerSelection = 1
 min_lon, min_lat, max_lon, max_lat = 140.5, 42.0, 141.5, 43.5
-
 url_string = f"https://api.msil.go.jp/aquarium/v2/MapServer/{LayerSelection}/query?f=geojson&geometry={min_lon},{min_lat},{max_lon},{max_lat}"
 api_key = (
     "10784fa6ea604de687b2052e55e03879"  # <-- 海しるのお試し用のサブスクリプションキー
@@ -15,7 +14,6 @@ api_key = (
 # 2. リクエストの作成とヘッダーの設定
 url = QUrl(url_string)
 request = QNetworkRequest(url)
-
 # ヘッダーにAPIキーを設定します
 # キーとバリューはバイト文字列 (b"") にする必要があります
 request.setRawHeader(b"Ocp-Apim-Subscription-Key", api_key.encode("utf-8"))

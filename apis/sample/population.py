@@ -98,7 +98,10 @@ def update_population_to_layer(layer_name, area_code, population_value):
 
     # administraフィールドが存在しない場合はreturn
     if population_field_idx == -1 or administra_field_idx == -1:
-        log("必要なカラム 'POPULATION' または 'area_code' が見つかりません。", Qgis.Critical)
+        log(
+            "必要なカラム 'POPULATION' または 'area_code' が見つかりません。",
+            Qgis.Critical,
+        )
         layer.rollBack()
         return
 
@@ -108,7 +111,10 @@ def update_population_to_layer(layer_name, area_code, population_value):
         administra_value = feature["area_code"]
         if str(administra_value) == str(area_code):
             changes[feature.id()] = {population_field_idx: population_value}
-            log(f"一致: area_code='{administra_value}' に人口データ '{population_value}' を設定します。", Qgis.Info)
+            log(
+                f"一致: area_code='{administra_value}' に人口データ '{population_value}' を設定します。",
+                Qgis.Info,
+            )
         else:
             changes[feature.id()] = {population_field_idx: None}
 

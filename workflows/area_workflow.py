@@ -14,6 +14,7 @@ from ..area.area_settings import (
 )
 from ..area.area_algorithm import AreaAlgorithm
 
+
 class AreaWorkflow:
     """エリア選択・管理のワークフロークラス"""
 
@@ -54,7 +55,7 @@ class AreaWorkflow:
                 prefecture_code=prefecture_code,
                 api_key=REAL_ESTATE_API_KEY,
                 base_url=REAL_ESTATE_API_BASE_URL,
-                response_encoding=RESPONSE_ENCODING
+                response_encoding=RESPONSE_ENCODING,
             )
 
             if not municipalities:
@@ -68,7 +69,7 @@ class AreaWorkflow:
             QgsMessageLog.logMessage(
                 f"市区町村読み込み中にエラーが発生: {str(e)}",
                 PLUGIN_NAME,
-                level=Qgis.Critical
+                level=Qgis.Critical,
             )
             dockwidget.set_municipality_combobox([])
             return False

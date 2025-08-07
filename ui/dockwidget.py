@@ -105,5 +105,3 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
 
         # 未選択状態に設定
         self.comboBox_municipality.setCurrentIndex(0)
-
-

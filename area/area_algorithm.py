@@ -58,7 +58,9 @@ class AreaAlgorithm:
         if not api_key or not prefecture_code:
             raise ValueError("APIキーまたは都道府県コードが未設定です")
         if not prefecture_code.isdigit() or len(prefecture_code) != 2:
-            raise ValueError(f"無効な都道府県コード: {prefecture_code} (2桁の数字である必要があります)")
+            raise ValueError(
+                f"無効な都道府県コード: {prefecture_code} (2桁の数字である必要があります)"
+            )
         return True
 
     def _fetch_api_data(self, url_string: str, api_key: str) -> QByteArray:

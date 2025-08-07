@@ -111,7 +111,9 @@ class GreenInfraPlugin:
         selected_code = self.dockwidget.comboBox_prefecture.currentData()
 
         if selected_code and selected_code != "":
-            self.area_workflow.load_municipality_dropdown(self.dockwidget, selected_code)
+            self.area_workflow.load_municipality_dropdown(
+                self.dockwidget, selected_code
+            )
         else:
             # 未選択の場合は市区町村をクリア
             self.dockwidget.set_municipality_combobox([])

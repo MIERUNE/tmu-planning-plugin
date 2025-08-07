@@ -29,7 +29,7 @@ loop.exec_()
 if reply.error() == QNetworkReply.NoError:
     # 応答データをバイト配列から文字列にデコード
     response_data = reply.readAll().data().decode("utf-8")
-    
+
     try:
         # JSONデータをパース
         json_data = json.loads(response_data)
@@ -41,7 +41,7 @@ if reply.error() == QNetworkReply.NoError:
         data_inf = statistical_data.get("DATA_INF", {})
         value = data_inf.get("VALUE", {})
 
-        area_code = value.get("@area") # @areaの値コード
+        area_code = value.get("@area")  # @areaの値コード
         population_value_str = value.get("$")  # 人口データの値
 
         if area_code and population_value_str:
@@ -96,7 +96,7 @@ if area_code and population_value_str:
     else:
         layer = layer[0]
         layer_provider = layer.dataProvider()
-        layer.startEditing() 
+        layer.startEditing()
         QgsMessageLog.logMessage(
             f"レイヤー '{layer.name()}' の編集を開始しました。", "e-Stat API", Qgis.Info
         )
@@ -124,7 +124,7 @@ if area_code and population_value_str:
                 raise Exception("Failed to add new field.")
 
         population_field_idx = layer.fields().indexOf("POPULATION")
-        administra_field_idx = layer.fields().indexOf("administra") 
+        administra_field_idx = layer.fields().indexOf("administra")
 
         if population_field_idx == -1 or administra_field_idx == -1:
             QgsMessageLog.logMessage(

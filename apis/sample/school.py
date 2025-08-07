@@ -30,7 +30,6 @@ loop.exec_()
 # エラーチェック
 if reply.error():
     print(f"エラーが発生しました: {reply.errorString()}")
-# （前のコードから続く...）
 else:
     # 正常に取得できた場合、レスポンスをUTF-8でデコードして表示
     response_data = reply.readAll()

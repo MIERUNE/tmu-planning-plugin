@@ -5,14 +5,16 @@
 
 from qgis.core import QgsMessageLog, Qgis
 
-from ..area.area_settings import (
+from ..real_estate_lib.area.area_settings import (
     PREFECTURE_LIST,
-    REAL_ESTATE_API_BASE_URL,
     REAL_ESTATE_API_KEY,
-    RESPONSE_ENCODING,
-    PLUGIN_NAME,
 )
-from ..area.area_algorithm import AreaAlgorithm
+from ..real_estate_lib.connect import (
+    AREA_LIST_API_ENDPOINT,
+    PLUGIN_NAME,
+    RESPONSE_ENCODING
+)
+from ..real_estate_lib.area.area_algorithm import AreaAlgorithm
 
 
 class AreaWorkflow:
@@ -54,7 +56,7 @@ class AreaWorkflow:
             municipalities = self.area_algorithm.get_municipalities(
                 prefecture_code=prefecture_code,
                 api_key=REAL_ESTATE_API_KEY,
-                base_url=REAL_ESTATE_API_BASE_URL,
+                base_url=AREA_LIST_API_ENDPOINT,
                 response_encoding=RESPONSE_ENCODING,
             )
 

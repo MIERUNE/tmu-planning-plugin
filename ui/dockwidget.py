@@ -98,10 +98,9 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
         # 初期項目を追加
         if municipalities:
             self.comboBox_municipality.addItem("市区町村を選択してください", "")
-
-        # 市区町村リストを追加
-        for code, name in municipalities:
-            self.comboBox_municipality.addItem(name, code)
+            # 市区町村リストを追加
+            for code, name in municipalities:
+                self.comboBox_municipality.addItem(name, code)
 
         # 未選択状態に設定
         self.comboBox_municipality.setCurrentIndex(0)

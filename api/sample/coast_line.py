@@ -1,7 +1,8 @@
+import tempfile
+
 from PyQt5.QtCore import QEventLoop, QUrl
 from PyQt5.QtNetwork import QNetworkRequest
 from qgis.core import QgsNetworkAccessManager, QgsProject, QgsVectorLayer
-import tempfile
 
 # 1. リクエスト情報の設定
 # TODO : パラメーターとAPIキーはユーザーが選択したものに置き換える
@@ -37,9 +38,11 @@ else:
     response_data = reply.readAll()
     response_string = response_data.data().decode("utf-8-sig")
 
-    with tempfile.NamedTemporaryFile(mode='wt', suffix='.geojson', delete=False, encoding='utf-8') as temp_file:
+    with tempfile.NamedTemporaryFile(
+        mode="wt", suffix=".geojson", delete=False, encoding="utf-8"
+    ) as temp_file:
         temp_file.write(response_string)
-        temp_file_path = temp_file.name # 作成された一時ファイルのパスを取得
+        temp_file_path = temp_file.name  # 作成された一時ファイルのパスを取得
 
     print(f"一時ファイルを作成しました: {temp_file_path}")
 

@@ -82,8 +82,25 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
         self.comboBox_prefecture.clear()
 
         # 初期項目を追加
-        self.comboBox_prefecture.addItem("選択してください", "")
+        self.comboBox_prefecture.addItem("都道府県を選択してください", "")
 
         # 都道府県リストを追加
         for code, name in prefectures:
-            self.comboBox_prefecture.addItem(f"{code} : {name}", code)
+            self.comboBox_prefecture.addItem(name, code)
+
+    def set_municipality_combobox(self, municipalities: list):
+        """市区町村のコンボボックスを設定
+        Args:
+            municipalities (list): 市区町村リスト [(code, name), ...]
+        """
+        self.comboBox_municipality.clear()
+
+        # 初期項目を追加
+        if municipalities:
+            self.comboBox_municipality.addItem("市区町村を選択してください", "")
+            # 市区町村リストを追加
+            for code, name in municipalities:
+                self.comboBox_municipality.addItem(name, code)
+
+        # 未選択状態に設定
+        self.comboBox_municipality.setCurrentIndex(0)

@@ -80,6 +80,11 @@ class GreenInfraPlugin:
             # 都道府県リストを読み込み
             self.area_workflow.load_prefecture_dropdown(self.dockwidget)
 
+            # 都道府県選択変更イベントを接続
+            self.dockwidget.comboBox_prefecture.currentIndexChanged.connect(
+                self.on_prefecture_changed
+            )
+
             # 実行ボタンにイベントを接続
             self.dockwidget.pushButton_execute.clicked.connect(
                 self.execute_data_visualization
@@ -97,3 +102,18 @@ class GreenInfraPlugin:
 
         # Phase 2:
         # Phase 3:
+
+    def on_prefecture_changed(self):
+        """都道府県選択変更時の処理"""
+        if not self.dockwidget:
+            return
+
+        selected_code = self.dockwidget.comboBox_prefecture.currentData()
+
+        if selected_code and selected_code != "":
+            self.area_workflow.load_municipality_dropdown(
+                self.dockwidget, selected_code
+            )
+        else:
+            # 未選択の場合は市区町村をクリア
+            self.dockwidget.set_municipality_combobox([])

@@ -19,8 +19,6 @@ stats_data_id = "8003007181"  # 取得したいデータのID（人口メッシ�
 population_mesh_url = (
     "https://api.e-stat.go.jp/rest/3.0/app/json/getStatsData?appId={apiId}&lang=J&statsDataId=8003007181&cdCat01=0010"
 ).format(apiId=API_KEY)
-# population_mesh_url = "https://api.e-stat.go.jp/rest/3.0/app/json/getStatsData??appId={APIキー}&lang=J&statsDataId=8003007181&cdCat01=0010"
-# mesh_shapefile_url = "https://www.e-stat.go.jp/gis/statmap-search/data/2020/g04-c-2020-01-1-jgd.zip" #「3次メッシュ」のシェープファイルのURL
 mesh_data = "https://www.e-stat.go.jp/gis/statmap-search/data?dlserveyId=S&code=6441&coordSys=1&format=shape&downloadType=5"
 
 temp_dir = tempfile.mkdtemp()

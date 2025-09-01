@@ -8,7 +8,7 @@ from qgis.core import QgsMessageLog, Qgis
 from ..real_estate_lib.area.area_settings import (
     PREFECTURE_LIST,
     REAL_ESTATE_API_KEY,
-    get_municipalities_by_prefecture
+    get_municipalities_by_prefecture,
 )
 from ..real_estate_lib.connect import (
     AREA_LIST_API_ENDPOINT,
@@ -89,5 +89,3 @@ class AreaWorkflow:
                 )
                 dockwidget.set_municipality_combobox([])
                 return False
-
-

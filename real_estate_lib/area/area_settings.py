@@ -1,6 +1,7 @@
 """
 都道府県市区町村一覧取得APIの設定ファイル
 """
+
 import json
 import os
 from typing import List, Tuple
@@ -62,7 +63,10 @@ PREFECTURE_LIST = [
 ]
 
 # 市区町村JSONファイル名
-MUNICIPALITIES_JSON_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "municipalities.json")
+MUNICIPALITIES_JSON_FILE = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "data", "municipalities.json"
+)
+
 
 def load_municipalities_from_json() -> dict:
     """JSONファイルから市区町村データを読み込み
@@ -75,6 +79,7 @@ def load_municipalities_from_json() -> dict:
     except Exception as e:
         print(f"市区町村JSONファイル読み込みエラー: {e}")
         return {}
+
 
 def get_municipalities_by_prefecture(prefecture_code: str) -> List[Tuple[str, str]]:
     """指定都道府県の市区町村リストをJSONファイルから取得

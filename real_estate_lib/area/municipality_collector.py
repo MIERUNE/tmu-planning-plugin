@@ -14,7 +14,7 @@ from qgis.core import QgsNetworkAccessManager
 # 設定値
 # =============================================================================
 
-API_KEY = "" # 不動産情報ライブラリAPIキーを入力してください
+API_KEY = ""  # 不動産情報ライブラリAPIキーを入力してください
 BASE_URL = "https://www.reinfolib.mlit.go.jp/ex-api/external/XIT002"
 RESPONSE_ENCODING = "utf-8-sig"
 

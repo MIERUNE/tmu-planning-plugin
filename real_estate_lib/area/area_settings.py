@@ -9,7 +9,6 @@ from typing import List, Tuple
 # 不動産情報ライブラリAPIキー
 # TODO: 次の段階でAPIキー入力フォームと連携させる
 REAL_ESTATE_API_KEY = ""
-# REAL_ESTATE_API_KEY = "8ef021ba2e7241158260dc2de39d650b"
 
 # 都道府県一覧（マニュアル記載の固定リスト）
 PREFECTURE_LIST = [

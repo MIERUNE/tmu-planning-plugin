@@ -3,7 +3,8 @@ API_KEY_LIST = [
         "id": 1,
         "label_name": "apikeyLabel_1",
         "line_edit_name": "apikeyLineEdit_1",
-        "setting_key": "service_1",
+        "setting_key": "real_estate_lib_api_key",
+        "display_name": "不動産情報ライブラリAPIキー",
     },
     {
         "id": 2,

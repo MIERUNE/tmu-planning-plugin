@@ -8,6 +8,7 @@ from qgis.core import QgsMessageLog, Qgis
 from ..real_estate_lib.area.area_settings import (
     PREFECTURE_LIST,
     REAL_ESTATE_API_KEY,
+    get_municipalities_by_prefecture,
 )
 from ..real_estate_lib.connect import (
     AREA_LIST_API_ENDPOINT,
@@ -48,7 +49,7 @@ class AreaWorkflow:
         """市区町村プルダウンを更新
         Args:
             dockwidget: DockWidgetインスタンス
-            prefecture_code (str): 選択された都道府県コード
+            prefecture_code (str): 都道府県コード
         Returns:
             bool: 成功した場合はTrue、失敗した場合はFalse
         """
@@ -67,11 +68,24 @@ class AreaWorkflow:
 
             dockwidget.set_municipality_combobox(municipalities)
             return True
+
         except Exception as e:
-            QgsMessageLog.logMessage(
-                f"市区町村読み込み中にエラーが発生: {str(e)}",
-                PLUGIN_NAME,
-                level=Qgis.Critical,
-            )
-            dockwidget.set_municipality_combobox([])
-            return False
+            # フォールバック: JSONファイルの市区町村リストを使用
+            municipalities = get_municipalities_by_prefecture(prefecture_code)
+
+            if municipalities:
+                QgsMessageLog.logMessage(
+                    f"API取得に失敗したため、ローカルJSONファイルから市区町村データを取得しました（都道府県: {prefecture_code}, {len(municipalities)}件）",
+                    PLUGIN_NAME,
+                    level=Qgis.Warning,
+                )
+                dockwidget.set_municipality_combobox(municipalities)
+                return True
+            else:
+                QgsMessageLog.logMessage(
+                    f"APIおよびJSONファイルの両方から市区町村データが取得できませんでした（都道府県: {prefecture_code}）。元のエラー: {str(e)}",
+                    PLUGIN_NAME,
+                    level=Qgis.Critical,
+                )
+                dockwidget.set_municipality_combobox([])
+                return False

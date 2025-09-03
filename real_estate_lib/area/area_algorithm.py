@@ -24,9 +24,17 @@ class AreaAlgorithm:
         base_url: str,
         response_encoding: str = "utf-8-sig",
     ) -> List[Tuple[str, str]]:
-        """指定都道府県の市区町村一覧を取得"""
-        if not self._validate_inputs(prefecture_code, api_key):
-            return []
+        """指定都道府県の市区町村一覧を取得
+        Args:
+            prefecture_code (str): 都道府県コード
+            api_key (str): APIキー
+            base_url (str): APIのベースURL
+            response_encoding (str, optional): レスポンスのエンコーディング（デフォルト: "utf-8-sig"）
+        Returns:
+            List[Tuple[str, str]]: 市区町村のリスト [(code, name), ...]
+        """
+        if not api_key or not prefecture_code:
+            raise ValueError("APIキーまたは都道府県コードが未設定です")
 
         url_string = f"{base_url}?area={prefecture_code}"
 
@@ -46,22 +54,6 @@ class AreaAlgorithm:
             return municipalities
 
         return []
-
-    def _validate_inputs(self, prefecture_code: str, api_key: str) -> bool:
-        """入力値の検証
-        Args:
-            prefecture_code (str): 都道府県コード
-            api_key (str): APIキー
-        Returns:
-            bool: 検証結果（True: 有効、False: 無効）
-        """
-        if not api_key or not prefecture_code:
-            raise ValueError("APIキーまたは都道府県コードが未設定です")
-        if not prefecture_code.isdigit() or len(prefecture_code) != 2:
-            raise ValueError(
-                f"無効な都道府県コード: {prefecture_code} (2桁の数字である必要があります)"
-            )
-        return True
 
     def _fetch_api_data(self, url_string: str, api_key: str) -> QByteArray:
         """APIからデータを取得

@@ -86,7 +86,8 @@ class ApikeyDialog(QDialog, ui_dialog):
         QMessageBox.information(self, "保存完了", "APIキーが保存されました。")
         self.accept()
 
-    def get_saved_api_key_by_id(self, api_key_id: int) -> str:
+    @staticmethod
+    def get_saved_api_key_by_id(api_key_id: int) -> str:
         """保存されているAPIキー設定を取得
         Args:
             api_key_id (int): APIキーのID（1, 2, 3）
@@ -108,4 +109,4 @@ class ApikeyDialog(QDialog, ui_dialog):
         Returns:
             str: 不動産情報ライブラリAPIキーの値
         """
-        return ApikeyDialog().get_saved_api_key_by_id(1)
+        return ApikeyDialog.get_saved_api_key_by_id(1)

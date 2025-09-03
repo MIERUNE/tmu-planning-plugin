@@ -44,7 +44,9 @@ class AreaWorkflow:
             )
             return False
 
-    def load_municipality_dropdown(self, dockwidget, api_key: str, prefecture_code: str) -> bool:
+    def load_municipality_dropdown(
+        self, dockwidget, api_key: str, prefecture_code: str
+    ) -> bool:
         """市区町村プルダウンを更新
         Args:
             dockwidget: DockWidgetインスタンス

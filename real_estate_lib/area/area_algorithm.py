@@ -37,7 +37,9 @@ class AreaAlgorithm:
         response_data = self._fetch_api_data(url_string, api_key)
 
         if not response_data or response_data.isEmpty():
-            raise Exception(f"APIからのレスポンスが空です（都道府県: {prefecture_code}）")
+            raise Exception(
+                f"APIからのレスポンスが空です（都道府県: {prefecture_code}）"
+            )
 
         data = self._decode_response(response_data, response_encoding, prefecture_code)
         municipalities = self._parse_municipalities(data, prefecture_code)

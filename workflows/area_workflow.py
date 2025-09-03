@@ -7,7 +7,6 @@ from qgis.core import QgsMessageLog, Qgis
 
 from ..real_estate_lib.area.area_settings import (
     PREFECTURE_LIST,
-    REAL_ESTATE_API_KEY,
     get_municipalities_by_prefecture,
 )
 from ..real_estate_lib.connect import (
@@ -45,26 +44,30 @@ class AreaWorkflow:
             )
             return False
 
-    def load_municipality_dropdown(self, dockwidget, prefecture_code: str) -> bool:
+    def load_municipality_dropdown(self, dockwidget, api_key: str, prefecture_code: str) -> bool:
         """市区町村プルダウンを更新
         Args:
             dockwidget: DockWidgetインスタンス
+            api_key (str): APIキー
             prefecture_code (str): 都道府県コード
         Returns:
             bool: 成功した場合はTrue、失敗した場合はFalse
         """
-        try:
-            municipalities = self.area_algorithm.get_municipalities(
-                prefecture_code=prefecture_code,
-                api_key=REAL_ESTATE_API_KEY,
-                base_url=AREA_LIST_API_ENDPOINT,
-                response_encoding=RESPONSE_ENCODING,
-            )
+        # 都道府県未選択の場合は空にして終了
+        if not prefecture_code:
+            dockwidget.set_municipality_combobox([])
+            return True
 
-            if not municipalities:
-                raise Exception(
-                    f"市区町村データが取得できませんでした（都道府県コード: {prefecture_code}）"
+        try:
+            if api_key:
+                municipalities = self.area_algorithm.get_municipalities(
+                    prefecture_code=prefecture_code,
+                    api_key=api_key,
+                    base_url=AREA_LIST_API_ENDPOINT,
+                    response_encoding=RESPONSE_ENCODING,
                 )
+            else:
+                municipalities = get_municipalities_by_prefecture(prefecture_code)
 
             dockwidget.set_municipality_combobox(municipalities)
             return True
@@ -72,16 +75,7 @@ class AreaWorkflow:
         except Exception as e:
             # フォールバック: JSONファイルの市区町村リストを使用
             municipalities = get_municipalities_by_prefecture(prefecture_code)
-
-            if municipalities:
-                QgsMessageLog.logMessage(
-                    f"API取得に失敗したため、ローカルJSONファイルから市区町村データを取得しました（都道府県: {prefecture_code}, {len(municipalities)}件）",
-                    PLUGIN_NAME,
-                    level=Qgis.Warning,
-                )
-                dockwidget.set_municipality_combobox(municipalities)
-                return True
-            else:
+            if not municipalities:
                 QgsMessageLog.logMessage(
                     f"APIおよびJSONファイルの両方から市区町村データが取得できませんでした（都道府県: {prefecture_code}）。元のエラー: {str(e)}",
                     PLUGIN_NAME,
@@ -89,3 +83,6 @@ class AreaWorkflow:
                 )
                 dockwidget.set_municipality_combobox([])
                 return False
+
+            dockwidget.set_municipality_combobox(municipalities)
+            return True

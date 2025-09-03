@@ -31,29 +31,18 @@ class AreaAlgorithm:
             base_url (str): APIのベースURL
             response_encoding (str, optional): レスポンスのエンコーディング（デフォルト: "utf-8-sig"）
         Returns:
-            List[Tuple[str, str]]: 市区町村のリスト [(code, name), ...]
+            List[Tuple[str, str]]: 市区町村のリスト [(コード, 名称), ...]
         """
-        if not api_key or not prefecture_code:
-            raise ValueError("APIキーまたは都道府県コードが未設定です")
-
         url_string = f"{base_url}?area={prefecture_code}"
-
         response_data = self._fetch_api_data(url_string, api_key)
-        if response_data is None or response_data.isEmpty():
-            raise Exception(
-                f"APIからのレスポンスが空です（都道府県: {prefecture_code}）"
-            )
+
+        if not response_data or response_data.isEmpty():
+            raise Exception(f"APIからのレスポンスが空です（都道府県: {prefecture_code}）")
 
         data = self._decode_response(response_data, response_encoding, prefecture_code)
-        if data is None:
-            return []
-
         municipalities = self._parse_municipalities(data, prefecture_code)
-        if municipalities:
-            municipalities.sort(key=lambda x: x[0])
-            return municipalities
 
-        return []
+        return sorted(municipalities, key=lambda x: x[0]) if municipalities else []
 
     def _fetch_api_data(self, url_string: str, api_key: str) -> QByteArray:
         """APIからデータを取得

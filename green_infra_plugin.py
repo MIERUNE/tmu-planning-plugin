@@ -7,6 +7,7 @@ from qgis.PyQt.QtWidgets import QAction
 from .workflows.area_workflow import AreaWorkflow
 from .workflows.basemap_workflow import BasemapWorkflow
 from .ui.dockwidget import GreenInfraPlanningDockwidget
+from .ui.apikey_dialog import ApikeyDialog
 
 PLUGIN_NAME = "Green Infra Plugin"
 
@@ -108,12 +109,9 @@ class GreenInfraPlugin:
         if not self.dockwidget:
             return
 
+        api_key = ApikeyDialog.get_real_estate_api_key()
         selected_code = self.dockwidget.comboBox_prefecture.currentData()
 
-        if selected_code and selected_code != "":
-            self.area_workflow.load_municipality_dropdown(
-                self.dockwidget, selected_code
-            )
-        else:
-            # 未選択の場合は市区町村をクリア
-            self.dockwidget.set_municipality_combobox([])
+        self.area_workflow.load_municipality_dropdown(
+            self.dockwidget, api_key, selected_code
+        )

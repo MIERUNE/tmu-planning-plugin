@@ -1,5 +1,6 @@
-import requests
 import json
+
+import requests
 
 # -------------------------------------------------------------------------
 # 設定項目：ご自身のe-Stat APIキー（appId）に書き換えてください
@@ -45,8 +46,8 @@ try:
 
     # 必要な統計データ部分を抽出して表示
     print("\n--- 抽出した統計データ ---")
-    statistical_data = data.get('GET_STATS_DATA', {}).get('STATISTICAL_DATA', {})
-    data_values = statistical_data.get('DATA_INF', {}).get('VALUE', [])
+    statistical_data = data.get("GET_STATS_DATA", {}).get("STATISTICAL_DATA", {})
+    data_values = statistical_data.get("DATA_INF", {}).get("VALUE", [])
 
     # APIのレスポンスは、データが1件の場合に辞書、複数件の場合にリストを返すため、
     # 常にリストとして扱えるように型をチェックして変換します。
@@ -54,34 +55,34 @@ try:
         data_values = [data_values]
 
     if not data_values:
-        result_info = data.get('GET_STATS_DATA', {}).get('RESULT', {})
-        error_msg = result_info.get('ERROR_MSG', 'データが見つかりませんでした。')
+        result_info = data.get("GET_STATS_DATA", {}).get("RESULT", {})
+        error_msg = result_info.get("ERROR_MSG", "データが見つかりませんでした。")
         print(f"エラー: {error_msg}")
     else:
         # 地域コードと地域名を対応付ける辞書を作成
         area_map = {}
-        class_objects = statistical_data.get('CLASS_INF', {}).get('CLASS_OBJ', [])
-        
+        class_objects = statistical_data.get("CLASS_INF", {}).get("CLASS_OBJ", [])
+
         # CLASS_OBJもデータが1件の場合に辞書となるケースに対応します。
         if isinstance(class_objects, dict):
             class_objects = [class_objects]
 
         for class_obj in class_objects:
             # CLASSがリストではない場合に対応
-            if isinstance(class_obj, dict) and class_obj.get('@id') == 'area':
-                classes = class_obj.get('CLASS', [])
+            if isinstance(class_obj, dict) and class_obj.get("@id") == "area":
+                classes = class_obj.get("CLASS", [])
                 if isinstance(classes, dict):
                     classes = [classes]
                 for category in classes:
                     if isinstance(category, dict):
-                        area_map[category.get('@code')] = category.get('@name')
+                        area_map[category.get("@code")] = category.get("@name")
 
         # データを一つずつ表示
         for value_data in data_values:
-            area_code = value_data.get('@area')
-            area_name = area_map.get(area_code, '不明な地域')
-            value = value_data.get('$')
-            unit = value_data.get('@unit')
+            area_code = value_data.get("@area")
+            area_name = area_map.get(area_code, "不明な地域")
+            value = value_data.get("$")
+            unit = value_data.get("@unit")
             print(f"地域: {area_name} ({area_code}) | 人口: {value} {unit}")
 
 except requests.exceptions.RequestException as e:
@@ -90,4 +91,3 @@ except json.JSONDecodeError:
     print("\n[エラー] APIレスポンスの解析に失敗しました。不正なJSONデータです。")
 except Exception as e:
     print(f"\n[エラー] 予期せぬエラーが発生しました: {e}")
-

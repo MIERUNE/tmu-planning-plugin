@@ -13,7 +13,7 @@ from qgis.core import (
 )
 from qgis.PyQt.QtCore import QVariant
 
-API_KEY = "826caa70ecafc235546d72631891eb6d13d2028e"  # e-StatのAPIキー
+API_KEY = ""  # e-StatのAPIキー
 
 stats_data_id = "8003007181"  # 取得したいデータのID（人口メッシュデータ）
 population_mesh_url = (

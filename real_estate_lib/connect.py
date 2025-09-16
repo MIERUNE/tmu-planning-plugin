@@ -10,6 +10,10 @@ AREA_LIST_API_ENDPOINT = "https://www.reinfolib.mlit.go.jp/ex-api/external/XIT00
 REAL_ESTATE_PRICE_API_ENDPOINT = (
     "https://www.reinfolib.mlit.go.jp/ex-api/external/XIT001"
 )
+# 都市計画決定GISデータ（都市計画区域/区域区分）API
+URBAN_PLANNING_AREA_API_ENDPOINT = (
+    "https://www.reinfolib.mlit.go.jp/ex-api/external/XKT001"
+)
 
 # ログメッセージ用プラグイン名
 PLUGIN_NAME = "Green Infra Plugin"

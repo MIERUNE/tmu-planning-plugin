@@ -3,11 +3,13 @@ import os
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
+from qgis.core import Qgis, QgsMessageLog
 
+from .ui.apikey_dialog import ApikeyDialog
+from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .workflows.area_workflow import AreaWorkflow
 from .workflows.basemap_workflow import BasemapWorkflow
-from .ui.dockwidget import GreenInfraPlanningDockwidget
-from .ui.apikey_dialog import ApikeyDialog
+from .workflows.urban_planning_workflow import UrbanPlanningWorkflow
 
 PLUGIN_NAME = "Green Infra Plugin"
 
@@ -24,6 +26,7 @@ class GreenInfraPlugin:
         self.dockwidget = None
         self.area_workflow = AreaWorkflow(iface)
         self.basemap_workflow = BasemapWorkflow(iface)
+        self.urban_planning_workflow = UrbanPlanningWorkflow(iface)
 
     def add_action(
         self,
@@ -98,10 +101,17 @@ class GreenInfraPlugin:
         if not self.dockwidget:
             return
 
+        api_key = ApikeyDialog.get_real_estate_api_key()
+
         # Phase 1: ベースマップレイヤーの可視化
         self.basemap_workflow.execute(self.dockwidget.get_selected_basemaps())
 
-        # Phase 2:
+        # Phase 2:都市計画区域の可視化
+        if self.dockwidget.checkBox_urban_area.isChecked():
+            # Workflowを実行
+            self.urban_planning_workflow.execute(
+                api_key=api_key,
+            )
         # Phase 3:
 
     def on_prefecture_changed(self):

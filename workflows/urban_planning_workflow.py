@@ -54,35 +54,6 @@ class UrbanPlanningWorkflow:
 
             return True
 
-            # features = QgsJsonUtils.stringToFeatures(geojson_string)
-            # if not features:
-            #     QgsMessageLog.logMessage(
-            #         "GeoJSONからフィーチャーへの変換に失敗しました。",
-            #         PLUGIN_NAME,
-            #         level=Qgis.Critical,
-            #     )
-            #     return False
-
-            # # CRSは不動産情報ライブラリの仕様に合わせて JGD2011 (EPSG:6668) を指定
-            # layer_name = "都市計画区域"
-            # layer = QgsVectorLayer("Polygon?crs=EPSG:6668", layer_name, "memory")
-            # provider = layer.dataProvider()
-
-            # provider.addAttributes(features[0].fields())
-            # layer.updateFields()
-
-            # provider.addFeatures(features)
-            # layer.updateExtents()
-
-            # QgsProject.instance().addMapLayer(layer)
-            # QgsMessageLog.logMessage(
-            #     f"'{layer.name()}' レイヤーを追加しました。",
-            #     PLUGIN_NAME,
-            #     level=Qgis.Success,
-            # )
-
-            # return True
-
         except Exception as e:
             QgsMessageLog.logMessage(
                 f"都市計画区域の可視化中にエラーが発生: {str(e)}",

@@ -2,11 +2,12 @@
 都市計画区域データの取得機能モジュール
 """
 
-from PyQt5.QtCore import QEventLoop, QUrl,  QByteArray
+from PyQt5.QtCore import QByteArray, QEventLoop, QUrl
 from PyQt5.QtNetwork import QNetworkRequest
-from qgis.core import QgsNetworkAccessManager, QgsMessageLog, Qgis
+from qgis.core import Qgis, QgsMessageLog, QgsNetworkAccessManager
 
 from ..connect import PLUGIN_NAME, URBAN_PLANNING_AREA_API_ENDPOINT
+
 
 class UrbanPlanningAlgorithm:
     """都市計画区域データ取得クラス"""
@@ -22,9 +23,9 @@ class UrbanPlanningAlgorithm:
         Returns:
             QByteArray: APIからのレスポンスデータ（GeoJSON形式のバイト配列）
         """
-       
+
         # TODO : 指定した自治体のデータに必要なタイル分を取得するようにする
-        url_string = f"{URBAN_PLANNING_AREA_API_ENDPOINT}?response_format=geojson&z=13&x=7272&y=3225" # 千葉県
+        url_string = f"{URBAN_PLANNING_AREA_API_ENDPOINT}?response_format=geojson&z=13&x=7272&y=3225"  # 千葉県
 
         url = QUrl(url_string)
         request = QNetworkRequest(url)
@@ -60,7 +61,7 @@ class UrbanPlanningAlgorithm:
                 )
                 return QByteArray()
 
-            print('APIの取得成功')
+            print("APIの取得成功")
             return response_data
 
         finally:

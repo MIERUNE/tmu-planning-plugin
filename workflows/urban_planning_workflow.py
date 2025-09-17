@@ -1,6 +1,5 @@
 from qgis.core import (
     Qgis,
-    QgsJsonUtils,
     QgsMessageLog,
     QgsProject,
     QgsVectorLayer,
@@ -10,6 +9,7 @@ from ..real_estate_lib.connect import PLUGIN_NAME
 from ..real_estate_lib.urban_planning.urban_planning_algorithm import (
     UrbanPlanningAlgorithm,
 )
+
 
 class UrbanPlanningWorkflow:
     """都市計画区域の可視化ワークフロークラス"""

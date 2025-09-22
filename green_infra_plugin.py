@@ -8,7 +8,7 @@ from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .workflows.area_workflow import AreaWorkflow
 from .workflows.basemap_workflow import BasemapWorkflow
-from .workflows.urban_planning_workflow import  UrbanPlanningWorkflow
+from .workflows.urban_planning_workflow import UrbanPlanningWorkflow
 
 PLUGIN_NAME = "Green Infra Plugin"
 

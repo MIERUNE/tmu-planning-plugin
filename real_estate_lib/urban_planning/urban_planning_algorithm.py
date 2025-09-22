@@ -15,22 +15,20 @@ class UrbanPlanningAlgorithm:
     def __init__(self, iface):
         self.iface = iface
 
-    def get_urban_planning_area(self, api_key: str, z: int, x: int, y: int) -> QByteArray:
+    def get_urban_planning_area(self, api_key: str) -> QByteArray:
         """
         指定した市区町村の都市計画区域データをAPIから取得する
         Args:
             api_key (str): APIキー
-            z (int): ズームレベル
-            x (int): X座標（タイル）
-            y (int): Y座標（タイル）
         Returns:
             QByteArray: APIからのレスポンスデータ（GeoJSON形式のバイト配列）
         """
 
         # TODO : 指定した自治体のデータに必要なタイル分を取得するようにする
-        z = 13
-        x = 7272
-        y = 3225
+        z = 11
+        x = 1828
+        y = 752
+
         url_string = f"{URBAN_PLANNING_AREA_API_ENDPOINT}?response_format=geojson&z={z}&x={x}&y={y}"
 
         url = QUrl(url_string)
@@ -69,7 +67,9 @@ class UrbanPlanningAlgorithm:
                 )
                 return QByteArray()
 
-            print(f"APIの取得成功: z={z}, x={x}, y={y}") 
+            QgsMessageLog.logMessage(
+                f"APIリクエスト成功: {url_string}", PLUGIN_NAME, level=Qgis.Info
+            )
             return response_data
 
         finally:

@@ -4,9 +4,9 @@
 """
 
 import json
-from typing import List, Tuple, Dict, Any
+from typing import Any, Dict, List, Tuple
 
-from PyQt5.QtCore import QEventLoop, QUrl, QByteArray
+from PyQt5.QtCore import QByteArray, QEventLoop, QUrl
 from PyQt5.QtNetwork import QNetworkRequest
 from qgis.core import QgsNetworkAccessManager
 

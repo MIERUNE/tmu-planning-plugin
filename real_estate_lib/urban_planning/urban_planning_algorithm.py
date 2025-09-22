@@ -47,9 +47,7 @@ class UrbanPlanningAlgorithm:
             # エラーチェック
             if reply.error():
                 http_status = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
-                error_message = (
-                    f"APIリクエスト失敗: {reply.errorString()} (HTTP {http_status or 'Unknown'})"
-                )
+                error_message = f"APIリクエスト失敗: {reply.errorString()} (HTTP {http_status or 'Unknown'})"
                 QgsMessageLog.logMessage(
                     error_message, PLUGIN_NAME, level=Qgis.Critical
                 )

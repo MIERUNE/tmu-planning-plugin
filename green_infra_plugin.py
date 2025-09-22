@@ -1,10 +1,9 @@
 import os
 
+from qgis.core import Qgis, QgsMessageLog
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
-
-from qgis.core import Qgis, QgsMessageLog
 
 from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget

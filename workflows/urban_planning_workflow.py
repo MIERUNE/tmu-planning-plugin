@@ -33,7 +33,7 @@ class UrbanPlanningWorkflow:
             geojson_data = self.algorithm.get_urban_planning_area(api_key)
 
             # データが空なら処理を中断
-            if not geojson_data or geojson_data.isEmpty():
+            if not geojson_data or geojson_data.size() == 0:
                 message = "都市計画区域データが見つかりませんでした。"
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
                 self.iface.messageBar().pushMessage("情報", message, level=Qgis.Info)

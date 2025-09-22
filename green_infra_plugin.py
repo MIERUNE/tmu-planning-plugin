@@ -4,6 +4,8 @@ from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
+from qgis.core import Qgis, QgsMessageLog
+
 from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .workflows.area_workflow import AreaWorkflow
@@ -101,6 +103,16 @@ class GreenInfraPlugin:
             return
 
         api_key = ApikeyDialog.get_real_estate_api_key()
+
+        if not api_key:
+            # 1. ログにエラーメッセージを記録
+            message = "APIキーが未設定のため、処理を中断します。"
+            QgsMessageLog.logMessage(
+                message,
+                PLUGIN_NAME,
+                level=Qgis.Warning,  # または Qgis.Critical
+            )
+            return
 
         # Phase 1: ベースマップレイヤーの可視化
         self.basemap_workflow.execute(self.dockwidget.get_selected_basemaps())

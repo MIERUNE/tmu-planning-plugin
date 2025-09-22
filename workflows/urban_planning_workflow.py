@@ -53,8 +53,6 @@ class UrbanPlanningWorkflow:
 
             return True
 
-
-
         except Exception as e:
             QgsMessageLog.logMessage(
                 f"都市計画区域の可視化中にエラーが発生: {str(e)}",

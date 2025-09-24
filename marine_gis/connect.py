@@ -14,6 +14,3 @@ UMI_SHIRU_API_KEY = "10784fa6ea604de687b2052e55e03879"
 
 # ログメッセージ用プラグイン名
 PLUGIN_NAME = "Green Infra Plugin"
-
-# レスポンス文字エンコーディング
-RESPONSE_ENCODING = "utf-8-sig"

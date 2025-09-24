@@ -153,9 +153,8 @@ class CoastlineAlgorithm:
         海岸線レイヤーにスタイルを適用
         """
         try:
-            # シンプルなスタイル設定
+            # スタイル設定
             symbol = layer.renderer().symbol()
-            # 文字列の色コードをQColorオブジェクトに変換
             color = QColor(COASTLINE_STYLE["color"])
             symbol.setColor(color)
             symbol.setWidth(COASTLINE_STYLE["width"])

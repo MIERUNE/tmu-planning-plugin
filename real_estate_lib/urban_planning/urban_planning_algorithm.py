@@ -24,17 +24,15 @@ class UrbanPlanningAlgorithm:
         Returns:
             QgsVectorTileLayer : 追加に成功した場合はレイヤーオブジェクト
         """
-        # get_real_estate_url = f"type=xyz&url={URBAN_PLANNING_AREA_API_ENDPOINT}?response_format%3Dpbf%26z%3D%7Bz%7D%26x%3D%7Bx%7D%26y%3D%7By%7D&zmax=15&zmin=11&http-header:Ocp-Apim-Subscription-Key={api_key}"
+        # パラメーターをエンコード
         params = {"response_format": "pbf", "z": "{z}", "x": "{x}", "y": "{y}"}
         encoded_params = urllib.parse.urlencode(params, safe="{}")
-        # QgsMessageLog.logMessage(
-        #     f"エンコードしたパラメータ: '{encoded_params}'", PLUGIN_NAME, level=Qgis.Info
-        # )
+        
+        # QGIS用にエンコード
         encoded_for_qgis = encoded_params.replace('=', '%3D').replace('&', '%26')
         encoded_tile_url = f"{URBAN_PLANNING_AREA_API_ENDPOINT}?{encoded_for_qgis}"
-        # QgsMessageLog.logMessage(
-        #     f"エンコードしたURL: '{encoded_tile_url}'", PLUGIN_NAME, level=Qgis.Info
-        # )
+       
+        # ベクトルタイルレイヤーのURLを作成
         get_real_estate_url = (
             f"type=xyz"
             f"&url={encoded_tile_url}"
@@ -42,9 +40,7 @@ class UrbanPlanningAlgorithm:
             f"&zmin=11"
             f"&http-header:Ocp-Apim-Subscription-Key={api_key}"
         )
-        QgsMessageLog.logMessage(
-            f"URLの組み立て: '{get_real_estate_url}'", PLUGIN_NAME, level=Qgis.Info
-        )
+
         layer_name = "都市計画区域"
         urban_planning_layer = QgsVectorTileLayer(get_real_estate_url, layer_name)
 

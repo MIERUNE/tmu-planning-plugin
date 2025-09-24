@@ -2,11 +2,12 @@
 都市計画区域データの取得機能モジュール
 """
 
+import urllib.parse
 from typing import Optional
 
 from qgis.core import Qgis, QgsMessageLog, QgsProject, QgsVectorTileLayer
 
-from ..connect import PLUGIN_NAME
+from ..connect import PLUGIN_NAME, URBAN_PLANNING_AREA_API_ENDPOINT
 
 
 class UrbanPlanningAlgorithm:
@@ -23,11 +24,27 @@ class UrbanPlanningAlgorithm:
         Returns:
             QgsVectorTileLayer : 追加に成功した場合はレイヤーオブジェクト
         """
-        QgsMessageLog.logMessage(
-            f"受け取ったAPIキー: '{api_key}'", PLUGIN_NAME, level=Qgis.Info
+        # get_real_estate_url = f"type=xyz&url={URBAN_PLANNING_AREA_API_ENDPOINT}?response_format%3Dpbf%26z%3D%7Bz%7D%26x%3D%7Bx%7D%26y%3D%7By%7D&zmax=15&zmin=11&http-header:Ocp-Apim-Subscription-Key={api_key}"
+        params = {"response_format": "pbf", "z": "{z}", "x": "{x}", "y": "{y}"}
+        encoded_params = urllib.parse.urlencode(params, safe="{}")
+        # QgsMessageLog.logMessage(
+        #     f"エンコードしたパラメータ: '{encoded_params}'", PLUGIN_NAME, level=Qgis.Info
+        # )
+        encoded_for_qgis = encoded_params.replace('=', '%3D').replace('&', '%26')
+        encoded_tile_url = f"{URBAN_PLANNING_AREA_API_ENDPOINT}?{encoded_for_qgis}"
+        # QgsMessageLog.logMessage(
+        #     f"エンコードしたURL: '{encoded_tile_url}'", PLUGIN_NAME, level=Qgis.Info
+        # )
+        get_real_estate_url = (
+            f"type=xyz"
+            f"&url={encoded_tile_url}"
+            f"&zmax=15"
+            f"&zmin=11"
+            f"&http-header:Ocp-Apim-Subscription-Key={api_key}"
         )
-        get_real_estate_url = f"type=xyz&url=https://www.reinfolib.mlit.go.jp/ex-api/external/XKT001?response_format%3Dpbf%26z%3D%7Bz%7D%26x%3D%7Bx%7D%26y%3D%7By%7D&zmax=14&zmin=0&http-header:Ocp-Apim-Subscription-Key={api_key}"
-
+        QgsMessageLog.logMessage(
+            f"URLの組み立て: '{get_real_estate_url}'", PLUGIN_NAME, level=Qgis.Info
+        )
         layer_name = "都市計画区域"
         urban_planning_layer = QgsVectorTileLayer(get_real_estate_url, layer_name)
 

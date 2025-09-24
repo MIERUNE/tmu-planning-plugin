@@ -331,208 +331,6 @@ QToolButton:hover {
       <property name="currentIndex">
        <number>3</number>
       </property>
-      <widget class="QWidget" name="tab_disaster">
-       <attribute name="title">
-        <string>災害リスク</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_disaster">
-        <item>
-         <widget class="QScrollArea" name="scrollArea_disaster">
-          <property name="widgetResizable">
-           <bool>true</bool>
-          </property>
-          <widget class="QWidget" name="scrollAreaWidgetContents_disaster">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>0</y>
-             <width>488</width>
-             <height>233</height>
-            </rect>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayout_disaster_content">
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_hazardmap">
-              <item>
-               <widget class="QLabel" name="label_hazardmap">
-                <property name="font">
-                 <font>
-                  <weight>75</weight>
-                  <bold>true</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>ハザードマップ</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QToolButton" name="toolButton_hazardmap_info">
-                <property name="maximumSize">
-                 <size>
-                  <width>20</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>国土交通省ハザードマップポータルサイト</string>
-                </property>
-                <property name="styleSheet">
-                 <string>QToolButton {
-    border: none;
-    background-color: transparent;
-    color: #2196F3;
-    font-weight: bold;
-}
-QToolButton:hover {
-    color: #1976D2;
-}</string>
-                </property>
-                <property name="text">
-                 <string>ⓘ</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_hazardmap">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="checkBox_flood">
-              <property name="text">
-               <string>洪水浸水想定区域</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="checkBox_tsunami">
-              <property name="text">
-               <string>津波災害警戒区域</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="checkBox_landslide">
-              <property name="text">
-               <string>土砂災害警戒区域</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="checkBox_steep_slope">
-              <property name="text">
-               <string>急傾斜地崩壊危険区域</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="Line" name="line_disaster">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_earthquake">
-              <item>
-               <widget class="QLabel" name="label_earthquake">
-                <property name="font">
-                 <font>
-                  <weight>75</weight>
-                  <bold>true</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>地震リスク（J-SHIS）</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QToolButton" name="toolButton_jshis_info">
-                <property name="maximumSize">
-                 <size>
-                  <width>20</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>防災科学技術研究所 J-SHIS</string>
-                </property>
-                <property name="styleSheet">
-                 <string>QToolButton {
-    border: none;
-    background-color: transparent;
-    color: #2196F3;
-    font-weight: bold;
-}
-QToolButton:hover {
-    color: #1976D2;
-}</string>
-                </property>
-                <property name="text">
-                 <string>ⓘ</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_earthquake">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="checkBox_seismic_intensity">
-              <property name="text">
-               <string>地震ハザード情報</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="checkBox_liquefaction">
-              <property name="text">
-               <string>液状化の発生傾向図</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="verticalSpacer_disaster">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>40</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
-          </widget>
-         </widget>
-        </item>
-       </layout>
-      </widget>
       <widget class="QWidget" name="tab_population">
        <attribute name="title">
         <string>人口・社会</string>
@@ -549,7 +347,7 @@ QToolButton:hover {
              <x>0</x>
              <y>0</y>
              <width>503</width>
-             <height>215</height>
+             <height>209</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_population_content">
@@ -618,23 +416,9 @@ QToolButton:hover {
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="checkBox_aging_rate">
+             <widget class="QCheckBox" name="checkBox_did">
               <property name="text">
-               <string>人口メッシュ（4次メッシュ）</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="checkBox_household">
-              <property name="text">
-               <string>世帯数（3次メッシュ）</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="checkBox_population_change">
-              <property name="text">
-               <string>世帯数（4次メッシュ）</string>
+               <string>人口集中地区（DID）</string>
               </property>
              </widget>
             </item>
@@ -646,144 +430,7 @@ QToolButton:hover {
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="label_future">
-              <property name="font">
-               <font>
-                <weight>75</weight>
-                <bold>true</bold>
-               </font>
-              </property>
-              <property name="text">
-               <string>将来推計</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="checkBox_future_population">
-              <property name="text">
-               <string>将来推計人口</string>
-              </property>
-             </widget>
-            </item>
-            <item>
              <spacer name="verticalSpacer_population">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>40</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
-          </widget>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="tab_realestate">
-       <attribute name="title">
-        <string>土地・不動産</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_realestate">
-        <item>
-         <widget class="QScrollArea" name="scrollArea_realestate">
-          <property name="widgetResizable">
-           <bool>true</bool>
-          </property>
-          <widget class="QWidget" name="scrollAreaWidgetContents_realestate">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>0</y>
-             <width>503</width>
-             <height>215</height>
-            </rect>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayout_realestate_content">
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_realestate">
-              <item>
-               <widget class="QLabel" name="label_realestate_library">
-                <property name="font">
-                 <font>
-                  <weight>75</weight>
-                  <bold>true</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>不動産</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QToolButton" name="toolButton_realestate_info">
-                <property name="maximumSize">
-                 <size>
-                  <width>20</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>国土交通省 不動産情報ライブラリ</string>
-                </property>
-                <property name="styleSheet">
-                 <string>QToolButton {
-    border: none;
-    background-color: transparent;
-    color: #2196F3;
-    font-weight: bold;
-}
-QToolButton:hover {
-    color: #1976D2;
-}</string>
-                </property>
-                <property name="text">
-                 <string>ⓘ</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_realestate">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="checkBox_land_price">
-              <property name="text">
-               <string>地価公示・地価調査</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="checkBox_transaction_price">
-              <property name="text">
-               <string>不動産価格（取引価格・成約価格）</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="Line" name="line_realestate">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="verticalSpacer_realestate">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
               </property>
@@ -817,7 +464,7 @@ QToolButton:hover {
              <x>0</x>
              <y>0</y>
              <width>503</width>
-             <height>215</height>
+             <height>209</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_urban_content">
@@ -830,14 +477,14 @@ QToolButton:hover {
                </font>
               </property>
               <property name="text">
-               <string>区域区分</string>
+               <string>都市計画</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QCheckBox" name="checkBox_urban_area">
               <property name="text">
-               <string>都市計画区域</string>
+               <string>都市計画区域/区域区分</string>
               </property>
              </widget>
             </item>
@@ -856,9 +503,16 @@ QToolButton:hover {
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="checkBox_current_landuse">
+             <widget class="QCheckBox" name="checkBox_district_planning">
               <property name="text">
-               <string>防火・準防火地域</string>
+               <string>地区計画</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_high_level_use_districts">
+              <property name="text">
+               <string>高度利用地区</string>
               </property>
              </widget>
             </item>
@@ -890,7 +544,7 @@ QToolButton:hover {
       </widget>
       <widget class="QWidget" name="tab_infrastructure">
        <attribute name="title">
-        <string>インフラ・施設</string>
+        <string>土地・不動産</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_infra">
         <item>
@@ -904,12 +558,12 @@ QToolButton:hover {
              <x>0</x>
              <y>0</y>
              <width>503</width>
-             <height>215</height>
+             <height>209</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_infra_content">
             <item>
-             <widget class="QLabel" name="label_public_facility">
+             <widget class="QLabel" name="label_mlit_dpf">
               <property name="font">
                <font>
                 <weight>75</weight>
@@ -917,28 +571,14 @@ QToolButton:hover {
                </font>
               </property>
               <property name="text">
-               <string>公共施設</string>
+               <string>国交省DPF</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QCheckBox" name="checkBox_school">
               <property name="text">
-               <string>学校（小中高）</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="checkBox_hospital">
-              <property name="text">
-               <string>医療機関</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="checkBox_welfare">
-              <property name="text">
-               <string>福祉施設</string>
+               <string>行政区域</string>
               </property>
              </widget>
             </item>
@@ -968,9 +608,9 @@ QToolButton:hover {
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_environment">
+      <widget class="QWidget" name="tab_sea">
        <attribute name="title">
-        <string>環境・その他</string>
+        <string>海洋状況</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_env">
         <item>
@@ -984,12 +624,12 @@ QToolButton:hover {
              <x>0</x>
              <y>0</y>
              <width>503</width>
-             <height>215</height>
+             <height>209</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_env_content">
             <item>
-             <widget class="QLabel" name="label_green">
+             <widget class="QLabel" name="label_sea">
               <property name="font">
                <font>
                 <weight>75</weight>
@@ -997,14 +637,28 @@ QToolButton:hover {
                </font>
               </property>
               <property name="text">
-               <string>緑地・自然環境</string>
+               <string>海しる</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="checkBox_nature_park">
+             <widget class="QCheckBox" name="checkBox_coast_line">
               <property name="text">
-               <string>自然公園地域</string>
+               <string>海岸線</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_port_area">
+              <property name="text">
+               <string>港湾区域</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_fishing_port_area">
+              <property name="text">
+               <string>漁港区域</string>
               </property>
              </widget>
             </item>

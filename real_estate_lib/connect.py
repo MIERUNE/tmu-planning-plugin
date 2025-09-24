@@ -6,9 +6,9 @@
 AREA_LIST_API_ENDPOINT = "https://www.reinfolib.mlit.go.jp/ex-api/external/XIT002"
 
 # TODO:以下のような感じで機能ごとにエンドポイントを追加する
-# 不動産価格（取引価格・成約価格）情報取得API
-REAL_ESTATE_PRICE_API_ENDPOINT = (
-    "https://www.reinfolib.mlit.go.jp/ex-api/external/XIT001"
+# 都市計画決定GISデータ（都市計画区域/区域区分）API
+URBAN_PLANNING_AREA_API_ENDPOINT = (
+    "https://www.reinfolib.mlit.go.jp/ex-api/external/XKT001"
 )
 
 # ログメッセージ用プラグイン名

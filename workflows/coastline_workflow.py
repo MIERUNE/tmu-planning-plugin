@@ -13,10 +13,11 @@ class CoastlineWorkflow(BaseWorkflow):
         super().__init__(iface)
         self.algorithm = CoastlineAlgorithm(iface)
 
-    def execute(self, bounds=None) -> bool:
+    def execute(self, api_key, bounds=None) -> bool:
         """
         ワークフローを実行し、海岸線レイヤーをQGISに追加する
         Args:
+            api_key (str): 海しるAPIキー
             bounds (dict, optional): 取得範囲の境界。Noneの場合はデフォルト範囲を使用
         Returns:
             bool: 成功した場合はTrue、失敗した場合はFalse
@@ -31,7 +32,7 @@ class CoastlineWorkflow(BaseWorkflow):
             )
 
             # 2. データ取得
-            geojson_data = self.algorithm.fetch_coastline_data(bounds)
+            geojson_data = self.algorithm.fetch_coastline_data(bounds, api_key)
             if not geojson_data:
                 message = "海岸線データが見つかりませんでした。"
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)

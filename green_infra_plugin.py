@@ -9,6 +9,7 @@ from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .workflows.area_workflow import AreaWorkflow
 from .workflows.basemap_workflow import BasemapWorkflow
+from .workflows.coastline_workflow import CoastlineWorkflow
 from .workflows.urban_planning_workflow import UrbanPlanningWorkflow
 
 PLUGIN_NAME = "Green Infra Plugin"
@@ -27,6 +28,7 @@ class GreenInfraPlugin:
         self.area_workflow = AreaWorkflow(iface)
         self.basemap_workflow = BasemapWorkflow(iface)
         self.urban_planning_workflow = UrbanPlanningWorkflow(iface)
+        self.coastline_workflow = CoastlineWorkflow(iface)
 
     def add_action(
         self,
@@ -122,7 +124,10 @@ class GreenInfraPlugin:
             self.urban_planning_workflow.execute(
                 api_key=api_key,
             )
-        # Phase 3:
+
+        # Phase 3: 海岸線データの可視化
+        if self.dockwidget.checkBox_coast_line.isChecked():
+            self.coastline_workflow.execute()
 
     def on_prefecture_changed(self):
         """都道府県選択変更時の処理"""

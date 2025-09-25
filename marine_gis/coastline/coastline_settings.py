@@ -11,6 +11,6 @@ DEFAULT_BOUNDS = {"min_lon": 140.5, "min_lat": 42.0, "max_lon": 141.5, "max_lat"
 # レイヤースタイル設定
 COASTLINE_STYLE = {
     "color": "#0066CC",  # 海岸線の色（青）
-    "width": 1.5,  # 線の太さ
+    "width": 0.5,  # 線の太さ
     "opacity": 0.8,  # 透明度
 }

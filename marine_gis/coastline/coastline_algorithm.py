@@ -1,21 +1,13 @@
-from PyQt5.QtCore import QEventLoop, QUrl
 from PyQt5.QtGui import QColor
-from PyQt5.QtNetwork import QNetworkRequest
-from qgis.core import (
-    Qgis,
-    QgsCoordinateReferenceSystem,
-    QgsMessageLog,
-    QgsNetworkAccessManager,
-    QgsVectorLayer,
-)
+from qgis.core import Qgis, QgsCoordinateReferenceSystem, QgsMessageLog, QgsVectorLayer
 
-from ..connect import COASTLINE_API_ENDPOINT, PLUGIN_NAME
-from .coastline_settings import COASTLINE_STYLE, LAYER_SELECTION
+from ..connect import PLUGIN_NAME, UmiShiruApiClient
+from .coastline_settings import COASTLINE_STYLE
 
 
 class CoastlineAlgorithm:
     """
-    海岸線データの取得と処理を行うクラス
+    海岸線データの取得と処理を行うアルゴリズムクラス
     """
 
     def __init__(self, iface):
@@ -30,55 +22,17 @@ class CoastlineAlgorithm:
         Returns:
             str: GeoJSON文字列（取得失敗時はNone）
         """
+        # APIクライアントを作成
+        client = UmiShiruApiClient(api_key)
+
         # APIパラメータ設定
         params = {
             "f": "geojson",
             "geometry": f"{bounds['min_lon']},{bounds['min_lat']},{bounds['max_lon']},{bounds['max_lat']}",
         }
 
-        # URLにパラメータを追加
-        param_str = "&".join([f"{k}={v}" for k, v in params.items()])
-        full_url = f"{COASTLINE_API_ENDPOINT}/{LAYER_SELECTION}/query?{param_str}"
-
-        QgsMessageLog.logMessage(
-            f"海岸線データを取得中: {full_url}", PLUGIN_NAME, level=Qgis.Info
-        )
-
-        # ネットワークリクエスト実行
-        request = QNetworkRequest(QUrl(full_url))
-        # APIキーをヘッダーに設定
-        request.setRawHeader(b"Ocp-Apim-Subscription-Key", api_key.encode("utf-8"))
-        nam = QgsNetworkAccessManager.instance()
-        reply = nam.get(request)
-        loop = QEventLoop()
-        reply.finished.connect(loop.quit)
-        loop.exec_()
-
-        try:
-            # エラーチェック
-            if reply.error():
-                http_status = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
-                error_response = reply.readAll().data().decode("utf-8", errors="ignore")
-                error_message = f"APIリクエスト失敗: {reply.errorString()} (HTTP {http_status or 'Unknown'})"
-
-                QgsMessageLog.logMessage(
-                    f"{error_message}\nレスポンス詳細: {error_response}",
-                    PLUGIN_NAME,
-                    level=Qgis.Critical,
-                )
-                raise Exception(error_message)
-
-            response_data = reply.readAll()
-            if not response_data:
-                raise Exception(f"APIからのレスポンスが空です。URL: {full_url}")
-
-            QgsMessageLog.logMessage(
-                f"APIリクエスト成功: {full_url}", PLUGIN_NAME, level=Qgis.Info
-            )
-
-            return response_data.data().decode("utf-8-sig")
-        finally:
-            reply.deleteLater()
+        # 海岸線データを取得
+        return client.request("coastline", params)
 
     def create_coastline_layer(self, geojson_data, layer_name="海岸線"):
         """

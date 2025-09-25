@@ -1,5 +1,3 @@
-import tempfile
-
 from PyQt5.QtCore import QEventLoop, QUrl
 from PyQt5.QtGui import QColor
 from PyQt5.QtNetwork import QNetworkRequest
@@ -109,15 +107,8 @@ class CoastlineAlgorithm:
         GeoJSONデータをQGISレイヤーとして追加
         """
         try:
-            # 一時ファイルにGeoJSONを保存
-            with tempfile.NamedTemporaryFile(
-                mode="wt", suffix=".geojson", delete=False, encoding="utf-8"
-            ) as temp_file:
-                temp_file.write(geojson_data)
-                temp_file_path = temp_file.name
-
             # ベクターレイヤーを作成
-            layer = QgsVectorLayer(temp_file_path, "海岸線", "ogr")
+            layer = QgsVectorLayer(geojson_data, "海岸線", "ogr")
 
             if layer.isValid():
                 # CRSを設定

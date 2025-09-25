@@ -127,7 +127,15 @@ class GreenInfraPlugin:
 
         # Phase 3: 海岸線データの可視化
         if self.dockwidget.checkBox_coast_line.isChecked():
-            self.coastline_workflow.execute()
+            # 海しるAPIキーを取得
+            umi_shiru_api_key = ApikeyDialog.get_umi_shiru_api_key()
+            if not umi_shiru_api_key:
+                message = (
+                    "海しるAPIキーが未設定のため、海岸線データの処理をスキップします。"
+                )
+                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+            else:
+                self.coastline_workflow.execute(api_key=umi_shiru_api_key)
 
     def on_prefecture_changed(self):
         """都道府県選択変更時の処理"""

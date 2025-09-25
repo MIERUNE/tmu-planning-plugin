@@ -9,7 +9,6 @@ from qgis.core import (
     Qgis,
     QgsMessageLog,
     QgsNetworkAccessManager,
-    QgsProject,
     QgsVectorTileLayer,
 )
 from qgis.PyQt.QtCore import QEventLoop, QUrl
@@ -96,11 +95,5 @@ class UrbanPlanningAlgorithm:
 
         layer_name = "都市計画区域"
         urban_planning_layer = QgsVectorTileLayer(get_real_estate_url, layer_name)
-
-        # QGISプロジェクトにレイヤーを追加
-        # QgsProject.instance().addMapLayer(urban_planning_layer)
-        # QgsMessageLog.logMessage(
-        #     f"レイヤー '{layer_name}' を追加しました。", PLUGIN_NAME, level=Qgis.Info
-        # )
 
         return urban_planning_layer

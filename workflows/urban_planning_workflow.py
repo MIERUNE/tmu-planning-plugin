@@ -38,11 +38,6 @@ class UrbanPlanningWorkflow:
                 self.iface.messageBar().pushMessage("情報", message, level=Qgis.Info)
                 return False
 
-            # geojson_string = geojson_data.data().decode("utf-8")
-
-            # layer_name = "都市計画区域"
-            # layer = QgsVectorLayer(geojson_string, layer_name, "ogr")
-
             QgsProject.instance().addMapLayer(added_layer)
             QgsMessageLog.logMessage(
                 f"'{added_layer.name()}'都市計画区域レイヤーの追加に成功しました。",

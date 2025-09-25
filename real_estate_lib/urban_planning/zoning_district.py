@@ -58,9 +58,9 @@ class ZoningDistrictAlgorithm:
         reply.deleteLater()
         return True, http_status
 
-    def get_zoning_district_area(self, api_key: str) -> Optional[QgsVectorTileLayer]:
+    def create_layer(self, api_key: str) -> Optional[QgsVectorTileLayer]:
         """
-        指定した市区町村の用途地域データをAPIから取得する
+        用途地域データをAPIから取得する
         Args:
             api_key (str): APIキー
         Returns:

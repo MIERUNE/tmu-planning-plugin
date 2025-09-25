@@ -1,8 +1,8 @@
 from qgis.core import Qgis, QgsMessageLog, QgsProject
 
-from ..marine_gis.coastline.coastline_algorithm import CoastlineAlgorithm
-from ..marine_gis.coastline.coastline_settings import DEFAULT_BOUNDS
-from ..marine_gis.connect import PLUGIN_NAME
+from ..umi_shiru.coastline.coastline_algorithm import CoastlineAlgorithm
+from ..umi_shiru.coastline.coastline_settings import DEFAULT_BOUNDS
+from ..umi_shiru.connect import PLUGIN_NAME
 from .base_workflow import BaseWorkflow
 
 

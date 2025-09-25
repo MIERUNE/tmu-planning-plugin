@@ -3,7 +3,7 @@ import os
 from qgis.core import Qgis, QgsMessageLog
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction
+from qgis.PyQt.QtWidgets import QAction, QMessageBox
 
 from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
@@ -104,12 +104,18 @@ class GreenInfraPlugin:
         api_key = ApikeyDialog.get_real_estate_api_key()
 
         if not api_key:
-            # 1. ログにエラーメッセージを記録
+            # ログにエラーメッセージを記録
             message = "APIキーが未設定のため、処理を中断します。"
             QgsMessageLog.logMessage(
                 message,
                 PLUGIN_NAME,
                 level=Qgis.Warning,  # または Qgis.Critical
+            )
+            # ユーザーにメッセージを表示
+            QMessageBox.warning(
+                self.win,
+                "APIキー未設定",
+                "APIキーが設定されていません。\nメニューからAPIキーを設定してください。",
             )
             return
 

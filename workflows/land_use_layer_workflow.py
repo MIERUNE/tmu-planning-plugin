@@ -5,7 +5,7 @@ from qgis.core import (
 )
 
 from ..real_estate_lib.connect import PLUGIN_NAME
-from ..real_estate_lib.urban_planning.urban_planning_algorithm import (
+from ..real_estate_lib.land_use.urban_planning_algorithm import (
     UrbanPlanningAlgorithm,
 )
 

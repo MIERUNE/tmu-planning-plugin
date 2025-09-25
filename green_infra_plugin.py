@@ -9,9 +9,9 @@ from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .workflows.area_workflow import AreaWorkflow
 from .workflows.basemap_workflow import BasemapWorkflow
-from .workflows.layer_workflow import LayerWorkflow
-from .real_estate_lib.urban_planning.urban_planning_algorithm import UrbanPlanningAlgorithm
-from .real_estate_lib.urban_planning.zoning_district import ZoningDistrictAlgorithm
+from .workflows.land_use_layer_workflow import LayerWorkflow
+from .real_estate_lib.land_use.urban_planning_algorithm import UrbanPlanningAlgorithm
+from .real_estate_lib.land_use.zoning_district import ZoningDistrictAlgorithm
 
 PLUGIN_NAME = "Green Infra Plugin"
 

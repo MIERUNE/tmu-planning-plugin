@@ -9,7 +9,7 @@ from qgis.core import (
     QgsVectorLayer,
 )
 
-from ..connect import COASTLINE_API_ENDPOINT, PLUGIN_NAME, UMI_SHIRU_API_KEY
+from ..connect import COASTLINE_API_ENDPOINT, PLUGIN_NAME
 from .coastline_settings import COASTLINE_STYLE, LAYER_SELECTION
 
 
@@ -21,11 +21,12 @@ class CoastlineAlgorithm:
     def __init__(self, iface):
         self.iface = iface
 
-    def fetch_coastline_data(self, bounds):
+    def fetch_coastline_data(self, bounds, api_key):
         """
         海岸線データをAPIから取得
         Args:
             bounds (dict): 取得範囲の境界
+            api_key (str): 海しるAPIキー
         Returns:
             str: GeoJSON文字列（取得失敗時はNone）
         """
@@ -46,9 +47,7 @@ class CoastlineAlgorithm:
         # ネットワークリクエスト実行
         request = QNetworkRequest(QUrl(full_url))
         # APIキーをヘッダーに設定
-        request.setRawHeader(
-            b"Ocp-Apim-Subscription-Key", UMI_SHIRU_API_KEY.encode("utf-8")
-        )
+        request.setRawHeader(b"Ocp-Apim-Subscription-Key", api_key.encode("utf-8"))
         nam = QgsNetworkAccessManager.instance()
         reply = nam.get(request)
         loop = QEventLoop()

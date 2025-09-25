@@ -14,7 +14,6 @@ from qgis.core import (
 )
 from qgis.PyQt.QtCore import QEventLoop, QUrl
 from qgis.PyQt.QtNetwork import QNetworkRequest
-from qgis.PyQt.QtWidgets import QMessageBox
 
 from ..connect import PLUGIN_NAME, URBAN_PLANNING_AREA_API_ENDPOINT
 
@@ -71,11 +70,10 @@ class UrbanPlanningAlgorithm:
         # 接続チェック
         if not self._check_api_connection(api_key):
             # 失敗した場合はユーザーに通知して処理を中断
-            QMessageBox.critical(
-                self.iface.mainWindow(),
+            self.iface.messageBar().pushMessage(
                 "API接続エラー",
-                "APIサーバーへの接続に失敗しました。\n\n"
-                "APIキーが正しいか、インターネット接続が有効か確認してください。",
+                "APIサーバーへの接続に失敗しました。APIキーやインターネット接続を確認してください。",
+                level=Qgis.Critical,
             )
             return None
 
@@ -99,32 +97,10 @@ class UrbanPlanningAlgorithm:
         layer_name = "都市計画区域"
         urban_planning_layer = QgsVectorTileLayer(get_real_estate_url, layer_name)
 
-        # if not urban_planning_layer.isValid():
-        #     # ログにエラーメッセージを記録
-        #     error_message = "ベクトルタイルレイヤーの読み込みに失敗しました。またはAPIキーが無効です。"
-        #     QgsMessageLog.logMessage(error_message, PLUGIN_NAME, level=Qgis.Critical)
-        #     self.iface.messageBar().pushMessage(
-        #         "エラー", error_message, level=Qgis.Critical
-        #     )
-
-        #     user_message = (
-        #         "都市計画区域レイヤーの読み込みに失敗しました。\n\n"
-        #         "以下の点を確認してください:\n"
-        #         "  ・インターネットに接続されていること\n"
-        #         "  ・設定したAPIキーが正しいこと"
-        #     )
-        #     # 警告(Warning)より深刻なエラー(Critical)が適切
-        #     QMessageBox.critical(
-        #         self.iface.mainWindow(),  # 親ウィンドウの指定
-        #         "レイヤー読み込みエラー",     # ダイアログのタイトル
-        #         user_message              # 表示メッセージ
-        #     )
-        #     return None
-
         # QGISプロジェクトにレイヤーを追加
-        QgsProject.instance().addMapLayer(urban_planning_layer)
-        QgsMessageLog.logMessage(
-            f"レイヤー '{layer_name}' を追加しました。", PLUGIN_NAME, level=Qgis.Info
-        )
+        # QgsProject.instance().addMapLayer(urban_planning_layer)
+        # QgsMessageLog.logMessage(
+        #     f"レイヤー '{layer_name}' を追加しました。", PLUGIN_NAME, level=Qgis.Info
+        # )
 
         return urban_planning_layer

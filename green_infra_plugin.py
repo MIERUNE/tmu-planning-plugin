@@ -3,7 +3,7 @@ import os
 from qgis.core import Qgis, QgsMessageLog
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction, QMessageBox
+from qgis.PyQt.QtWidgets import QAction
 
 from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
@@ -109,13 +109,12 @@ class GreenInfraPlugin:
             QgsMessageLog.logMessage(
                 message,
                 PLUGIN_NAME,
-                level=Qgis.Warning,  # または Qgis.Critical
+                level=Qgis.Critical,
             )
-            # ユーザーにメッセージを表示
-            QMessageBox.warning(
-                self.win,
-                "APIキー未設定",
-                "APIキーが設定されていません。\nメニューからAPIキーを設定してください。",
+            self.iface.messageBar().pushMessage(
+                "API接続エラー",
+                "APIキーが設定されていません。",
+                level=Qgis.Critical,
             )
             return
 

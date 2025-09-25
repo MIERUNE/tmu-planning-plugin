@@ -2,7 +2,6 @@ from qgis.core import (
     Qgis,
     QgsMessageLog,
     QgsProject,
-    QgsVectorLayer,
 )
 
 from ..real_estate_lib.connect import PLUGIN_NAME

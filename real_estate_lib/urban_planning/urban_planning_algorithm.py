@@ -50,7 +50,7 @@ class UrbanPlanningAlgorithm:
                 level=Qgis.Critical,
             )
             reply.deleteLater()
-            return False , http_status
+            return False, http_status
 
         QgsMessageLog.logMessage(
             "APIキーの有効性を確認しました (HTTP 200)", PLUGIN_NAME, level=Qgis.Info
@@ -73,7 +73,7 @@ class UrbanPlanningAlgorithm:
             self.iface.messageBar().pushMessage(
                 "API接続エラー",
                 f"{user_message} (HTTP Status: {status_code})",
-                level=Qgis.Critical
+                level=Qgis.Critical,
             )
             return None
 

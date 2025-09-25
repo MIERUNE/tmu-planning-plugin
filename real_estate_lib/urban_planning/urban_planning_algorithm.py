@@ -68,12 +68,6 @@ class UrbanPlanningAlgorithm:
         """
         # 接続チェック
         if not self._check_api_connection(api_key):
-            # 失敗した場合はユーザーに通知して処理を中断
-            self.iface.messageBar().pushMessage(
-                "API接続エラー",
-                "APIサーバーへの接続に失敗しました。APIキーやインターネット接続を確認してください。",
-                level=Qgis.Critical,
-            )
             return None
 
         # パラメーターをエンコード

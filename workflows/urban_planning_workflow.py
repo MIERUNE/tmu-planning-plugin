@@ -26,16 +26,13 @@ class UrbanPlanningWorkflow:
             bool: 成功した場合はTrue、失敗した場合はFalse
         """
         try:
-            QgsMessageLog.logMessage(
-                "都市計画区域データを取得します...", PLUGIN_NAME, level=Qgis.Info
-            )
             added_layer = self.algorithm.get_urban_planning_area(api_key)
 
             # データが空なら処理を中断
             if not added_layer:
                 message = "都市計画区域データの追加に失敗しました。"
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-                self.iface.messageBar().pushMessage("情報", message, level=Qgis.Info)
+                self.iface.messageBar().pushMessage("情報", message, level=Qgis.Warning)
                 return False
 
             QgsProject.instance().addMapLayer(added_layer)

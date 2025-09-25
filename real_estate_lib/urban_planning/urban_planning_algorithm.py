@@ -23,7 +23,7 @@ class UrbanPlanningAlgorithm:
     def __init__(self, iface):
         self.iface = iface
 
-    def _check_api_connection(self, api_key: str) -> bool:
+    def _check_api_connection(self, api_key: str) -> tuple[bool, Optional[int]]:
         """APIキーの有効性を確認するための事前接続チェック"""
         # 接続テストとしてズームレベル0のタイルをリクエスト
         test_url = (
@@ -50,13 +50,13 @@ class UrbanPlanningAlgorithm:
                 level=Qgis.Critical,
             )
             reply.deleteLater()
-            return False
+            return False , http_status
 
         QgsMessageLog.logMessage(
             "APIキーの有効性を確認しました (HTTP 200)", PLUGIN_NAME, level=Qgis.Info
         )
         reply.deleteLater()
-        return True
+        return True, http_status
 
     def get_urban_planning_area(self, api_key: str) -> Optional[QgsVectorTileLayer]:
         """
@@ -66,8 +66,15 @@ class UrbanPlanningAlgorithm:
         Returns:
             QgsVectorTileLayer : 追加に成功した場合はレイヤーオブジェクト
         """
+        success, status_code = self._check_api_connection(api_key)
         # 接続チェック
-        if not self._check_api_connection(api_key):
+        if not success:
+            user_message = "APIサーバーへの接続に失敗しました。"
+            self.iface.messageBar().pushMessage(
+                "API接続エラー",
+                f"{user_message} (HTTP Status: {status_code})",
+                level=Qgis.Critical
+            )
             return None
 
         # パラメーターをエンコード

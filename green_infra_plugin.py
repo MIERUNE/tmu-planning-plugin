@@ -9,7 +9,9 @@ from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .workflows.area_workflow import AreaWorkflow
 from .workflows.basemap_workflow import BasemapWorkflow
-from .workflows.urban_planning_workflow import UrbanPlanningWorkflow
+from .workflows.layer_workflow import LayerWorkflow
+from .real_estate_lib.urban_planning.urban_planning_algorithm import UrbanPlanningAlgorithm
+from .real_estate_lib.urban_planning.zoning_district import ZoningDistrictAlgorithm
 
 PLUGIN_NAME = "Green Infra Plugin"
 
@@ -26,7 +28,9 @@ class GreenInfraPlugin:
         self.dockwidget = None
         self.area_workflow = AreaWorkflow(iface)
         self.basemap_workflow = BasemapWorkflow(iface)
-        self.urban_planning_workflow = UrbanPlanningWorkflow(iface)
+        self.layer_workflow = LayerWorkflow(iface)
+        self.urban_planning_algorithm = UrbanPlanningAlgorithm(iface)
+        self.zoning_district_algorithm = ZoningDistrictAlgorithm(iface)
 
     def add_action(
         self,
@@ -124,7 +128,14 @@ class GreenInfraPlugin:
         # Phase 2:都市計画区域の可視化
         if self.dockwidget.checkBox_urban_area.isChecked():
             # Workflowを実行
-            self.urban_planning_workflow.execute(
+            self.layer_workflow.execute(
+                self.urban_planning_algorithm,
+                api_key=api_key,
+            )
+        if self.dockwidget.checkBox_use_district.isChecked():
+            # Workflowを実行
+            self.layer_workflow.execute(
+                self.zoning_district_algorithm,
                 api_key=api_key,
             )
         # Phase 3:

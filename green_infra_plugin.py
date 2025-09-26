@@ -113,12 +113,12 @@ class GreenInfraPlugin:
             QgsMessageLog.logMessage(
                 message,
                 PLUGIN_NAME,
-                level=Qgis.Critical,
+                level=Qgis.Warning,
             )
             self.iface.messageBar().pushMessage(
                 "API接続エラー",
                 "APIキーが設定されていません。",
-                level=Qgis.Critical,
+                level=Qgis.Warning,
             )
             return
 

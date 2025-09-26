@@ -19,7 +19,7 @@ API_ENDPOINTS = {
 
 # 海しるAPI レイヤー選択定義（データごとのデフォルト値）
 LAYER_SELECTIONS = {
-    "coastline": "1", # 海岸線
+    "coastline": "1",  # 海岸線
     # 今後追加予定:
     # "fishing_port": "3",   # 漁港区域
     # "port_area": "3",      # 港湾区域

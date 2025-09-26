@@ -105,7 +105,6 @@ class UmiShiruApiClient:
                 f"海しるAPIリクエスト成功: {full_url}", PLUGIN_NAME, level=Qgis.Info
             )
 
-            # Use 'utf-8-sig' to decode in case the API response includes a UTF-8 BOM
             return response_data.data().decode("utf-8-sig")
 
         finally:

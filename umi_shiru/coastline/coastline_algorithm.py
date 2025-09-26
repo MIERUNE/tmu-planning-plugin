@@ -1,3 +1,5 @@
+from typing import Dict, Optional
+
 from PyQt5.QtGui import QColor
 from qgis.core import Qgis, QgsCoordinateReferenceSystem, QgsMessageLog, QgsVectorLayer
 
@@ -13,12 +15,14 @@ class CoastlineAlgorithm:
     def __init__(self, iface):
         self.iface = iface
 
-    def fetch_coastline_data(self, bounds, api_key):
+    def fetch_coastline_data(
+        self, api_key: str, bounds: Dict[str, float]
+    ) -> Optional[str]:
         """
         海岸線データをAPIから取得
         Args:
-            bounds (dict): 取得範囲の境界
             api_key (str): 海しるAPIキー
+            bounds (dict): 取得範囲の境界
         Returns:
             str: GeoJSON文字列（取得失敗時はNone）
         """
@@ -34,7 +38,9 @@ class CoastlineAlgorithm:
         # 海岸線データを取得
         return client.request("coastline", params)
 
-    def create_coastline_layer(self, geojson_data, layer_name="海岸線"):
+    def create_coastline_layer(
+        self, geojson_data: str, layer_name: str = "海岸線"
+    ) -> QgsVectorLayer:
         """
         GeoJSONデータからQGISレイヤーを作成
         Args:
@@ -58,7 +64,7 @@ class CoastlineAlgorithm:
 
         return layer
 
-    def _apply_coastline_style(self, layer):
+    def _apply_coastline_style(self, layer: QgsVectorLayer):
         """
         海岸線レイヤーにスタイルを適用
         """

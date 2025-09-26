@@ -134,6 +134,7 @@ class GreenInfraPlugin:
                     "海しるAPIキーが未設定のため、海岸線データの処理をスキップします。"
                 )
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                self.iface.messageBar().pushMessage(message, level=Qgis.Warning)
             else:
                 self.coastline_workflow.execute(api_key=umi_shiru_api_key)
 

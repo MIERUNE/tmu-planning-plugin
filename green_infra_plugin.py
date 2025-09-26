@@ -103,6 +103,10 @@ class GreenInfraPlugin:
 
         api_key = ApikeyDialog.get_real_estate_api_key()
 
+        # Phase 1: ベースマップレイヤーの可視化
+        self.basemap_workflow.execute(self.dockwidget.get_selected_basemaps())
+
+        # Phase 2: 不動産情報ライブラリの可視化
         if not api_key:
             # ログにエラーメッセージを記録
             message = "APIキーが未設定のため、処理を中断します。"
@@ -118,16 +122,14 @@ class GreenInfraPlugin:
             )
             return
 
-        # Phase 1: ベースマップレイヤーの可視化
-        self.basemap_workflow.execute(self.dockwidget.get_selected_basemaps())
-
-        # Phase 2:都市計画区域の可視化
-        if self.dockwidget.checkBox_urban_area.isChecked():
-            # Workflowを実行
-            self.urban_planning_workflow.execute(
-                api_key=api_key,
-            )
-        # Phase 3:
+        else:
+            # 都市計画区域の可視化
+            if self.dockwidget.checkBox_urban_area.isChecked():
+                # Workflowを実行
+                self.urban_planning_workflow.execute(
+                    api_key=api_key,
+                )
+            # 用途地域の可視化
 
     def on_prefecture_changed(self):
         """都道府県選択変更時の処理"""

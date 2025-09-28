@@ -112,7 +112,7 @@ class GreenInfraPlugin:
         if not real_estate_api_key:
             # ログにエラーメッセージを記録
             message = (
-                "A不動産情報ライブラリAPIキーが未設定のため、処理をスキップします。"
+                "不動産情報ライブラリAPIキーが未設定のため、処理をスキップします。"
             )
             QgsMessageLog.logMessage(
                 message,

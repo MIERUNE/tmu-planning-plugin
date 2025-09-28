@@ -2,7 +2,6 @@ from qgis.core import (
     Qgis,
     QgsMessageLog,
     QgsProject,
-    QgsVectorLayer,
 )
 
 from ..real_estate_lib.connect import PLUGIN_NAME
@@ -27,26 +26,18 @@ class UrbanPlanningWorkflow:
             bool: 成功した場合はTrue、失敗した場合はFalse
         """
         try:
-            QgsMessageLog.logMessage(
-                "都市計画区域データを取得します...", PLUGIN_NAME, level=Qgis.Info
-            )
-            geojson_data = self.algorithm.get_urban_planning_area(api_key)
+            added_layer = self.algorithm.get_urban_planning_area(api_key)
 
             # データが空なら処理を中断
-            if not geojson_data or geojson_data.size() == 0:
-                message = "都市計画区域データが見つかりませんでした。"
+            if not added_layer:
+                message = "都市計画区域データの追加に失敗しました。"
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-                self.iface.messageBar().pushMessage("情報", message, level=Qgis.Info)
+                self.iface.messageBar().pushMessage("情報", message, level=Qgis.Warning)
                 return False
 
-            geojson_string = geojson_data.data().decode("utf-8")
-
-            layer_name = "都市計画区域"
-            layer = QgsVectorLayer(geojson_string, layer_name, "ogr")
-
-            QgsProject.instance().addMapLayer(layer)
+            QgsProject.instance().addMapLayer(added_layer)
             QgsMessageLog.logMessage(
-                f"'{layer.name()}' レイヤーを追加しました。",
+                f"'{added_layer.name()}'都市計画区域レイヤーの追加に成功しました。",
                 PLUGIN_NAME,
                 level=Qgis.Success,
             )

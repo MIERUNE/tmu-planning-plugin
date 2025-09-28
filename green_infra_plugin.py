@@ -103,27 +103,35 @@ class GreenInfraPlugin:
         if not self.dockwidget:
             return
 
-        api_key = ApikeyDialog.get_real_estate_api_key()
-
-        if not api_key:
-            # 1. ログにエラーメッセージを記録
-            message = "APIキーが未設定のため、処理を中断します。"
-            QgsMessageLog.logMessage(
-                message,
-                PLUGIN_NAME,
-                level=Qgis.Warning,  # または Qgis.Critical
-            )
-            return
+        real_estate_api_key = ApikeyDialog.get_real_estate_api_key()
 
         # Phase 1: ベースマップレイヤーの可視化
         self.basemap_workflow.execute(self.dockwidget.get_selected_basemaps())
 
-        # Phase 2:都市計画区域の可視化
-        if self.dockwidget.checkBox_urban_area.isChecked():
-            # Workflowを実行
-            self.urban_planning_workflow.execute(
-                api_key=api_key,
+        # Phase 2: 不動産情報ライブラリの可視化
+        if not real_estate_api_key:
+            # ログにエラーメッセージを記録
+            message = (
+                "不動産情報ライブラリAPIキーが未設定のため、処理をスキップします。"
             )
+            QgsMessageLog.logMessage(
+                message,
+                PLUGIN_NAME,
+                level=Qgis.Warning,
+            )
+            self.iface.messageBar().pushMessage(
+                message,
+                level=Qgis.Warning,
+            )
+
+        else:
+            # 都市計画区域の可視化
+            if self.dockwidget.checkBox_urban_area.isChecked():
+                # Workflowを実行
+                self.urban_planning_workflow.execute(
+                    api_key=real_estate_api_key,
+                )
+            # 用途地域の可視化
 
         # Phase 3: 海岸線データの可視化
         if self.dockwidget.checkBox_coast_line.isChecked():

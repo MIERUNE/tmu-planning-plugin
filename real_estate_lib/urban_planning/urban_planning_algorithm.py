@@ -2,9 +2,17 @@
 都市計画区域データの取得機能モジュール
 """
 
-from PyQt5.QtCore import QByteArray, QEventLoop, QUrl
-from PyQt5.QtNetwork import QNetworkRequest
-from qgis.core import Qgis, QgsMessageLog, QgsNetworkAccessManager
+import urllib.parse
+from typing import Optional
+
+from qgis.core import (
+    Qgis,
+    QgsMessageLog,
+    QgsNetworkAccessManager,
+    QgsVectorTileLayer,
+)
+from qgis.PyQt.QtCore import QEventLoop, QUrl
+from qgis.PyQt.QtNetwork import QNetworkRequest
 
 from ..connect import PLUGIN_NAME, URBAN_PLANNING_AREA_API_ENDPOINT
 
@@ -15,60 +23,78 @@ class UrbanPlanningAlgorithm:
     def __init__(self, iface):
         self.iface = iface
 
-    def get_urban_planning_area(self, api_key: str) -> QByteArray:
+    def _check_api_connection(self, api_key: str) -> tuple[bool, Optional[int]]:
+        """APIキーの有効性を確認するための事前接続チェック"""
+        # 接続テストとしてズームレベル0のタイルをリクエスト
+        test_url = (
+            URBAN_PLANNING_AREA_API_ENDPOINT
+            + "?response_format=geojson&z=13&x=7272&y=3225"
+        )
+
+        request = QNetworkRequest(QUrl(test_url))
+        request.setRawHeader(b"Ocp-Apim-Subscription-Key", api_key.encode("utf-8"))
+
+        nam = QgsNetworkAccessManager.instance()
+        reply = nam.get(request)
+
+        loop = QEventLoop()
+        reply.finished.connect(loop.quit)
+        loop.exec_()
+
+        http_status = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
+
+        if reply.error():
+            QgsMessageLog.logMessage(
+                f"API接続に失敗しました: {reply.errorString()} (HTTPステータス: {http_status})",
+                PLUGIN_NAME,
+                level=Qgis.Critical,
+            )
+            reply.deleteLater()
+            return False, http_status
+
+        QgsMessageLog.logMessage(
+            "APIキーの有効性を確認しました (HTTP 200)", PLUGIN_NAME, level=Qgis.Info
+        )
+        reply.deleteLater()
+        return True, http_status
+
+    def get_urban_planning_area(self, api_key: str) -> Optional[QgsVectorTileLayer]:
         """
         指定した市区町村の都市計画区域データをAPIから取得する
         Args:
             api_key (str): APIキー
         Returns:
-            QByteArray: APIからのレスポンスデータ（GeoJSON形式のバイト配列）
+            QgsVectorTileLayer : 追加に成功した場合はレイヤーオブジェクト
         """
-
-        # TODO : 指定した自治体のデータに必要なタイル分を取得するようにする
-        z = 11
-        x = 1828
-        y = 752
-
-        url_string = f"{URBAN_PLANNING_AREA_API_ENDPOINT}?response_format=geojson&z={z}&x={x}&y={y}"
-
-        url = QUrl(url_string)
-        request = QNetworkRequest(url)
-        # ヘッダーにAPIキーを設定
-        request.setRawHeader(b"Ocp-Apim-Subscription-Key", api_key.encode("utf-8"))
-
-        # QGISのネットワークマネージャーを使って非同期でリクエストを送信
-        nam = QgsNetworkAccessManager.instance()
-        reply = nam.get(request)
-        loop = QEventLoop()
-        reply.finished.connect(loop.quit)
-        loop.exec_()
-
-        try:
-            # エラーチェック
-            if reply.error():
-                http_status = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
-                error_message = f"APIリクエスト失敗: {reply.errorString()} (HTTP {http_status or 'Unknown'})"
-                QgsMessageLog.logMessage(
-                    error_message, PLUGIN_NAME, level=Qgis.Critical
-                )
-                self.iface.messageBar().pushMessage(
-                    "エラー", error_message, level=Qgis.Critical
-                )
-                return QByteArray()
-
-            response_data = reply.readAll()
-            if not response_data:
-                QgsMessageLog.logMessage(
-                    f"APIからのレスポンスが空です。URL: {url_string}",
-                    PLUGIN_NAME,
-                    level=Qgis.Warning,
-                )
-                return QByteArray()
-
-            QgsMessageLog.logMessage(
-                f"APIリクエスト成功: {url_string}", PLUGIN_NAME, level=Qgis.Info
+        success, status_code = self._check_api_connection(api_key)
+        # 接続チェック
+        if not success:
+            user_message = "APIサーバーへの接続に失敗しました。"
+            self.iface.messageBar().pushMessage(
+                "API接続エラー",
+                f"{user_message} (HTTP Status: {status_code})",
+                level=Qgis.Critical,
             )
-            return response_data
+            return None
 
-        finally:
-            reply.deleteLater()
+        # パラメーターをエンコード
+        params = {"response_format": "pbf", "z": "{z}", "x": "{x}", "y": "{y}"}
+        encoded_params = urllib.parse.urlencode(params, safe="{}")
+
+        # QGIS用にエンコード
+        encoded_for_qgis = encoded_params.replace("=", "%3D").replace("&", "%26")
+        encoded_tile_url = f"{URBAN_PLANNING_AREA_API_ENDPOINT}?{encoded_for_qgis}"
+
+        # ベクトルタイルレイヤーのURLを作成
+        get_real_estate_url = (
+            f"type=xyz"
+            f"&url={encoded_tile_url}"
+            f"&zmax=15"
+            f"&zmin=11"
+            f"&http-header:Ocp-Apim-Subscription-Key={api_key}"
+        )
+
+        layer_name = "都市計画区域"
+        urban_planning_layer = QgsVectorTileLayer(get_real_estate_url, layer_name)
+
+        return urban_planning_layer

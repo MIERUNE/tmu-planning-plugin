@@ -10,7 +10,8 @@ API_KEY_LIST = [
         "id": 2,
         "label_name": "apikeyLabel_2",
         "line_edit_name": "apikeyLineEdit_2",
-        "setting_key": "service_2",
+        "setting_key": "umi_shiru_api_key",
+        "display_name": "海しるAPIキー",
     },
     {
         "id": 3,

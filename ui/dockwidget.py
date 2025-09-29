@@ -37,6 +37,9 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
         self.colorButton_highway: QgsColorButton = self.colorButton_highway
         self.colorButton_major_road: QgsColorButton = self.colorButton_major_road
         self.colorButton_building: QgsColorButton = self.colorButton_building
+        self.checkBox_coast_line: QCheckBox = self.checkBox_coast_line
+        self.checkBox_port_area: QCheckBox = self.checkBox_port_area
+        self.checkBox_fishing_port_area: QCheckBox = self.checkBox_fishing_port_area
 
         self.apikey_keep: QPushButton = self.findChild(QPushButton, "apikey_keep")
 

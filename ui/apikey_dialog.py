@@ -110,3 +110,11 @@ class ApikeyDialog(QDialog, ui_dialog):
             str: 不動産情報ライブラリAPIキーの値
         """
         return ApikeyDialog.get_saved_api_key_by_id(1)
+
+    @staticmethod
+    def get_umi_shiru_api_key() -> str:
+        """海しるAPIキー（ID:2）を取得
+        Returns:
+            str: 海しるAPIキーの値
+        """
+        return ApikeyDialog.get_saved_api_key_by_id(2)

@@ -5,13 +5,14 @@ from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
+from .real_estate_lib.land_use.urban_planning_algorithm import UrbanPlanningAlgorithm
+from .real_estate_lib.land_use.zoning_district import ZoningDistrictAlgorithm
 from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .workflows.area_workflow import AreaWorkflow
 from .workflows.basemap_workflow import BasemapWorkflow
+from .workflows.coastline_workflow import CoastlineWorkflow
 from .workflows.land_use_layer_workflow import LayerWorkflow
-from .real_estate_lib.land_use.urban_planning_algorithm import UrbanPlanningAlgorithm
-from .real_estate_lib.land_use.zoning_district import ZoningDistrictAlgorithm
 
 PLUGIN_NAME = "Green Infra Plugin"
 
@@ -31,6 +32,7 @@ class GreenInfraPlugin:
         self.layer_workflow = LayerWorkflow(iface)
         self.urban_planning_algorithm = UrbanPlanningAlgorithm(iface)
         self.zoning_district_algorithm = ZoningDistrictAlgorithm(iface)
+        self.coastline_workflow = CoastlineWorkflow(iface)
 
     def add_action(
         self,
@@ -105,40 +107,55 @@ class GreenInfraPlugin:
         if not self.dockwidget:
             return
 
-        api_key = ApikeyDialog.get_real_estate_api_key()
-
-        if not api_key:
-            # ログにエラーメッセージを記録
-            message = "APIキーが未設定のため、処理を中断します。"
-            QgsMessageLog.logMessage(
-                message,
-                PLUGIN_NAME,
-                level=Qgis.Critical,
-            )
-            self.iface.messageBar().pushMessage(
-                "API接続エラー",
-                "APIキーが設定されていません。",
-                level=Qgis.Critical,
-            )
-            return
+        real_estate_api_key = ApikeyDialog.get_real_estate_api_key()
 
         # Phase 1: ベースマップレイヤーの可視化
         self.basemap_workflow.execute(self.dockwidget.get_selected_basemaps())
 
-        # Phase 2:都市計画区域の可視化
-        if self.dockwidget.checkBox_urban_area.isChecked():
-            # Workflowを実行
-            self.layer_workflow.execute(
-                self.urban_planning_algorithm,
-                api_key=api_key,
+        # Phase 2: 不動産情報ライブラリの可視化
+        if not real_estate_api_key:
+            # ログにエラーメッセージを記録
+            message = (
+                "不動産情報ライブラリAPIキーが未設定のため、処理をスキップします。"
             )
-        if self.dockwidget.checkBox_use_district.isChecked():
-            # Workflowを実行
-            self.layer_workflow.execute(
-                self.zoning_district_algorithm,
-                api_key=api_key,
+            QgsMessageLog.logMessage(
+                message,
+                PLUGIN_NAME,
+                level=Qgis.Warning,
             )
-        # Phase 3:
+            self.iface.messageBar().pushMessage(
+                message,
+                level=Qgis.Warning,
+            )
+
+        else:
+            # 都市計画区域の可視化
+            if self.dockwidget.checkBox_urban_area.isChecked():
+                # Workflowを実行
+                self.layer_workflow.execute(
+                    self.urban_planning_algorithm,
+                    api_key=real_estate_api_key,
+                )
+
+            # 用途地域の可視化
+            if self.dockwidget.checkBox_use_district.isChecked():
+                # Workflowを実行
+                self.layer_workflow.execute(
+                    self.zoning_district_algorithm, api_key=real_estate_api_key
+                )
+
+        # Phase 3: 海岸線データの可視化
+        if self.dockwidget.checkBox_coast_line.isChecked():
+            # 海しるAPIキーを取得
+            umi_shiru_api_key = ApikeyDialog.get_umi_shiru_api_key()
+            if not umi_shiru_api_key:
+                message = (
+                    "海しるAPIキーが未設定のため、海岸線データの処理をスキップします。"
+                )
+                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                self.iface.messageBar().pushMessage(message, level=Qgis.Warning)
+            else:
+                self.coastline_workflow.execute(api_key=umi_shiru_api_key)
 
     def on_prefecture_changed(self):
         """都道府県選択変更時の処理"""

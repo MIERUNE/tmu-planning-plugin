@@ -139,6 +139,7 @@ class GreenInfraPlugin:
                 # Workflowを実行
                 self.urban_planning_workflow.execute(
                     api_key=real_estate_api_key,
+                    municipality_code=selected_municipality_code
                 )
             # 用途地域の可視化
 

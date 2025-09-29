@@ -17,7 +17,7 @@ class UrbanPlanningWorkflow:
         self.iface = iface
         self.algorithm = UrbanPlanningAlgorithm(iface)
 
-    def execute(self, api_key: str) -> bool:
+    def execute(self, api_key: str, municipality_code: str) -> bool:
         """
         ワークフローを実行し、都市計画区域タイルレイヤーをQGISに追加する
         Args:
@@ -26,7 +26,7 @@ class UrbanPlanningWorkflow:
             bool: 成功した場合はTrue、失敗した場合はFalse
         """
         try:
-            added_layer = self.algorithm.get_urban_planning_area(api_key)
+            added_layer = self.algorithm.get_urban_planning_area(api_key, municipality_code)
 
             # データが空なら処理を中断
             if not added_layer:

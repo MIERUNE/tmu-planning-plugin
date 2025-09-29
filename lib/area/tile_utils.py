@@ -1,5 +1,6 @@
 import math
 from typing import Dict, List, Tuple
+
 from qgis.core import Qgis, QgsMessageLog
 
 
@@ -29,8 +30,8 @@ def calculate_tile_coords(
                 all_tiles.append((z, x, y))
 
         QgsMessageLog.logMessage(
-            f"Zoom: {z}, Tiles: {len(all_tiles)}",
-            level=Qgis.Info
+            f"取得するタイル数を計算しました: Zoom: {z}, Tiles: {len(all_tiles)}",
+            level=Qgis.Info,
         )
 
     return all_tiles
@@ -44,19 +45,10 @@ def _deg2num(lat_deg: float, lon_deg: float, zoom: int) -> Tuple[int, int]:
     ytile = int((1.0 - math.asinh(math.tan(lat_rad)) / math.pi) / 2.0 * n)
     return (xtile, ytile)
 
-# TODO :PR提出時に削除
-test_bbox = {"xmin": 139.6917, "ymin": 35.6895, "xmax": 139.8017, "ymax": 35.7895}
-min_z, max_z = 13, 15
 
-# 関数を呼び出し、その戻り値を `print()` でコンソールに表示する
-tile_results = calculate_tile_coords(test_bbox, min_z, max_z)
-
-# 結果をコンソールに出力
-print("--- Tile Calculation Results ---")
-print(f"Total tiles calculated: {len(tile_results)}")
-# 最初の20件だけ表示してみる
-print(f"First 20 tiles: {tile_results[:20]}")
-print("------------------------------")
-
-
-
+# # 結果をコンソールに出力
+# print("--- Tile Calculation Results ---")
+# print(f"Total tiles calculated: {len(tile_results)}")
+# # 最初の20件だけ表示してみる
+# print(f"First 20 tiles: {tile_results[:20]}")
+# print("------------------------------")

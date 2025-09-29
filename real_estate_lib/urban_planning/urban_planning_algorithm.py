@@ -20,7 +20,6 @@ from ..connect import PLUGIN_NAME, URBAN_PLANNING_AREA_API_ENDPOINT
 class UrbanPlanningAlgorithm:
     """都市計画区域データ取得クラス"""
 
-
     def __init__(self, iface):
         self.iface = iface
 
@@ -59,7 +58,7 @@ class UrbanPlanningAlgorithm:
         reply.deleteLater()
         return True, http_status
 
-    def get_urban_planning_area(self, api_key: str, municipality_code: str) -> Optional[QgsVectorTileLayer]:
+    def get_urban_planning_area(self, api_key: str) -> Optional[QgsVectorTileLayer]:
         """
         指定した市区町村の都市計画区域データをAPIから取得する
         Args:

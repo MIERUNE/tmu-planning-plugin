@@ -21,6 +21,11 @@ def fetch_and_calculate_bbox(municipality_code: str):
         dict: 成功時にBBOXの辞書 {'xmin': float, ...} を返す
         None: 失敗時にNoneを返す
     """
+    QgsMessageLog.logMessage(
+        f"市区町村コード: {municipality_code} のBBOXを計算します...",
+        PLUGIN_NAME,
+        level=Qgis.Info,
+    )
     if not municipality_code or len(municipality_code) != 5:
         QgsMessageLog.logMessage(
             f"無効な市区町村コードです: {municipality_code}",
@@ -92,14 +97,19 @@ def fetch_and_calculate_bbox(municipality_code: str):
 
             if layer.isValid():
                 bbox = layer.extent()
-                print("---------------------------------")
-                print(f"✅ レイヤ '{layer.name()}' のBBOXを計算しました。")
-                print(f"  CRS: {layer.crs().authid()}")
-                print(f"  xmin: {bbox.xMinimum()}")
-                print(f"  ymin: {bbox.yMinimum()}")
-                print(f"  xmax: {bbox.xMaximum()}")
-                print(f"  ymax: {bbox.yMaximum()}")
-                print("---------------------------------")
+                result_bbox = {
+                    "xmin": bbox.xMinimum(),
+                    "ymin": bbox.yMinimum(),
+                    "xmax": bbox.xMaximum(),
+                    "ymax": bbox.yMaximum(),
+                }
+
+                QgsMessageLog.logMessage(
+                    f"レイヤ '{layer.name()}' のBBOXを計算しました: {result_bbox}",
+                    PLUGIN_NAME,
+                    level=Qgis.Info,
+                )
+                return result_bbox
             else:
                 print(f"警告: レイヤとして読み込めませんでした: {shp_path}")
 
@@ -109,10 +119,3 @@ def fetch_and_calculate_bbox(municipality_code: str):
     finally:
         # 全ての処理が終わった後、最後に一時フォルダを強制的に削除
         shutil.rmtree(temp_dir, ignore_errors=True)
-
-    # TODO :PR提出時に削除
-    QgsMessageLog.logMessage("--- 処理が完了しました ---", PLUGIN_NAME, level=Qgis.Info)
-
-
-# TODO :PR提出時に削除
-fetch_and_calculate_bbox("14214")  # 例: 市区町村コードを指定して実行

@@ -106,9 +106,9 @@ class GreenInfraPlugin:
         selected_municipality_code = self.dockwidget.comboBox_municipality.currentData()
         real_estate_api_key = ApikeyDialog.get_real_estate_api_key()
 
-        QgsMessageLog.logMessage(
-            f"選択された市区町村コード: {selected_municipality_code}", level=Qgis.Info
-        )
+        # QgsMessageLog.logMessage(
+        #     f"選択された市区町村コード: {selected_municipality_code}", level=Qgis.Info
+        # )
 
         if not selected_municipality_code:
             # 市区町村が選択されていない場合のエラー処理

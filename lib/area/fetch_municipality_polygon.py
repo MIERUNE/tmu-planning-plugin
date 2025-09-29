@@ -13,7 +13,7 @@ PLUGIN_NAME = "Green Infra Plugin"
 
 def fetch_and_calculate_bbox(municipality_code: str):
     """
-    指定された市区町村コードの行政区域ポリゴンをダウンロードし、BBOXを計算して返す関数
+    指定された市区町村コードの行政区域ポリゴンをe-Statからダウンロードし、BBOXを計算して返す関数
     Args:
         municipality_code (str): 5桁の市区町村コード
 

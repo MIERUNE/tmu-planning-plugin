@@ -19,6 +19,7 @@ from ..connect import PLUGIN_NAME, URBAN_PLANNING_AREA_API_ENDPOINT
 
 class UrbanPlanningAlgorithm:
     """都市計画区域データ取得クラス"""
+    
 
     def __init__(self, iface):
         self.iface = iface

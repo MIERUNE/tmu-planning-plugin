@@ -1,8 +1,10 @@
+from typing import Dict, Optional
+
 from qgis.core import Qgis, QgsMessageLog, QgsProject
 
-from ..marine_gis.coastline.coastline_algorithm import CoastlineAlgorithm
-from ..marine_gis.coastline.coastline_settings import DEFAULT_BOUNDS
-from ..marine_gis.connect import PLUGIN_NAME
+from ..umi_shiru.coastline.coastline_algorithm import CoastlineAlgorithm
+from ..umi_shiru.coastline.coastline_settings import DEFAULT_BOUNDS
+from ..umi_shiru.connect import PLUGIN_NAME
 from .base_workflow import BaseWorkflow
 
 
@@ -13,10 +15,11 @@ class CoastlineWorkflow(BaseWorkflow):
         super().__init__(iface)
         self.algorithm = CoastlineAlgorithm(iface)
 
-    def execute(self, bounds=None) -> bool:
+    def execute(self, api_key: str, bounds: Optional[Dict[str, float]] = None) -> bool:
         """
         ワークフローを実行し、海岸線レイヤーをQGISに追加する
         Args:
+            api_key (str): 海しるAPIキー
             bounds (dict, optional): 取得範囲の境界。Noneの場合はデフォルト範囲を使用
         Returns:
             bool: 成功した場合はTrue、失敗した場合はFalse
@@ -31,7 +34,9 @@ class CoastlineWorkflow(BaseWorkflow):
             )
 
             # 2. データ取得
-            geojson_data = self.algorithm.fetch_coastline_data(bounds)
+            geojson_data = self.algorithm.fetch_coastline_data(
+                api_key=api_key, bounds=bounds
+            )
             if not geojson_data:
                 message = "海岸線データが見つかりませんでした。"
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)

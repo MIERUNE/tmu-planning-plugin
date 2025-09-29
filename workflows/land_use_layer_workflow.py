@@ -6,6 +6,7 @@ from qgis.core import (
 
 from ..real_estate_lib.connect import PLUGIN_NAME
 
+
 class LayerWorkflow:
     """不動産情報ライブラリからのレイヤー取得・可視化のための汎用ワークフロー"""
 

@@ -57,3 +57,6 @@ print(f"Total tiles calculated: {len(tile_results)}")
 # 最初の20件だけ表示してみる
 print(f"First 20 tiles: {tile_results[:20]}")
 print("------------------------------")
+
+
+

@@ -2,7 +2,7 @@
 海しるAPIの接続情報とAPIクライアント
 """
 
-from PyQt5.QtCore import QEventLoop, QUrl
+from PyQt5.QtCore import QEventLoop, QUrl, QUrlQuery
 from PyQt5.QtNetwork import QNetworkRequest
 from qgis.core import Qgis, QgsMessageLog, QgsNetworkAccessManager
 
@@ -67,8 +67,14 @@ def build_estat_municipality_url(municipality_code: str) -> str:
     params = E_STAT_API_CONFIG["default_params"].copy()
     params["code"] = municipality_code
 
-    param_str = "&".join([f"{k}={v}" for k, v in params.items()])
-    return f"{E_STAT_API_CONFIG['base_url']}?{param_str}"
+    query = QUrlQuery()
+    for key, value in params.items():
+        query.addQueryItem(key, str(value))
+
+    # URLオブジェクトを生成
+    url = QUrl(E_STAT_API_CONFIG["base_url"])
+    url.setQuery(query)
+    return url.toString()
 
 
 class UmiShiruApiClient:
@@ -105,9 +111,16 @@ class UmiShiruApiClient:
         endpoint = api_def["endpoint"]
         layer_selection = api_def["layer"]
 
-        # URLを構築
-        param_str = "&".join([f"{k}={v}" for k, v in params.items()])
-        full_url = f"{self.base_url}{endpoint}/{layer_selection}/query?{param_str}"
+        base_full_url = f"{self.base_url}{endpoint}/{layer_selection}/query"
+
+        query = QUrlQuery()
+        for key, value in params.items():
+            query.addQueryItem(key, str(value))
+
+        # URLオブジェクトを生成
+        url = QUrl(base_full_url)
+        url.setQuery(query)
+        full_url = url.toString()
 
         QgsMessageLog.logMessage(
             f"海しるAPIリクエスト開始: {full_url}", PLUGIN_NAME, level=Qgis.Info

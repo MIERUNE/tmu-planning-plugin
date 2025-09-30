@@ -11,6 +11,7 @@ from .workflows.area_workflow import AreaWorkflow
 from .workflows.basemap_workflow import BasemapWorkflow
 from .workflows.coastline_workflow import CoastlineWorkflow
 from .workflows.urban_planning_workflow import UrbanPlanningWorkflow
+from .workflows.estat_did_workflow import EstatDidWorkflow
 
 PLUGIN_NAME = "Green Infra Plugin"
 
@@ -29,6 +30,7 @@ class GreenInfraPlugin:
         self.basemap_workflow = BasemapWorkflow(iface)
         self.urban_planning_workflow = UrbanPlanningWorkflow(iface)
         self.coastline_workflow = CoastlineWorkflow(iface)
+        self.estat_did_workflow = EstatDidWorkflow(iface)
 
     def add_action(
         self,
@@ -108,7 +110,10 @@ class GreenInfraPlugin:
         # Phase 1: ベースマップレイヤーの可視化
         self.basemap_workflow.execute(self.dockwidget.get_selected_basemaps())
 
-        # Phase 2: 不動産情報ライブラリの可視化
+        
+
+
+        # Phase 3: 不動産情報ライブラリの可視化
         if not real_estate_api_key:
             # ログにエラーメッセージを記録
             message = (
@@ -145,6 +150,13 @@ class GreenInfraPlugin:
                 self.iface.messageBar().pushMessage(message, level=Qgis.Warning)
             else:
                 self.coastline_workflow.execute(api_key=umi_shiru_api_key)
+
+        # Phase 4:e-Statの可視化
+        if self.dockwidget.checkBox_did.isChecked():
+            prefecture_code = self.dockwidget.comboBox_prefecture.currentData()
+            QgsMessageLog.logMessage(f"Selected Prefecture Code: {prefecture_code}", PLUGIN_NAME, level=Qgis.Info)
+            if prefecture_code:
+                self.estat_did_workflow.execute(prefecture_code=prefecture_code)
 
     def on_prefecture_changed(self):
         """都道府県選択変更時の処理"""

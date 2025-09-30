@@ -9,14 +9,10 @@ from typing import Optional
 import requests
 from qgis.core import Qgis, QgsMessageLog, QgsProject, QgsVectorLayer, QgsWkbTypes
 
-# from .connect import DID_AREA_API_ENDPOINT, PLUGIN_NAME
-DID_AREA_API_ENDPOINT = "https://www.e-stat.go.jp/gis/statmap-search/data"
-
-# ログメッセージ用プラグイン名
-PLUGIN_NAME = "Green Infra Plugin"
+from .connect import DID_AREA_API_ENDPOINT, PLUGIN_NAME
 
 
-class DidDownloader:
+class DidAlgorithm:
     """人口集中地区(DID)のデータをダウンロードし、QGISに追加するクラス"""
 
     def __init__(self, prefecture_code: str, iface):
@@ -112,8 +108,6 @@ class DidDownloader:
 
                 # 3. ヘルパー関数を使って、安全にメモリレイヤを作成
                 mem_layer = self._create_memory_layer(shp_path)
-
-                # ガベージコレクションを強制し、ロック解放の確実性を高める
                 gc.collect()
 
                 # 4. メモリレイヤをプロジェクトに追加

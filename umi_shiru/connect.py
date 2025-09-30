@@ -25,8 +25,38 @@ LAYER_SELECTIONS = {
     # "port_area": "3",      # 港湾区域
 }
 
+# TODO: 将来的にはe-Stat専用ディレクトリへ移動する予定
+# e-Stat API ベースURL
+E_STAT_BASE_URL = "https://www.e-stat.go.jp/gis/statmap-search/data"
+
+# e-Stat API デフォルトパラメータ（行政区域データ用）
+E_STAT_DEFAULT_PARAMS = {
+    "dlserveyId": "A002005212020",  # 国勢調査2020年
+    "coordSys": "1",  # 世界測地系
+    "format": "shape",  # シェープファイル形式
+    "downloadType": "5",  # 市区町村レベル
+    "datum": "2011",  # 測地系2011（JGD2011）
+}
+
 # ログメッセージ用プラグイン名
 PLUGIN_NAME = "Green Infra Plugin"
+
+
+def build_estat_municipality_url(municipality_code: str) -> str:
+    """
+    e-Stat API用の市区町村データ取得URLを構築
+
+    Args:
+        municipality_code (str): 5桁の市区町村コード
+
+    Returns:
+        str: 構築されたURL
+    """
+    params = E_STAT_DEFAULT_PARAMS.copy()
+    params["code"] = municipality_code
+
+    param_str = "&".join([f"{k}={v}" for k, v in params.items()])
+    return f"{E_STAT_BASE_URL}?{param_str}"
 
 
 class UmiShiruApiClient:

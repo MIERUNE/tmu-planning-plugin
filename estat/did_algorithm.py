@@ -113,11 +113,6 @@ class DidAlgorithm:
                 # 4. メモリレイヤをプロジェクトに追加
                 if mem_layer is not None:
                     QgsProject.instance().addMapLayer(mem_layer)
-                    QgsMessageLog.logMessage(
-                        f"✅ 成功: レイヤ '{self.layer_name}' を地図に追加しました。",
-                        PLUGIN_NAME,
-                        Qgis.Success,
-                    )
 
             except requests.exceptions.RequestException as e:
                 QgsMessageLog.logMessage(
@@ -131,5 +126,3 @@ class DidAlgorithm:
                     PLUGIN_NAME,
                     Qgis.Critical,
                 )
-
-        QgsMessageLog.logMessage("--- 処理完了 ---", PLUGIN_NAME, Qgis.Info)

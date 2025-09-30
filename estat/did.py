@@ -4,6 +4,7 @@ import os
 import tempfile
 import urllib.parse
 import zipfile
+from typing import Optional
 
 import requests
 from qgis.core import Qgis, QgsMessageLog, QgsProject, QgsVectorLayer, QgsWkbTypes
@@ -43,97 +44,98 @@ class DidDownloader:
         encoded_params = urllib.parse.urlencode(params)
         return f"{DID_AREA_API_ENDPOINT}?{encoded_params}"
 
+    def _create_memory_layer(self, shp_path: str) -> Optional[QgsVectorLayer]:
+        """
+        シェープファイルを読み込み、その内容を新しいメモリレイヤとして返すヘルパー関数。
+        ファイルロックを保持するレイヤはこの関数内でのみ生存し、関数の終了時に解放される。
+        """
+        temp_layer = QgsVectorLayer(shp_path, "temp_copy_layer", "ogr")
+        if not temp_layer.isValid():
+            QgsMessageLog.logMessage(
+                f"エラー: レイヤの読み込みに失敗しました: {shp_path}",
+                PLUGIN_NAME,
+                Qgis.Critical,
+            )
+            return None
+
+        # メモリレイヤの器を作成
+        crs = temp_layer.crs()
+        geom_type = QgsWkbTypes.displayString(temp_layer.wkbType())
+        uri = f"{geom_type}?crs={crs.authid()}"
+        mem_layer = QgsVectorLayer(uri, self.layer_name, "memory")
+
+        # データをコピー
+        provider = mem_layer.dataProvider()
+        provider.addAttributes(temp_layer.fields())
+        mem_layer.updateFields()
+        provider.addFeatures(temp_layer.getFeatures())
+        mem_layer.updateExtents()
+
+        del temp_layer
+        return mem_layer
+
     def get_did_area(self):
         """
-        URLからZIPをダウンロードし、シェープファイルをメモリレイヤとしてQGISに追加する
+        人口集中地区(DID)のZipファイルをダウンロードし、シェープファイルをメモリレイヤとしてQGISに追加する。
         """
-
-        
-
         request_url = self._build_req_url()
         QgsMessageLog.logMessage(
             f"リクエストURL: {request_url}", PLUGIN_NAME, Qgis.Info
         )
 
         with tempfile.TemporaryDirectory() as temp_dir:
-            zip_path = os.path.join(temp_dir, "data.zip")
-            extract_dir = os.path.join(temp_dir, "extracted")
-            os.makedirs(extract_dir)
-
-            QgsMessageLog.logMessage(
-                f"データのダウンロードを開始します: {self.prefecture_code}",
-                PLUGIN_NAME,
-                level=Qgis.Info,
-            )
-
-            # 人口集中地区(DID)ポリゴンデータのダウンロード
             try:
-                response = requests.get(request_url, timeout=60)
+                # 1. ダウンロードと解凍
+                zip_path = os.path.join(temp_dir, "data.zip")
+                response = requests.get(request_url, stream=True, timeout=120)
                 response.raise_for_status()
                 with open(zip_path, "wb") as f:
-                    f.write(response.content)
-                QgsMessageLog.logMessage(
-                    "ダウンロードが完了しました。", PLUGIN_NAME, Qgis.Info
+                    for chunk in response.iter_content(chunk_size=8192):
+                        f.write(chunk)
+
+                extract_dir = os.path.join(temp_dir, "extracted")
+                with zipfile.ZipFile(zip_path, "r") as zip_ref:
+                    zip_ref.extractall(extract_dir)
+
+                # 2. シェープファイルの検索
+                shp_files = glob.glob(
+                    os.path.join(extract_dir, "**", "*.shp"), recursive=True
                 )
+                if not shp_files:
+                    QgsMessageLog.logMessage(
+                        "警告: ZIP内にシェープファイルが見つかりませんでした。",
+                        PLUGIN_NAME,
+                        Qgis.Warning,
+                    )
+                    return
+                shp_path = shp_files[0]
+
+                # 3. ヘルパー関数を使って、安全にメモリレイヤを作成
+                mem_layer = self._create_memory_layer(shp_path)
+
+                # ガベージコレクションを強制し、ロック解放の確実性を高める
+                gc.collect()
+
+                # 4. メモリレイヤをプロジェクトに追加
+                if mem_layer is not None:
+                    QgsProject.instance().addMapLayer(mem_layer)
+                    QgsMessageLog.logMessage(
+                        f"✅ 成功: レイヤ '{self.layer_name}' を地図に追加しました。",
+                        PLUGIN_NAME,
+                        Qgis.Success,
+                    )
+
             except requests.exceptions.RequestException as e:
                 QgsMessageLog.logMessage(
-                    f"エラー: ダウンロードに失敗しました。\n{e}",
+                    f"エラー: ダウンロードに失敗しました。{e}",
                     PLUGIN_NAME,
                     Qgis.Critical,
                 )
-                return
-
-            # ZIPファイルを解凍
-            try:
-                with zipfile.ZipFile(zip_path, "r") as zip_ref:
-                    zip_ref.extractall(extract_dir)
-                print("ZIPファイルを解凍しました。")
             except Exception as e:
-                print(f"エラー: ZIPファイルの解凍に失敗しました。\n{e}")
-                return
+                QgsMessageLog.logMessage(
+                    f"エラー: 予期せぬ問題が発生しました。{e}",
+                    PLUGIN_NAME,
+                    Qgis.Critical,
+                )
 
-            # 解凍したフォルダからシェープファイルを検索
-            shp_files = glob.glob(
-                os.path.join(extract_dir, "**", "*.shp"), recursive=True
-            )
-            if not shp_files:
-                print("警告: ZIP内にシェープファイルが見つかりませんでした。")
-                return
-
-            shp_path = shp_files[0]
-            print(f"シェープファイルを検出しました: {shp_path}")
-
-            # 4. シェープファイルを「一時的な」レイヤとして読み込む
-            temp_layer = QgsVectorLayer(shp_path, "temp_layer", "ogr")
-            if not temp_layer.isValid():
-                print("エラー: 一時レイヤの読み込みに失敗しました。")
-                return
-
-            # 5. メモリレイヤを作成し、一時レイヤからデータをコピーする
-            #   これがファイルロックを回避するための重要なステップ
-
-            # 元レイヤの情報を取得
-            crs = temp_layer.crs()
-            geom_type = QgsWkbTypes.displayString(temp_layer.wkbType())
-
-            # メモリレイヤを新規作成
-            uri = f"{geom_type}?crs={crs.authid()}"
-            mem_layer = QgsVectorLayer(uri, self.layer_name, "memory")
-
-            # データのコピーを開始
-            provider = mem_layer.dataProvider()
-
-            # (a) 属性フィールド（列定義）をコピー
-            provider.addAttributes(temp_layer.fields())
-            mem_layer.updateFields()
-
-            # (b) フィーチャ（図形と値）をコピー
-            provider.addFeatures(temp_layer.getFeatures())
-            mem_layer.updateExtents()
-
-            # 6. 完成した「メモリレイヤ」をQGISプロジェクトに追加
-            QgsProject.instance().addMapLayer(mem_layer)
-
-            # 7. (重要) 一時レイヤの参照を削除し、ガベージコレクションを強制実行
-            del temp_layer
-            gc.collect()
+        QgsMessageLog.logMessage("--- 処理完了 ---", PLUGIN_NAME, Qgis.Info)

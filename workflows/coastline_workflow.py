@@ -4,7 +4,7 @@ from typing import Optional
 from qgis.core import Qgis, QgsMessageLog, QgsProject
 
 from ..umi_shiru.coastline.coastline_algorithm import CoastlineAlgorithm
-from ..umi_shiru.connect import PLUGIN_NAME
+from ..umi_shiru.connect import CITY_DEFAULT_BOUNDS, PLUGIN_NAME
 from .base_workflow import BaseWorkflow
 
 
@@ -62,11 +62,23 @@ class CoastlineWorkflow(BaseWorkflow):
         )
 
         calculated_bbox = self.algorithm.get_municipality_bbox(municipality_code)
+
         if not calculated_bbox:
-            message = f"市区町村 {municipality_code} のbbox計算に失敗しました。"
-            QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-            self.iface.messageBar().pushMessage("エラー", message, level=Qgis.Warning)
-            return None
+            # APIからデータが取得できない場合、デフォルト境界範囲を使用
+            if municipality_code in CITY_DEFAULT_BOUNDS:
+                calculated_bbox = CITY_DEFAULT_BOUNDS[municipality_code]
+                QgsMessageLog.logMessage(
+                    f"市区町村 {municipality_code} のe-Statデータが見つからないため、デフォルト境界範囲を使用します",
+                    PLUGIN_NAME,
+                    level=Qgis.Info,
+                )
+            else:
+                message = f"市区町村 {municipality_code} のbbox計算に失敗しました。デフォルト境界範囲も設定されていません。"
+                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                self.iface.messageBar().pushMessage(
+                    "エラー", message, level=Qgis.Warning
+                )
+                return None
 
         # 市区町村bboxにバッファを追加（約1km）
         buffer = 0.01

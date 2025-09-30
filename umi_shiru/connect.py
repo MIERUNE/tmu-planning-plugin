@@ -38,8 +38,21 @@ E_STAT_DEFAULT_PARAMS = {
     "datum": "2011",  # 測地系2011（JGD2011）
 }
 
+# 主要都市のデフォルト境界範囲
+CITY_DEFAULT_BOUNDS = {
+    "01100": {  # 札幌市
+        "min_lon": 141.0,
+        "min_lat": 42.8,
+        "max_lon": 141.6,
+        "max_lat": 43.4,
+    },
+    # 他の都市も必要に応じて追加可能
+}
+
 # ログメッセージ用プラグイン名
 PLUGIN_NAME = "Green Infra Plugin"
+
+
 
 
 def build_estat_municipality_url(municipality_code: str) -> str:

@@ -10,8 +10,8 @@ from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .workflows.area_workflow import AreaWorkflow
 from .workflows.basemap_workflow import BasemapWorkflow
 from .workflows.coastline_workflow import CoastlineWorkflow
-from .workflows.urban_planning_workflow import UrbanPlanningWorkflow
 from .workflows.estat_did_workflow import EstatDidWorkflow
+from .workflows.urban_planning_workflow import UrbanPlanningWorkflow
 
 PLUGIN_NAME = "Green Infra Plugin"
 
@@ -110,9 +110,6 @@ class GreenInfraPlugin:
         # Phase 1: ベースマップレイヤーの可視化
         self.basemap_workflow.execute(self.dockwidget.get_selected_basemaps())
 
-        
-
-
         # Phase 3: 不動産情報ライブラリの可視化
         if not real_estate_api_key:
             # ログにエラーメッセージを記録
@@ -154,7 +151,6 @@ class GreenInfraPlugin:
         # Phase 4:e-Statの可視化
         if self.dockwidget.checkBox_did.isChecked():
             prefecture_code = self.dockwidget.comboBox_prefecture.currentData()
-            QgsMessageLog.logMessage(f"Selected Prefecture Code: {prefecture_code}", PLUGIN_NAME, level=Qgis.Info)
             if prefecture_code:
                 self.estat_did_workflow.execute(prefecture_code=prefecture_code)
 

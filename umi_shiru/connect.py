@@ -9,33 +9,34 @@ from qgis.core import Qgis, QgsMessageLog, QgsNetworkAccessManager
 # 海しるAPI ベースURL
 UMI_SHIRU_BASE_URL = "https://api.msil.go.jp"
 
-# 海しるAPI エンドポイント定義
-API_ENDPOINTS = {
-    "coastline": "/coastline-type-ESI/v2/MapServer",
+# 海しるAPI 定義（エンドポイントとレイヤー情報）
+UMI_SHIRU_API_CONFIG = {
+    "coastline": {
+        "endpoint": "/coastline-type-ESI/v2/MapServer",
+        "layer": "1",  # 海岸線
+    },
     # 今後追加予定:
-    # "fishing_port": "/fishing-port-area/v2/MapServer",
-    # "port_area": "/port-area/v2/MapServer",
-}
-
-# 海しるAPI レイヤー選択定義（データごとのデフォルト値）
-LAYER_SELECTIONS = {
-    "coastline": "1",  # 海岸線
-    # 今後追加予定:
-    # "fishing_port": "3",   # 漁港区域
-    # "port_area": "3",      # 港湾区域
+    # "fishing_port": {
+    #     "endpoint": "/fishing-port-area/v2/MapServer",
+    #     "layer": "3",  # 漁港区域
+    # },
+    # "port_area": {
+    #     "endpoint": "/port-area/v2/MapServer",
+    #     "layer": "3",  # 港湾区域
+    # },
 }
 
 # TODO: 将来的にはe-Stat専用ディレクトリへ移動する予定
-# e-Stat API ベースURL
-E_STAT_BASE_URL = "https://www.e-stat.go.jp/gis/statmap-search/data"
-
-# e-Stat API デフォルトパラメータ（行政区域データ用）
-E_STAT_DEFAULT_PARAMS = {
-    "dlserveyId": "A002005212020",  # 国勢調査2020年
-    "coordSys": "1",  # 世界測地系
-    "format": "shape",  # シェープファイル形式
-    "downloadType": "5",  # 市区町村レベル
-    "datum": "2011",  # 測地系2011（JGD2011）
+# e-Stat API 定義
+E_STAT_API_CONFIG = {
+    "base_url": "https://www.e-stat.go.jp/gis/statmap-search/data",
+    "default_params": {
+        "dlserveyId": "A002005212020",  # 国勢調査2020年
+        "coordSys": "1",  # 世界測地系
+        "format": "shape",  # シェープファイル形式
+        "downloadType": "5",  # 市区町村レベル
+        "datum": "2011",  # 測地系2011（JGD2011）
+    },
 }
 
 # 主要都市のデフォルト境界範囲
@@ -53,8 +54,6 @@ CITY_DEFAULT_BOUNDS = {
 PLUGIN_NAME = "Green Infra Plugin"
 
 
-
-
 def build_estat_municipality_url(municipality_code: str) -> str:
     """
     e-Stat API用の市区町村データ取得URLを構築
@@ -65,11 +64,11 @@ def build_estat_municipality_url(municipality_code: str) -> str:
     Returns:
         str: 構築されたURL
     """
-    params = E_STAT_DEFAULT_PARAMS.copy()
+    params = E_STAT_API_CONFIG["default_params"].copy()
     params["code"] = municipality_code
 
     param_str = "&".join([f"{k}={v}" for k, v in params.items()])
-    return f"{E_STAT_BASE_URL}?{param_str}"
+    return f"{E_STAT_API_CONFIG['base_url']}?{param_str}"
 
 
 class UmiShiruApiClient:
@@ -99,14 +98,12 @@ class UmiShiruApiClient:
         Raises:
             Exception: APIリクエスト失敗時
         """
-        if data_type not in API_ENDPOINTS:
+        if data_type not in UMI_SHIRU_API_CONFIG:
             raise ValueError(f"未定義のデータタイプ: {data_type}")
 
-        if data_type not in LAYER_SELECTIONS:
-            raise ValueError(f"未定義のレイヤー設定: {data_type}")
-
-        endpoint = API_ENDPOINTS[data_type]
-        layer_selection = LAYER_SELECTIONS[data_type]
+        api_def = UMI_SHIRU_API_CONFIG[data_type]
+        endpoint = api_def["endpoint"]
+        layer_selection = api_def["layer"]
 
         # URLを構築
         param_str = "&".join([f"{k}={v}" for k, v in params.items()])

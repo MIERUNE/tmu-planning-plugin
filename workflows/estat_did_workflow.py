@@ -23,18 +23,18 @@ class EstatDidWorkflow:
             added_layer = algorithm.get_did_area()
 
             if not added_layer:
-                message = "人口集中地区(DID)レイヤーの取得に失敗しました。"
+                message = "エラー：人口集中地区(DID)レイヤーの取得に失敗しました。"
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, Qgis.Critical)
-                self.iface.messageBar().pushMessage(
-                    "エラー", message, level=Qgis.Critical, duration=5
-                )
+                self.iface.messageBar().pushMessage(message, level=Qgis.Critical)
                 return False
 
             QgsProject.instance().addMapLayer(added_layer)
             return True
 
         except Exception as e:
-            message = f"人口集中地区(DID)の可視化中にエラーが発生しました: {str(e)}"
+            message = (
+                f"エラー：人口集中地区(DID)の可視化中にエラーが発生しました: {str(e)}"
+            )
             QgsMessageLog.logMessage(message, PLUGIN_NAME, Qgis.Critical)
             self.iface.messageBar().pushMessage(message, level=Qgis.Critical)
             return False

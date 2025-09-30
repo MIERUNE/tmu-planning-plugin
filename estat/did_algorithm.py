@@ -52,6 +52,7 @@ class DidAlgorithm:
                 PLUGIN_NAME,
                 Qgis.Critical,
             )
+
             return None
 
         # メモリレイヤの器を作成
@@ -75,9 +76,6 @@ class DidAlgorithm:
         人口集中地区(DID)のZipファイルをダウンロードし、シェープファイルをメモリレイヤとしてQGISに追加する。
         """
         request_url = self._build_req_url()
-        QgsMessageLog.logMessage(
-            f"リクエストURL: {request_url}", PLUGIN_NAME, Qgis.Info
-        )
 
         with tempfile.TemporaryDirectory() as temp_dir:
             try:
@@ -98,10 +96,15 @@ class DidAlgorithm:
                     os.path.join(extract_dir, "**", "*.shp"), recursive=True
                 )
                 if not shp_files:
+                    message = "警告: ZIP内にシェープファイルが見つかりませんでした。"
                     QgsMessageLog.logMessage(
-                        "警告: ZIP内にシェープファイルが見つかりませんでした。",
+                        message,
                         PLUGIN_NAME,
                         Qgis.Warning,
+                    )
+                    self.iface.messageBar().pushMessage(
+                        message,
+                        level=Qgis.Warning,
                     )
                     return
                 shp_path = shp_files[0]
@@ -115,14 +118,17 @@ class DidAlgorithm:
                     QgsProject.instance().addMapLayer(mem_layer)
 
             except requests.exceptions.RequestException as e:
+                message = f"エラー: ダウンロードに失敗しました。{e}"
                 QgsMessageLog.logMessage(
-                    f"エラー: ダウンロードに失敗しました。{e}",
+                    message,
                     PLUGIN_NAME,
                     Qgis.Critical,
                 )
+                self.iface.messageBar().pushMessage(message, level=Qgis.Critical)
             except Exception as e:
                 QgsMessageLog.logMessage(
                     f"エラー: 予期せぬ問題が発生しました。{e}",
                     PLUGIN_NAME,
                     Qgis.Critical,
                 )
+                self.iface.messageBar().pushMessage(message, level=Qgis.Critical)

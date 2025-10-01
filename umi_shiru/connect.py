@@ -50,6 +50,13 @@ CITY_DEFAULT_BOUNDS = {
     # 他の都市も必要に応じて追加可能
 }
 
+# 海岸線データの分割取得が必要な市区町村の設定
+CITY_DIVISION_CONFIG = {
+    "42209": {  # 対馬市
+        "division_count": 3,
+    },
+}
+
 # ログメッセージ用プラグイン名
 PLUGIN_NAME = "Green Infra Plugin"
 

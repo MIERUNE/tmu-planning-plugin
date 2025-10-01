@@ -14,7 +14,11 @@ from qgis.core import (
 from qgis.PyQt.QtCore import QEventLoop, QUrl
 from qgis.PyQt.QtNetwork import QNetworkRequest
 
-from ..connect import PLUGIN_NAME, ZONING_DISTRICT_AREA_API_ENDPOINT, ZOOM9_SCALE_THRESHOLD
+from ..connect import (
+    PLUGIN_NAME,
+    ZONING_DISTRICT_AREA_API_ENDPOINT,
+    ZOOM9_SCALE_THRESHOLD,
+)
 
 
 class ZoningDistrictAlgorithm:

@@ -57,6 +57,10 @@ CITY_DIVISION_CONFIG = {
     },
 }
 
+# バウンディングボックス計算用定数
+# 市区町村境界から海岸線データ取得時のバッファサイズ（緯度経度単位）
+BBOX_BUFFER_DEGREES = 0.01  # 約1km相当
+
 # ログメッセージ用プラグイン名
 PLUGIN_NAME = "Green Infra Plugin"
 

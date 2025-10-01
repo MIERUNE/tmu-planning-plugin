@@ -4,7 +4,12 @@ from typing import Optional
 from qgis.core import Qgis, QgsMessageLog, QgsProject
 
 from ..umi_shiru.coastline.coastline_algorithm import CoastlineAlgorithm
-from ..umi_shiru.connect import CITY_DEFAULT_BOUNDS, CITY_DIVISION_CONFIG, PLUGIN_NAME
+from ..umi_shiru.connect import (
+    BBOX_BUFFER_DEGREES,
+    CITY_DEFAULT_BOUNDS,
+    CITY_DIVISION_CONFIG,
+    PLUGIN_NAME,
+)
 from .base_workflow import BaseWorkflow
 
 
@@ -108,12 +113,11 @@ class CoastlineWorkflow(BaseWorkflow):
                 return None
 
         # 市区町村bboxにバッファを追加（約1km）
-        buffer = 0.01
         bounds = {
-            "min_lon": calculated_bbox["min_lon"] - buffer,
-            "min_lat": calculated_bbox["min_lat"] - buffer,
-            "max_lon": calculated_bbox["max_lon"] + buffer,
-            "max_lat": calculated_bbox["max_lat"] + buffer,
+            "min_lon": calculated_bbox["min_lon"] - BBOX_BUFFER_DEGREES,
+            "min_lat": calculated_bbox["min_lat"] - BBOX_BUFFER_DEGREES,
+            "max_lon": calculated_bbox["max_lon"] + BBOX_BUFFER_DEGREES,
+            "max_lat": calculated_bbox["max_lat"] + BBOX_BUFFER_DEGREES,
         }
 
         QgsMessageLog.logMessage(

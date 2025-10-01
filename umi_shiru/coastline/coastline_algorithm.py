@@ -1,4 +1,5 @@
 import glob
+import hashlib
 import json
 import os
 import shutil
@@ -382,18 +383,23 @@ class CoastlineAlgorithm:
 
         # 地物の座標をキーとして重複を検出・削除
         unique_features = []
-        seen_coordinates = set()
+        seen_coordinate_hashes = set()
         failed_features = 0
 
         for feature in features:
             try:
-                # 座標列を文字列化してハッシュ可能にする
-                coordinates_str = json.dumps(
-                    feature.get("geometry", {}).get("coordinates", []), sort_keys=True
+                coordinates = feature.get("geometry", {}).get("coordinates", [])
+                coordinates_str = str(
+                    sorted(coordinates)
+                    if isinstance(coordinates, list)
+                    else coordinates
                 )
+                coordinate_hash = hashlib.md5(
+                    coordinates_str.encode("utf-8")
+                ).hexdigest()
 
-                if coordinates_str not in seen_coordinates:
-                    seen_coordinates.add(coordinates_str)
+                if coordinate_hash not in seen_coordinate_hashes:
+                    seen_coordinate_hashes.add(coordinate_hash)
                     unique_features.append(feature)
             except Exception as e:
                 failed_features += 1

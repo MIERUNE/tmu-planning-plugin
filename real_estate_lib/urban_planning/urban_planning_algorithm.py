@@ -97,4 +97,8 @@ class UrbanPlanningAlgorithm:
         layer_name = "都市計画区域"
         urban_planning_layer = QgsVectorTileLayer(get_real_estate_url, layer_name)
 
+        # ズームレベル９以下では表示しない
+        urban_planning_layer.setScaleBasedVisibility(True)
+        urban_planning_layer.setMinimumScale(1160000)
+
         return urban_planning_layer

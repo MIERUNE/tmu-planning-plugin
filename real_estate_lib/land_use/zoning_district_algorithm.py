@@ -14,7 +14,7 @@ from qgis.core import (
 from qgis.PyQt.QtCore import QEventLoop, QUrl
 from qgis.PyQt.QtNetwork import QNetworkRequest
 
-from ..connect import PLUGIN_NAME, ZONING_DISTRICT_AREA_API_ENDPOINT
+from ..connect import PLUGIN_NAME, ZONING_DISTRICT_AREA_API_ENDPOINT, ZOOM9_SCALE_THRESHOLD
 
 
 class ZoningDistrictAlgorithm:
@@ -96,6 +96,6 @@ class ZoningDistrictAlgorithm:
 
         # ズームレベル９以下では表示しない
         zoning_district_layer.setScaleBasedVisibility(True)
-        zoning_district_layer.setMinimumScale(1160000)
+        zoning_district_layer.setMinimumScale(ZOOM9_SCALE_THRESHOLD)
 
         return zoning_district_layer

@@ -50,14 +50,14 @@ CITY_DEFAULT_BOUNDS = {
     # 他の都市も必要に応じて追加可能
 }
 
-# 海岸線データの分割取得が必要な市区町村の設定
+# 分割取得が必要な市区町村の設定
 CITY_DIVISION_CONFIG = {
     "42209": {  # 対馬市
         "division_count": 3,
     },
 }
 
-# 海岸線データ取得時のバッファサイズ
+# データ取得時のバッファサイズ
 BBOX_BUFFER_DEGREES = 0.01  # 約1km相当
 
 # ログメッセージ用プラグイン名
@@ -67,10 +67,8 @@ PLUGIN_NAME = "Green Infra Plugin"
 def build_estat_municipality_url(municipality_code: str) -> str:
     """
     e-Stat API用の市区町村データ取得URLを構築
-
     Args:
         municipality_code (str): 5桁の市区町村コード
-
     Returns:
         str: 構築されたURL
     """
@@ -103,14 +101,11 @@ class UmiShiruApiClient:
     def request(self, data_type: str, params: dict) -> str:
         """
         海しるAPIへのリクエストを実行
-
         Args:
             data_type (str): データタイプ（例: "coastline", "port_area"等）
             params (dict): クエリパラメータ
-
         Returns:
             str: レスポンスデータ（GeoJSON文字列）
-
         Raises:
             Exception: APIリクエスト失敗時
         """

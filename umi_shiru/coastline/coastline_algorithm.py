@@ -31,11 +31,143 @@ class CoastlineAlgorithm:
         self, municipality_code: str
     ) -> Optional[Dict[str, float]]:
         """
-        市区町村コードからe-Stat APIでポリゴンを取得し、bboxを計算
+        行政区域ポリゴンからbboxを取得
         Args:
-            municipality_code (str): 5桁の市区町村コード
+            municipality_code (str): 市区町村コード
         Returns:
             dict: bbox座標 {'min_lon', 'min_lat', 'max_lon', 'max_lat'} または None
+        """
+        # e-Stat APIから行政区域データを取得
+        layer = self._fetch_municipality_polygon(municipality_code)
+        if layer is None:
+            return None
+
+        # 行政区域ポリゴンからbboxを取得
+        extent = layer.extent()
+        bbox = {
+            "min_lon": extent.xMinimum(),
+            "min_lat": extent.yMinimum(),
+            "max_lon": extent.xMaximum(),
+            "max_lat": extent.yMaximum(),
+        }
+
+        QgsMessageLog.logMessage(f"bbox取得成功: {bbox}", PLUGIN_NAME, level=Qgis.Info)
+        return bbox
+
+    def fetch_coastline_data(
+        self, api_key: str, bounds: Dict[str, float]
+    ) -> Optional[str]:
+        """
+        海岸線データをAPIから取得（単一取得）
+        Args:
+            api_key (str): 海しるAPIキー
+            bounds (dict): 取得範囲の境界
+        Returns:
+            str: GeoJSON文字列（取得失敗時はNone）
+        """
+        # APIクライアントを作成
+        client = UmiShiruApiClient(api_key)
+
+        # APIパラメータ設定
+        params = {
+            "f": "geojson",
+            "geometry": f"{bounds['min_lon']},{bounds['min_lat']},{bounds['max_lon']},{bounds['max_lat']}",
+        }
+
+        return client.request("coastline", params)
+
+    def fetch_coastline_data_divided(
+        self, api_key: str, bounds: dict, division_count: int, display_name: str
+    ) -> str:
+        """
+        海岸線データをAPIから取得（分割取得）
+        Args:
+            api_key (str): 海しるAPIキー
+            bounds (dict): 境界範囲
+            division_count (int): 分割数
+            display_name (str): 表示名（ログ用）
+        Returns:
+            str: 取得・処理後のGeoJSON文字列
+        """
+        QgsMessageLog.logMessage(
+            f"市区町村「{display_name}」はデータ数が多いため、分割してデータを取得します",
+            PLUGIN_NAME,
+            level=Qgis.Info,
+        )
+
+        # bboxを最適な方向に分割
+        bbox_list = self._split_bbox_optimally(bounds, division_count)
+
+        # 各分割範囲からデータを取得
+        geojson_list = []
+        for i, bbox in enumerate(bbox_list):
+            geojson_data = self.fetch_coastline_data(api_key=api_key, bounds=bbox)
+
+            if geojson_data:
+                geojson_list.append(geojson_data)
+            else:
+                QgsMessageLog.logMessage(
+                    f"分割範囲 {i+1}/{len(bbox_list)} のデータ取得に失敗しました",
+                    PLUGIN_NAME,
+                    level=Qgis.Warning,
+                )
+
+        if not geojson_list:
+            return ""
+
+        # データをマージ
+        merged_data = self._merge_geojson_features(geojson_list)
+
+        # 重複を削除
+        final_data = self._remove_duplicate_features(merged_data)
+
+        QgsMessageLog.logMessage(
+            f"市区町村「{display_name}」: 分割取得完了（{len(bbox_list)}個の範囲をマージ）",
+            PLUGIN_NAME,
+            level=Qgis.Info,
+        )
+
+        return final_data
+
+    def create_coastline_layer(
+        self, geojson_data: str, layer_name: str = "海岸線"
+    ) -> QgsVectorLayer:
+        """
+        GeoJSONデータからQGISレイヤーを作成
+        Args:
+            geojson_data (str): GeoJSON文字列
+            layer_name (str): レイヤー名
+        Returns:
+            QgsVectorLayer: 作成されたレイヤー（失敗時はNone）
+        """
+        # ベクターレイヤーを作成
+        layer = QgsVectorLayer(geojson_data, layer_name, "ogr")
+
+        if not layer.isValid():
+            raise Exception("ベクターレイヤーの作成に失敗しました")
+
+        # CRSを設定
+        crs = QgsCoordinateReferenceSystem("EPSG:4326")
+        layer.setCrs(crs)
+
+        # スタイルを適用
+        self._apply_coastline_style(layer)
+
+        return layer
+
+    # =====================================================
+    # get_municipality_bboxから呼び出されるプライベートメソッド
+    # =====================================================
+
+    def _fetch_municipality_polygon(
+        self, municipality_code: str
+    ) -> Optional[QgsVectorLayer]:
+        """
+        e-Stat APIから行政区域データを取得
+        Args:
+            municipality_code (str): 市区町村コード
+        Returns:
+            QgsVectorLayer: ポリゴンレイヤー、または None（取得失敗時）
         """
         # e-Stat API URL
         url = build_estat_municipality_url(municipality_code)
@@ -76,7 +208,7 @@ class CoastlineAlgorithm:
                 )
                 return None
 
-            # 最初のシェープファイルからbboxを取得
+            # 最初のシェープファイルからレイヤーを作成
             shp_path = shp_files[0]
             layer = QgsVectorLayer(
                 shp_path, f"temp_municipality_{municipality_code}", "ogr"
@@ -88,101 +220,19 @@ class CoastlineAlgorithm:
                 )
                 return None
 
-            extent = layer.extent()
-            bbox = {
-                "min_lon": extent.xMinimum(),
-                "min_lat": extent.yMinimum(),
-                "max_lon": extent.xMaximum(),
-                "max_lat": extent.yMaximum(),
-            }
-
-            QgsMessageLog.logMessage(
-                f"bbox取得成功: {bbox}", PLUGIN_NAME, level=Qgis.Info
-            )
-            return bbox
+            return layer
 
         except Exception as e:
-            error_msg = f"bbox取得エラー: {str(e)}"
+            error_msg = f"行政区域データ取得エラー: {str(e)}"
             QgsMessageLog.logMessage(error_msg, PLUGIN_NAME, level=Qgis.Critical)
             return None
         finally:
             shutil.rmtree(temp_dir, ignore_errors=True)
 
-    def fetch_coastline_data(
-        self, api_key: str, bounds: Dict[str, float]
-    ) -> Optional[str]:
-        """
-        海岸線データをAPIから取得（単一取得）
-        Args:
-            api_key (str): 海しるAPIキー
-            bounds (dict): 取得範囲の境界
-        Returns:
-            str: GeoJSON文字列（取得失敗時はNone）
-        """
-        # APIクライアントを作成
-        client = UmiShiruApiClient(api_key)
 
-        # APIパラメータ設定
-        params = {
-            "f": "geojson",
-            "geometry": f"{bounds['min_lon']},{bounds['min_lat']},{bounds['max_lon']},{bounds['max_lat']}",
-        }
-
-        # 海岸線データを取得
-        return client.request("coastline", params)
-
-    def fetch_coastline_data_divided(
-        self, api_key: str, bounds: dict, division_count: int, display_name: str
-    ) -> str:
-        """
-        海岸線データをAPIから取得（分割取得）
-        Args:
-            api_key (str): 海しるAPIキー
-            bounds (dict): 境界範囲
-            division_count (int): 分割数
-            display_name (str): 表示名（ログ用）
-        Returns:
-            str: 取得・処理後のGeoJSON文字列
-        """
-        QgsMessageLog.logMessage(
-            f"市区町村「{display_name}」はデータ数が多いため、分割してデータを取得します",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
-        # bboxを最適な方向に分割して取得
-        bbox_list = self._split_bbox_optimally(bounds, division_count)
-        return self._fetch_multiple_coastline_data(api_key, bbox_list, display_name)
-
-    def create_coastline_layer(
-        self, geojson_data: str, layer_name: str = "海岸線"
-    ) -> QgsVectorLayer:
-        """
-        GeoJSONデータからQGISレイヤーを作成
-        Args:
-            geojson_data (str): GeoJSON文字列
-            layer_name (str): レイヤー名
-        Returns:
-            QgsVectorLayer: 作成されたレイヤー（失敗時はNone）
-        """
-        # ベクターレイヤーを作成
-        layer = QgsVectorLayer(geojson_data, layer_name, "ogr")
-
-        if not layer.isValid():
-            raise Exception("ベクターレイヤーの作成に失敗しました")
-
-        # CRSを設定
-        crs = QgsCoordinateReferenceSystem("EPSG:4326")
-        layer.setCrs(crs)
-
-        # スタイルを適用
-        self._apply_coastline_style(layer)
-
-        return layer
-
-    # ========================================
-    # プライベートメソッド - bbox分割関連
-    # ========================================
-
+    # ===========================================================
+    # fetch_coastline_data_dividedから呼び出されるプライベートメソッド
+    # ===========================================================
     def _split_bbox_optimally(self, bbox: dict, divisions: int) -> List[dict]:
         """
         bboxの形状に基づいて最適な方向に分割
@@ -261,53 +311,6 @@ class CoastlineAlgorithm:
 
         return bbox_list
 
-    # ========================================
-    # プライベートメソッド - データ処理関連
-    # ========================================
-
-    def _fetch_multiple_coastline_data(
-        self, api_key: str, bbox_list: List[dict], display_name: str
-    ) -> str:
-        """
-        複数のbboxから海岸線データを取得してマージ
-        Args:
-            api_key (str): 海しるAPIキー
-            bbox_list (List[dict]): bboxのリスト
-            display_name (str): 表示名（ログ用）
-        Returns:
-            str: マージ・重複削除後のGeoJSON文字列
-        """
-        geojson_list = []
-
-        for i, bbox in enumerate(bbox_list):
-            geojson_data = self.fetch_coastline_data(api_key=api_key, bounds=bbox)
-
-            if geojson_data:
-                geojson_list.append(geojson_data)
-            else:
-                QgsMessageLog.logMessage(
-                    f"分割範囲 {i+1}/{len(bbox_list)} のデータ取得に失敗しました",
-                    PLUGIN_NAME,
-                    level=Qgis.Warning,
-                )
-
-        if not geojson_list:
-            return ""
-
-        # データをマージ
-        merged_data = self._merge_geojson_features(geojson_list)
-
-        # 重複を削除
-        final_data = self._remove_duplicate_features(merged_data)
-
-        QgsMessageLog.logMessage(
-            f"市区町村「{display_name}」: 分割取得完了（{len(bbox_list)}個の範囲をマージ）",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
-
-        return final_data
-
     def _merge_geojson_features(self, geojson_list: List[str]) -> str:
         """
         複数のGeoJSONをマージ
@@ -332,13 +335,6 @@ class CoastlineAlgorithm:
                     failed_count += 1
                     QgsMessageLog.logMessage(
                         f"GeoJSON パース失敗 ({i+1}/{len(geojson_list)}): {str(e)}",
-                        PLUGIN_NAME,
-                        level=Qgis.Warning,
-                    )
-                except Exception as e:
-                    failed_count += 1
-                    QgsMessageLog.logMessage(
-                        f"GeoJSON 処理エラー ({i+1}/{len(geojson_list)}): {str(e)}",
                         PLUGIN_NAME,
                         level=Qgis.Warning,
                     )
@@ -367,13 +363,6 @@ class CoastlineAlgorithm:
         except json.JSONDecodeError as e:
             QgsMessageLog.logMessage(
                 f"重複削除処理: GeoJSON パースに失敗しました: {str(e)}",
-                PLUGIN_NAME,
-                level=Qgis.Critical,
-            )
-            return json.dumps({"type": "FeatureCollection", "features": []})
-        except Exception as e:
-            QgsMessageLog.logMessage(
-                f"重複削除処理: 予期しないエラーが発生しました: {str(e)}",
                 PLUGIN_NAME,
                 level=Qgis.Critical,
             )

@@ -34,20 +34,16 @@ class CoastlineWorkflow(BaseWorkflow):
     def _validate_geojson_data(
         self,
         geojson_data: str,
-        municipality_code: str,
-        municipality_name: Optional[str] = None,
+        display_name: str,
     ) -> bool:
         """
         GeoJSONデータの内容を検証し、featuresが存在するかチェック
         Args:
             geojson_data (str): GeoJSON文字列
-            municipality_code (str): 市区町村コード
-            municipality_name (str, optional): 市区町村名（ログ表示用）
+            display_name (str): 表示名（例：「札幌市（01100）」）
         Returns:
             bool: featuresが存在する場合True、存在しない場合False
         """
-        display_name = self._get_display_name(municipality_code, municipality_name)
-
         try:
             geojson_obj = json.loads(geojson_data)
             features = geojson_obj.get("features", [])
@@ -76,18 +72,16 @@ class CoastlineWorkflow(BaseWorkflow):
     def _calculate_municipality_bounds(
         self,
         municipality_code: str,
-        municipality_name: Optional[str] = None,
+        display_name: str,
     ) -> Optional[dict]:
         """
         市区町村のbboxを取得し、バッファを追加した境界範囲を計算
         Args:
             municipality_code (str): 市区町村コード
-            municipality_name (str, optional): 市区町村名（ログ表示用）
+            display_name (str): 表示名（例：「札幌市（01100）」）
         Returns:
             dict: バッファ付きの境界範囲、または None（計算失敗時）
         """
-        display_name = self._get_display_name(municipality_code, municipality_name)
-
         QgsMessageLog.logMessage(
             f"市区町村「{display_name}」のbboxを計算します...",
             PLUGIN_NAME,
@@ -161,9 +155,11 @@ class CoastlineWorkflow(BaseWorkflow):
                 self.iface.messageBar().pushMessage("情報", message, level=Qgis.Info)
                 return False
 
+            display_name = self._get_display_name(municipality_code, municipality_name)
+
             # 市区町村の境界範囲を計算
             bounds = self._calculate_municipality_bounds(
-                municipality_code, municipality_name
+                municipality_code, display_name
             )
             if not bounds:
                 return False
@@ -185,13 +181,10 @@ class CoastlineWorkflow(BaseWorkflow):
                 return False
 
             # 3. GeoJSONデータの検証
-            if not self._validate_geojson_data(
-                geojson_data, municipality_code, municipality_name
-            ):
+            if not self._validate_geojson_data(geojson_data, display_name):
                 return False
 
             # 4. レイヤー作成
-            display_name = self._get_display_name(municipality_code, municipality_name)
             layer_name = f"海岸線_{display_name}"
             layer = self.algorithm.create_coastline_layer(geojson_data, layer_name)
 

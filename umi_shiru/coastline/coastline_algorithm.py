@@ -229,7 +229,6 @@ class CoastlineAlgorithm:
         finally:
             shutil.rmtree(temp_dir, ignore_errors=True)
 
-
     # ===========================================================
     # fetch_coastline_data_dividedから呼び出されるプライベートメソッド
     # ===========================================================

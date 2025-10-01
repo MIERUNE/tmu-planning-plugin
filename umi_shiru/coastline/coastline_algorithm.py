@@ -1,9 +1,10 @@
 import glob
+import json
 import os
 import shutil
 import tempfile
 import zipfile
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 import requests
 from PyQt5.QtGui import QColor
@@ -160,3 +161,256 @@ class CoastlineAlgorithm:
             QgsMessageLog.logMessage(
                 f"スタイル適用エラー: {str(e)}", PLUGIN_NAME, level=Qgis.Warning
             )
+
+    def _determine_optimal_division(self, bbox: dict) -> str:
+        """
+        bboxの形状に基づいて最適な分割方向を自動判定
+        Args:
+            bbox (dict): 境界範囲
+        Returns:
+            str: "vertical" または "horizontal"
+        """
+        width = bbox["max_lon"] - bbox["min_lon"]  # 経度幅
+        height = bbox["max_lat"] - bbox["min_lat"]  # 緯度幅
+
+        # 縦長なら縦分割、横長なら横分割
+        return "vertical" if height > width else "horizontal"
+
+    def _split_bbox_optimally(self, bbox: dict, divisions: int) -> List[dict]:
+        """
+        bboxの形状に基づいて最適な方向に分割
+        Args:
+            bbox (dict): 分割元のbbox
+            divisions (int): 分割数
+        Returns:
+            List[dict]: 分割されたbboxのリスト
+        """
+        division_type = self._determine_optimal_division(bbox)
+
+        if division_type == "vertical":
+            return self._split_bbox_vertically(bbox, divisions)
+        else:
+            return self._split_bbox_horizontally(bbox, divisions)
+
+    def _split_bbox_vertically(self, bbox: dict, divisions: int) -> List[dict]:
+        """
+        bboxを縦方向（緯度方向）に分割
+        Args:
+            bbox (dict): 分割元のbbox
+            divisions (int): 分割数
+        Returns:
+            List[dict]: 分割されたbboxのリスト
+        """
+        lat_range = bbox["max_lat"] - bbox["min_lat"]
+        lat_step = lat_range / divisions
+
+        bbox_list = []
+        for i in range(divisions):
+            split_bbox = {
+                "min_lon": bbox["min_lon"],
+                "max_lon": bbox["max_lon"],
+                "min_lat": bbox["min_lat"] + (i * lat_step),
+                "max_lat": bbox["min_lat"] + ((i + 1) * lat_step),
+            }
+            bbox_list.append(split_bbox)
+
+        return bbox_list
+
+    def _split_bbox_horizontally(self, bbox: dict, divisions: int) -> List[dict]:
+        """
+        bboxを横方向（経度方向）に分割
+        Args:
+            bbox (dict): 分割元のbbox
+            divisions (int): 分割数
+        Returns:
+            List[dict]: 分割されたbboxのリスト
+        """
+        lon_range = bbox["max_lon"] - bbox["min_lon"]
+        lon_step = lon_range / divisions
+
+        bbox_list = []
+        for i in range(divisions):
+            split_bbox = {
+                "min_lon": bbox["min_lon"] + (i * lon_step),
+                "max_lon": bbox["min_lon"] + ((i + 1) * lon_step),
+                "min_lat": bbox["min_lat"],
+                "max_lat": bbox["max_lat"],
+            }
+            bbox_list.append(split_bbox)
+
+        return bbox_list
+
+    def _merge_geojson_features(self, geojson_list: List[str]) -> str:
+        """
+        複数のGeoJSONをマージ
+        Args:
+            geojson_list (List[str]): GeoJSON文字列のリスト
+        Returns:
+            str: マージされたGeoJSON文字列
+        """
+        if not geojson_list:
+            return json.dumps({"type": "FeatureCollection", "features": []})
+
+        all_features = []
+        failed_count = 0
+
+        for i, geojson_str in enumerate(geojson_list):
+            if geojson_str:
+                try:
+                    geojson_obj = json.loads(geojson_str)
+                    features = geojson_obj.get("features", [])
+                    all_features.extend(features)
+                except json.JSONDecodeError as e:
+                    failed_count += 1
+                    QgsMessageLog.logMessage(
+                        f"GeoJSON パース失敗 ({i+1}/{len(geojson_list)}): {str(e)}",
+                        PLUGIN_NAME,
+                        level=Qgis.Warning,
+                    )
+                except Exception as e:
+                    failed_count += 1
+                    QgsMessageLog.logMessage(
+                        f"GeoJSON 処理エラー ({i+1}/{len(geojson_list)}): {str(e)}",
+                        PLUGIN_NAME,
+                        level=Qgis.Warning,
+                    )
+
+        if failed_count > 0:
+            QgsMessageLog.logMessage(
+                f"マージ処理: {failed_count}/{len(geojson_list)} 件の GeoJSON 処理に失敗しましたが、処理を継続します",
+                PLUGIN_NAME,
+                level=Qgis.Warning,
+            )
+
+        merged_geojson = {"type": "FeatureCollection", "features": all_features}
+
+        return json.dumps(merged_geojson)
+
+    def _remove_duplicate_features(self, geojson_data: str) -> str:
+        """
+        重複する地物を削除
+        Args:
+            geojson_data (str): GeoJSON文字列
+        Returns:
+            str: 重複削除後のGeoJSON文字列
+        """
+        try:
+            geojson_obj = json.loads(geojson_data)
+        except json.JSONDecodeError as e:
+            QgsMessageLog.logMessage(
+                f"重複削除処理: GeoJSON パースに失敗しました: {str(e)}",
+                PLUGIN_NAME,
+                level=Qgis.Critical,
+            )
+            return json.dumps({"type": "FeatureCollection", "features": []})
+        except Exception as e:
+            QgsMessageLog.logMessage(
+                f"重複削除処理: 予期しないエラーが発生しました: {str(e)}",
+                PLUGIN_NAME,
+                level=Qgis.Critical,
+            )
+            return json.dumps({"type": "FeatureCollection", "features": []})
+
+        features = geojson_obj.get("features", [])
+
+        # 地物の座標をキーとして重複を検出・削除
+        unique_features = []
+        seen_coordinates = set()
+        failed_features = 0
+
+        for feature in features:
+            try:
+                # 座標列を文字列化してハッシュ可能にする
+                coordinates_str = json.dumps(
+                    feature.get("geometry", {}).get("coordinates", []), sort_keys=True
+                )
+
+                if coordinates_str not in seen_coordinates:
+                    seen_coordinates.add(coordinates_str)
+                    unique_features.append(feature)
+            except Exception as e:
+                failed_features += 1
+                QgsMessageLog.logMessage(
+                    f"地物の座標処理でエラー: {str(e)}",
+                    PLUGIN_NAME,
+                    level=Qgis.Warning,
+                )
+
+        if failed_features > 0:
+            QgsMessageLog.logMessage(
+                f"重複削除: {failed_features} 件の地物で座標処理に失敗しましたが、処理を継続します",
+                PLUGIN_NAME,
+                level=Qgis.Warning,
+            )
+
+        deduplicated_geojson = {
+            "type": "FeatureCollection",
+            "features": unique_features,
+        }
+
+        return json.dumps(deduplicated_geojson)
+
+    def fetch_coastline_data_divided(
+        self, api_key: str, bounds: dict, division_count: int, display_name: str
+    ) -> str:
+        """
+        分割取得での海岸線データ取得
+        Args:
+            api_key (str): 海しるAPIキー
+            bounds (dict): 境界範囲
+            division_count (int): 分割数
+            display_name (str): 表示名（ログ用）
+        Returns:
+            str: 取得・処理後のGeoJSON文字列
+        """
+        QgsMessageLog.logMessage(
+            f"市区町村「{display_name}」はデータ数が多いため、分割してデータを取得します",
+            PLUGIN_NAME,
+            level=Qgis.Info,
+        )
+        # bboxを最適な方向に分割して取得
+        bbox_list = self._split_bbox_optimally(bounds, division_count)
+        return self._fetch_multiple_coastline_data(api_key, bbox_list, display_name)
+
+    def _fetch_multiple_coastline_data(
+        self, api_key: str, bbox_list: List[dict], display_name: str
+    ) -> str:
+        """
+        複数のbboxから海岸線データを取得してマージ
+        Args:
+            api_key (str): 海しるAPIキー
+            bbox_list (List[dict]): bboxのリスト
+            display_name (str): 表示名（ログ用）
+        Returns:
+            str: マージ・重複削除後のGeoJSON文字列
+        """
+        geojson_list = []
+
+        for i, bbox in enumerate(bbox_list):
+            geojson_data = self.fetch_coastline_data(api_key=api_key, bounds=bbox)
+
+            if geojson_data:
+                geojson_list.append(geojson_data)
+            else:
+                QgsMessageLog.logMessage(
+                    f"分割範囲 {i+1}/{len(bbox_list)} のデータ取得に失敗しました",
+                    PLUGIN_NAME,
+                    level=Qgis.Warning,
+                )
+
+        if not geojson_list:
+            return ""
+
+        # データをマージ
+        merged_data = self._merge_geojson_features(geojson_list)
+
+        # 重複を削除
+        final_data = self._remove_duplicate_features(merged_data)
+
+        QgsMessageLog.logMessage(
+            f"市区町村「{display_name}」: 分割取得完了（{len(bbox_list)}個の範囲をマージ）",
+            PLUGIN_NAME,
+            level=Qgis.Info,
+        )
+
+        return final_data

@@ -92,6 +92,10 @@ class ZoningDistrictAlgorithm:
         )
 
         layer_name = "用途地域"
-        urban_planning_layer = QgsVectorTileLayer(get_real_estate_url, layer_name)
+        zoning_district_layer = QgsVectorTileLayer(get_real_estate_url, layer_name)
 
-        return urban_planning_layer
+        # ズームレベル９以下では表示しない
+        zoning_district_layer.setScaleBasedVisibility(True)
+        zoning_district_layer.setMinimumScale(1160000)
+
+        return zoning_district_layer

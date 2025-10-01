@@ -45,8 +45,16 @@ class CoastlineAlgorithm:
             QgsMessageLog.logMessage(
                 "行政区域データをダウンロード中...", PLUGIN_NAME, level=Qgis.Info
             )
-            response = requests.get(url, timeout=60)
-            response.raise_for_status()
+            try:
+                response = requests.get(url, timeout=60)
+                response.raise_for_status()
+            except requests.exceptions.RequestException as e:
+                QgsMessageLog.logMessage(
+                    f"行政区域データのダウンロードに失敗しました: {str(e)}",
+                    PLUGIN_NAME,
+                    level=Qgis.Critical,
+                )
+                return None
 
             zip_path = os.path.join(temp_dir, "municipality.zip")
             with open(zip_path, "wb") as f:

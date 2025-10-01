@@ -153,7 +153,7 @@ class CoastlineWorkflow(BaseWorkflow):
                 self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
                 return False
 
-            if not municipality_code or len(municipality_code) != 5:
+            if not municipality_code:
                 message = "海岸線を表示するには市区町村を選択してください。"
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Info)
                 self.iface.messageBar().pushMessage("情報", message, level=Qgis.Info)

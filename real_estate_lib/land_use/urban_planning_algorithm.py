@@ -62,7 +62,7 @@ class UrbanPlanningAlgorithm:
         reply.deleteLater()
         return True, http_status
 
-    def get_urban_planning_area(self, api_key: str) -> Optional[QgsVectorTileLayer]:
+    def create_layer(self, api_key: str) -> Optional[QgsVectorTileLayer]:
         """
         指定した市区町村の都市計画区域データをAPIから取得する
         Args:

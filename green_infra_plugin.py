@@ -6,7 +6,7 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
 from .real_estate_lib.land_use.urban_planning_algorithm import UrbanPlanningAlgorithm
-from .real_estate_lib.land_use.zoning_district import ZoningDistrictAlgorithm
+from .real_estate_lib.land_use.zoning_district_algorithm import ZoningDistrictAlgorithm
 from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .workflows.area_workflow import AreaWorkflow
@@ -113,32 +113,47 @@ class GreenInfraPlugin:
         self.basemap_workflow.execute(self.dockwidget.get_selected_basemaps())
 
         # Phase 2: 不動産情報ライブラリの可視化
-        if not real_estate_api_key:
-            # ログにエラーメッセージを記録
-            message = (
-                "不動産情報ライブラリAPIキーが未設定のため、処理をスキップします。"
-            )
-            QgsMessageLog.logMessage(
-                message,
-                PLUGIN_NAME,
-                level=Qgis.Warning,
-            )
-            self.iface.messageBar().pushMessage(
-                message,
-                level=Qgis.Warning,
-            )
+        # 都市計画区域の可視化
+        if self.dockwidget.checkBox_urban_area.isChecked():
+            # 不動産情報ライブラリAPIキーを取得
+            real_estate_api_key = ApikeyDialog.get_real_estate_api_key()
 
-        else:
-            # 都市計画区域の可視化
-            if self.dockwidget.checkBox_urban_area.isChecked():
+            if not real_estate_api_key:
+                message = (
+                    "不動産情報ライブラリAPIキーが未設定のため、処理をスキップします。"
+                )
+                QgsMessageLog.logMessage(
+                    message,
+                    PLUGIN_NAME,
+                    level=Qgis.Warning,
+                )
+                self.iface.messageBar().pushMessage(
+                    message,
+                    level=Qgis.Warning,
+                )
+            else:
                 # Workflowを実行
                 self.layer_workflow.execute(
                     self.urban_planning_algorithm,
                     api_key=real_estate_api_key,
                 )
 
-            # 用途地域の可視化
-            if self.dockwidget.checkBox_use_district.isChecked():
+        # 用途地域の可視化
+        if self.dockwidget.checkBox_use_district.isChecked():
+            message = (
+                "不動産情報ライブラリAPIキーが未設定のため、処理をスキップします。"
+            )
+            if not real_estate_api_key:
+                QgsMessageLog.logMessage(
+                    message,
+                    PLUGIN_NAME,
+                    level=Qgis.Warning,
+                )
+                self.iface.messageBar().pushMessage(
+                    message,
+                    level=Qgis.Warning,
+                )
+            else:
                 # Workflowを実行
                 self.layer_workflow.execute(
                     self.zoning_district_algorithm, api_key=real_estate_api_key

@@ -40,6 +40,8 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
         self.checkBox_coast_line: QCheckBox = self.checkBox_coast_line
         self.checkBox_port_area: QCheckBox = self.checkBox_port_area
         self.checkBox_fishing_port_area: QCheckBox = self.checkBox_fishing_port_area
+        self.checkBox_urban_area: QCheckBox = self.checkBox_urban_area
+        self.checkBox_use_district: QCheckBox = self.checkBox_use_district
 
         self.apikey_keep: QPushButton = self.findChild(QPushButton, "apikey_keep")
 

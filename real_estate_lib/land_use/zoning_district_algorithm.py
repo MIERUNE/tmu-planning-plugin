@@ -52,9 +52,6 @@ class ZoningDistrictAlgorithm:
             reply.deleteLater()
             return False, http_status
 
-        QgsMessageLog.logMessage(
-            "APIキーの有効性を確認しました (HTTP 200)", PLUGIN_NAME, level=Qgis.Info
-        )
         reply.deleteLater()
         return True, http_status
 

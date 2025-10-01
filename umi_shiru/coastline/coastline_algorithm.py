@@ -22,6 +22,10 @@ class CoastlineAlgorithm:
     def __init__(self, iface):
         self.iface = iface
 
+    # ========================================
+    # workflowから呼び出されるパブリックメソッド
+    # ========================================
+
     def get_municipality_bbox(
         self, municipality_code: str
     ) -> Optional[Dict[str, float]]:
@@ -99,7 +103,7 @@ class CoastlineAlgorithm:
         self, api_key: str, bounds: Dict[str, float]
     ) -> Optional[str]:
         """
-        海岸線データをAPIから取得
+        海岸線データをAPIから取得（単一取得）
         Args:
             api_key (str): 海しるAPIキー
             bounds (dict): 取得範囲の境界
@@ -117,6 +121,28 @@ class CoastlineAlgorithm:
 
         # 海岸線データを取得
         return client.request("coastline", params)
+
+    def fetch_coastline_data_divided(
+        self, api_key: str, bounds: dict, division_count: int, display_name: str
+    ) -> str:
+        """
+        海岸線データをAPIから取得（分割取得）
+        Args:
+            api_key (str): 海しるAPIキー
+            bounds (dict): 境界範囲
+            division_count (int): 分割数
+            display_name (str): 表示名（ログ用）
+        Returns:
+            str: 取得・処理後のGeoJSON文字列
+        """
+        QgsMessageLog.logMessage(
+            f"市区町村「{display_name}」はデータ数が多いため、分割してデータを取得します",
+            PLUGIN_NAME,
+            level=Qgis.Info,
+        )
+        # bboxを最適な方向に分割して取得
+        bbox_list = self._split_bbox_optimally(bounds, division_count)
+        return self._fetch_multiple_coastline_data(api_key, bbox_list, display_name)
 
     def create_coastline_layer(
         self, geojson_data: str, layer_name: str = "海岸線"
@@ -144,37 +170,9 @@ class CoastlineAlgorithm:
 
         return layer
 
-    def _apply_coastline_style(self, layer: QgsVectorLayer):
-        """
-        海岸線レイヤーにスタイルを適用
-        """
-        try:
-            # スタイル設定
-            symbol = layer.renderer().symbol()
-            color = QColor(COASTLINE_STYLE["color"])
-            symbol.setColor(color)
-            symbol.setWidth(COASTLINE_STYLE["width"])
-            symbol.setOpacity(COASTLINE_STYLE["opacity"])
-            layer.triggerRepaint()
-
-        except Exception as e:
-            QgsMessageLog.logMessage(
-                f"スタイル適用エラー: {str(e)}", PLUGIN_NAME, level=Qgis.Warning
-            )
-
-    def _determine_optimal_division(self, bbox: dict) -> str:
-        """
-        bboxの形状に基づいて最適な分割方向を自動判定
-        Args:
-            bbox (dict): 境界範囲
-        Returns:
-            str: "vertical" または "horizontal"
-        """
-        width = bbox["max_lon"] - bbox["min_lon"]  # 経度幅
-        height = bbox["max_lat"] - bbox["min_lat"]  # 緯度幅
-
-        # 縦長なら縦分割、横長なら横分割
-        return "vertical" if height > width else "horizontal"
+    # ========================================
+    # プライベートメソッド - bbox分割関連
+    # ========================================
 
     def _split_bbox_optimally(self, bbox: dict, divisions: int) -> List[dict]:
         """
@@ -191,6 +189,20 @@ class CoastlineAlgorithm:
             return self._split_bbox_vertically(bbox, divisions)
         else:
             return self._split_bbox_horizontally(bbox, divisions)
+
+    def _determine_optimal_division(self, bbox: dict) -> str:
+        """
+        bboxの形状に基づいて最適な分割方向を自動判定
+        Args:
+            bbox (dict): 境界範囲
+        Returns:
+            str: "vertical" または "horizontal"
+        """
+        width = bbox["max_lon"] - bbox["min_lon"]  # 経度幅
+        height = bbox["max_lat"] - bbox["min_lat"]  # 緯度幅
+
+        # 縦長なら縦分割、横長なら横分割
+        return "vertical" if height > width else "horizontal"
 
     def _split_bbox_vertically(self, bbox: dict, divisions: int) -> List[dict]:
         """
@@ -239,6 +251,53 @@ class CoastlineAlgorithm:
             bbox_list.append(split_bbox)
 
         return bbox_list
+
+    # ========================================
+    # プライベートメソッド - データ処理関連
+    # ========================================
+
+    def _fetch_multiple_coastline_data(
+        self, api_key: str, bbox_list: List[dict], display_name: str
+    ) -> str:
+        """
+        複数のbboxから海岸線データを取得してマージ
+        Args:
+            api_key (str): 海しるAPIキー
+            bbox_list (List[dict]): bboxのリスト
+            display_name (str): 表示名（ログ用）
+        Returns:
+            str: マージ・重複削除後のGeoJSON文字列
+        """
+        geojson_list = []
+
+        for i, bbox in enumerate(bbox_list):
+            geojson_data = self.fetch_coastline_data(api_key=api_key, bounds=bbox)
+
+            if geojson_data:
+                geojson_list.append(geojson_data)
+            else:
+                QgsMessageLog.logMessage(
+                    f"分割範囲 {i+1}/{len(bbox_list)} のデータ取得に失敗しました",
+                    PLUGIN_NAME,
+                    level=Qgis.Warning,
+                )
+
+        if not geojson_list:
+            return ""
+
+        # データをマージ
+        merged_data = self._merge_geojson_features(geojson_list)
+
+        # 重複を削除
+        final_data = self._remove_duplicate_features(merged_data)
+
+        QgsMessageLog.logMessage(
+            f"市区町村「{display_name}」: 分割取得完了（{len(bbox_list)}個の範囲をマージ）",
+            PLUGIN_NAME,
+            level=Qgis.Info,
+        )
+
+        return final_data
 
     def _merge_geojson_features(self, geojson_list: List[str]) -> str:
         """
@@ -350,67 +409,24 @@ class CoastlineAlgorithm:
 
         return json.dumps(deduplicated_geojson)
 
-    def fetch_coastline_data_divided(
-        self, api_key: str, bounds: dict, division_count: int, display_name: str
-    ) -> str:
+    # ========================================
+    # プライベートメソッド - UI関連
+    # ========================================
+
+    def _apply_coastline_style(self, layer: QgsVectorLayer):
         """
-        分割取得での海岸線データ取得
-        Args:
-            api_key (str): 海しるAPIキー
-            bounds (dict): 境界範囲
-            division_count (int): 分割数
-            display_name (str): 表示名（ログ用）
-        Returns:
-            str: 取得・処理後のGeoJSON文字列
+        海岸線レイヤーにスタイルを適用
         """
-        QgsMessageLog.logMessage(
-            f"市区町村「{display_name}」はデータ数が多いため、分割してデータを取得します",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
-        # bboxを最適な方向に分割して取得
-        bbox_list = self._split_bbox_optimally(bounds, division_count)
-        return self._fetch_multiple_coastline_data(api_key, bbox_list, display_name)
+        try:
+            # スタイル設定
+            symbol = layer.renderer().symbol()
+            color = QColor(COASTLINE_STYLE["color"])
+            symbol.setColor(color)
+            symbol.setWidth(COASTLINE_STYLE["width"])
+            symbol.setOpacity(COASTLINE_STYLE["opacity"])
+            layer.triggerRepaint()
 
-    def _fetch_multiple_coastline_data(
-        self, api_key: str, bbox_list: List[dict], display_name: str
-    ) -> str:
-        """
-        複数のbboxから海岸線データを取得してマージ
-        Args:
-            api_key (str): 海しるAPIキー
-            bbox_list (List[dict]): bboxのリスト
-            display_name (str): 表示名（ログ用）
-        Returns:
-            str: マージ・重複削除後のGeoJSON文字列
-        """
-        geojson_list = []
-
-        for i, bbox in enumerate(bbox_list):
-            geojson_data = self.fetch_coastline_data(api_key=api_key, bounds=bbox)
-
-            if geojson_data:
-                geojson_list.append(geojson_data)
-            else:
-                QgsMessageLog.logMessage(
-                    f"分割範囲 {i+1}/{len(bbox_list)} のデータ取得に失敗しました",
-                    PLUGIN_NAME,
-                    level=Qgis.Warning,
-                )
-
-        if not geojson_list:
-            return ""
-
-        # データをマージ
-        merged_data = self._merge_geojson_features(geojson_list)
-
-        # 重複を削除
-        final_data = self._remove_duplicate_features(merged_data)
-
-        QgsMessageLog.logMessage(
-            f"市区町村「{display_name}」: 分割取得完了（{len(bbox_list)}個の範囲をマージ）",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
-
-        return final_data
+        except Exception as e:
+            QgsMessageLog.logMessage(
+                f"スタイル適用エラー: {str(e)}", PLUGIN_NAME, level=Qgis.Warning
+            )

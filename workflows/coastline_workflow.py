@@ -4,7 +4,7 @@ from typing import Optional
 from qgis.core import Qgis, QgsMessageLog, QgsProject
 
 from ..umi_shiru.coastline.coastline_algorithm import CoastlineAlgorithm
-from ..umi_shiru.connect import CITY_DEFAULT_BOUNDS, PLUGIN_NAME
+from ..umi_shiru.connect import CITY_DEFAULT_BOUNDS, CITY_DIVISION_CONFIG, PLUGIN_NAME
 from .base_workflow import BaseWorkflow
 
 
@@ -168,10 +168,21 @@ class CoastlineWorkflow(BaseWorkflow):
                 "海岸線データを取得します...", PLUGIN_NAME, level=Qgis.Info
             )
 
-            # 2. データ取得
-            geojson_data = self.algorithm.fetch_coastline_data(
-                api_key=api_key, bounds=bounds
-            )
+            # 2. データ取得（海岸線分割取得が必要な市区町村かチェック）
+            if municipality_code in CITY_DIVISION_CONFIG:
+                division_config = CITY_DIVISION_CONFIG[municipality_code]
+                division_count = division_config["division_count"]
+                geojson_data = self.algorithm.fetch_coastline_data_divided(
+                    api_key=api_key,
+                    bounds=bounds,
+                    division_count=division_count,
+                    display_name=display_name,
+                )
+            else:
+                geojson_data = self.algorithm.fetch_coastline_data(
+                    api_key=api_key, bounds=bounds
+                )
+
             if not geojson_data:
                 message = "海しるAPIからのデータ取得に失敗しました。"
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)

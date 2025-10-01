@@ -26,19 +26,11 @@ class CoastlineAlgorithm:
     ) -> Optional[Dict[str, float]]:
         """
         市区町村コードからe-Stat APIでポリゴンを取得し、bboxを計算
-
         Args:
             municipality_code (str): 5桁の市区町村コード
-
         Returns:
             dict: bbox座標 {'min_lon', 'min_lat', 'max_lon', 'max_lat'} または None
         """
-        QgsMessageLog.logMessage(
-            f"市区町村 {municipality_code} のbboxを取得中...",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
-
         # e-Stat API URL
         url = build_estat_municipality_url(municipality_code)
 

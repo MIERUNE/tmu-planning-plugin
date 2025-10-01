@@ -141,6 +141,7 @@ class GreenInfraPlugin:
             self.coastline_workflow.execute(
                 api_key=umi_shiru_api_key,
                 municipality_code=self.dockwidget.comboBox_municipality.currentData(),
+                municipality_name=self.dockwidget.comboBox_municipality.currentText(),
             )
         # 漁港区域の可視化
         # 港湾区域の可視化

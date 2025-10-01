@@ -15,21 +15,47 @@ class CoastlineWorkflow(BaseWorkflow):
         super().__init__(iface)
         self.algorithm = CoastlineAlgorithm(iface)
 
-    def _validate_geojson_data(self, geojson_data: str, municipality_code: str) -> bool:
+    def _get_display_name(
+        self, municipality_code: str, municipality_name: Optional[str] = None
+    ) -> str:
+        """
+        市区町村の表示名を生成
+        Args:
+            municipality_code (str): 市区町村コード
+            municipality_name (str, optional): 市区町村名
+        Returns:
+            str: 表示名（例：「札幌市（01100）」）
+        """
+        if municipality_name:
+            return f"{municipality_name}（{municipality_code}）"
+        else:
+            return municipality_code
+
+    def _validate_geojson_data(
+        self,
+        geojson_data: str,
+        municipality_code: str,
+        municipality_name: Optional[str] = None,
+    ) -> bool:
         """
         GeoJSONデータの内容を検証し、featuresが存在するかチェック
         Args:
             geojson_data (str): GeoJSON文字列
             municipality_code (str): 市区町村コード
+            municipality_name (str, optional): 市区町村名（ログ表示用）
         Returns:
             bool: featuresが存在する場合True、存在しない場合False
         """
+        display_name = self._get_display_name(municipality_code, municipality_name)
+
         try:
             geojson_obj = json.loads(geojson_data)
             features = geojson_obj.get("features", [])
 
             if not features:
-                message = f"市区町村 {municipality_code} の範囲には海岸線データが存在しません。"
+                message = (
+                    f"市区町村「{display_name}」の範囲には海岸線データが存在しません。"
+                )
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Info)
                 self.iface.messageBar().pushMessage("情報", message, level=Qgis.Info)
                 return False
@@ -47,16 +73,23 @@ class CoastlineWorkflow(BaseWorkflow):
             self.iface.messageBar().pushMessage("エラー", message, level=Qgis.Warning)
             return False
 
-    def _calculate_municipality_bounds(self, municipality_code: str) -> Optional[dict]:
+    def _calculate_municipality_bounds(
+        self,
+        municipality_code: str,
+        municipality_name: Optional[str] = None,
+    ) -> Optional[dict]:
         """
         市区町村のbboxを取得し、バッファを追加した境界範囲を計算
         Args:
             municipality_code (str): 市区町村コード
+            municipality_name (str, optional): 市区町村名（ログ表示用）
         Returns:
             dict: バッファ付きの境界範囲、または None（計算失敗時）
         """
+        display_name = self._get_display_name(municipality_code, municipality_name)
+
         QgsMessageLog.logMessage(
-            f"市区町村コード {municipality_code} のbboxを計算します...",
+            f"市区町村「{display_name}」のbboxを計算します...",
             PLUGIN_NAME,
             level=Qgis.Info,
         )
@@ -68,12 +101,12 @@ class CoastlineWorkflow(BaseWorkflow):
             if municipality_code in CITY_DEFAULT_BOUNDS:
                 calculated_bbox = CITY_DEFAULT_BOUNDS[municipality_code]
                 QgsMessageLog.logMessage(
-                    f"市区町村 {municipality_code} のe-Statデータが見つからないため、デフォルト境界範囲を使用します",
+                    f"市区町村「{display_name}」のe-Statデータが見つからないため、デフォルト境界範囲を使用します",
                     PLUGIN_NAME,
                     level=Qgis.Info,
                 )
             else:
-                message = f"市区町村 {municipality_code} のbbox計算に失敗しました。デフォルト境界範囲も設定されていません。"
+                message = f"市区町村「{display_name}」のbbox計算に失敗しました。デフォルト境界範囲も設定されていません。"
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
                 self.iface.messageBar().pushMessage(
                     "エラー", message, level=Qgis.Warning
@@ -101,12 +134,14 @@ class CoastlineWorkflow(BaseWorkflow):
         self,
         api_key: Optional[str],
         municipality_code: Optional[str] = None,
+        municipality_name: Optional[str] = None,
     ) -> bool:
         """
         ワークフローを実行し、海岸線レイヤーをQGISに追加する
         Args:
             api_key (str): 海しるAPIキー
             municipality_code (str, optional): 市区町村コード（5桁）
+            municipality_name (str, optional): 市区町村名
         Returns:
             bool: 成功した場合はTrue、失敗した場合はFalse
         """
@@ -127,7 +162,9 @@ class CoastlineWorkflow(BaseWorkflow):
                 return False
 
             # 市区町村の境界範囲を計算
-            bounds = self._calculate_municipality_bounds(municipality_code)
+            bounds = self._calculate_municipality_bounds(
+                municipality_code, municipality_name
+            )
             if not bounds:
                 return False
 
@@ -148,11 +185,14 @@ class CoastlineWorkflow(BaseWorkflow):
                 return False
 
             # 3. GeoJSONデータの検証
-            if not self._validate_geojson_data(geojson_data, municipality_code):
+            if not self._validate_geojson_data(
+                geojson_data, municipality_code, municipality_name
+            ):
                 return False
 
             # 4. レイヤー作成
-            layer_name = f"海岸線_{municipality_code}"
+            display_name = self._get_display_name(municipality_code, municipality_name)
+            layer_name = f"海岸線_{display_name}"
             layer = self.algorithm.create_coastline_layer(geojson_data, layer_name)
 
             # 5. QGISプロジェクトに追加

@@ -39,7 +39,10 @@ CITY_DEFAULT_BOUNDS = {
 
 # 分割取得が必要な市区町村の設定
 CITY_DIVISION_CONFIG = {
-    "42209": {  # 対馬市
+    "34202": {  # 呉市（広島県）
+        "division_count": 4,
+    },
+    "42209": {  # 対馬市（長崎県）
         "division_count": 3,
     },
 }
@@ -49,6 +52,7 @@ BBOX_BUFFER_DEGREES = 0.01  # 約1km相当
 
 # ログメッセージ用プラグイン名
 PLUGIN_NAME = "Green Infra Plugin"
+
 
 class UmiShiruApiClient:
     """

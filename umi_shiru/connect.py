@@ -127,10 +127,6 @@ class UmiShiruApiClient:
         url.setQuery(query)
         full_url = url.toString()
 
-        QgsMessageLog.logMessage(
-            f"海しるAPIリクエスト開始: {full_url}", PLUGIN_NAME, level=Qgis.Info
-        )
-
         # ネットワークリクエスト実行
         request = QNetworkRequest(QUrl(full_url))
         request.setRawHeader(b"Ocp-Apim-Subscription-Key", self.api_key.encode("utf-8"))

@@ -87,23 +87,12 @@ class CoastlineWorkflow(BaseWorkflow):
         Returns:
             dict: バッファ付きの境界範囲、または None（計算失敗時）
         """
-        QgsMessageLog.logMessage(
-            f"市区町村「{display_name}」のbboxを計算します...",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
-
         calculated_bbox = self.algorithm.get_municipality_bbox(municipality_code)
 
         if not calculated_bbox:
             # APIからデータが取得できない場合、デフォルト境界範囲を使用
             if municipality_code in CITY_DEFAULT_BOUNDS:
                 calculated_bbox = CITY_DEFAULT_BOUNDS[municipality_code]
-                QgsMessageLog.logMessage(
-                    f"市区町村「{display_name}」のe-Statデータが見つからないため、デフォルト境界範囲を使用します",
-                    PLUGIN_NAME,
-                    level=Qgis.Info,
-                )
             else:
                 message = f"市区町村「{display_name}」のbbox計算に失敗しました。デフォルト境界範囲も設定されていません。"
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
@@ -167,10 +156,6 @@ class CoastlineWorkflow(BaseWorkflow):
             )
             if not bounds:
                 return False
-
-            QgsMessageLog.logMessage(
-                "海岸線データを取得します...", PLUGIN_NAME, level=Qgis.Info
-            )
 
             # 2. データ取得（海岸線分割取得が必要な市区町村かチェック）
             if municipality_code in CITY_DIVISION_CONFIG:

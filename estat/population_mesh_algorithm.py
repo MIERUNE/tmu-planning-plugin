@@ -174,7 +174,9 @@ class PopulationMeshWorkflow:
                 population_mesh_layer.updateFields()
                 print(f"フィールド「{join_field_name}」を追加しました。")
 
-            join_field_idx = population_mesh_layer.fields().indexFromName(join_field_name)
+            join_field_idx = population_mesh_layer.fields().indexFromName(
+                join_field_name
+            )
             updated_count = 0
             for feature in population_mesh_layer.getFeatures():
                 mesh_code = feature[key_field_name]

@@ -3,9 +3,6 @@ from typing import Optional
 
 from qgis.core import Qgis, QgsMessageLog, QgsProject
 
-from utils.estat.bbox import calculate_municipality_bbox
-from utils.estat.client import AdministrativeAreaClient
-
 from ..umi_shiru.coastline.coastline_algorithm import CoastlineAlgorithm
 from ..umi_shiru.connect import (
     BBOX_BUFFER_DEGREES,
@@ -13,6 +10,8 @@ from ..umi_shiru.connect import (
     CITY_DIVISION_CONFIG,
     PLUGIN_NAME,
 )
+from ..utils.estat.bbox import calculate_municipality_bbox
+from ..utils.estat.client import AdministrativeAreaClient
 from .base_workflow import BaseWorkflow
 
 
@@ -91,12 +90,6 @@ class CoastlineWorkflow(BaseWorkflow):
         Returns:
             dict: バッファ付きの境界範囲、または None（計算失敗時）
         """
-        QgsMessageLog.logMessage(
-            f"市区町村「{display_name}」のbboxを取得します...",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
-
         # 行政区域ポリゴンを取得してbboxを計算
         municipality_layer = self.estat_client.fetch_municipality_polygon(
             municipality_code

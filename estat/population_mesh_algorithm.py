@@ -53,11 +53,6 @@ class PopulationMeshAlgorithm:
         mesh_request_url = f"{MESH_SHAPE_DOWNLOAD_URL}?{encode_params}"
 
         # メッシュ形状データのダウンロード
-        QgsMessageLog.logMessage(
-            "メッシュ形状データをダウンロード中...",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
         mesh_data = requests.get(mesh_request_url)
         # エラーチェック
         mesh_data.raise_for_status()
@@ -66,11 +61,6 @@ class PopulationMeshAlgorithm:
         # ダウンロードしたZIPファイルを一時ディレクトリに展開
         with zipfile.ZipFile(zip_data, "r") as zip_ref:
             zip_ref.extractall(self.temp_dir.name)
-            QgsMessageLog.logMessage(
-                f"ZIPファイルを一時ディレクトリに展開しました: {self.temp_dir.name}",
-                PLUGIN_NAME,
-                level=Qgis.Info,
-            )
 
         # 展開したファイルの中からシェープファイル（.shp）を探す
         temp_dir_path = Path(self.temp_dir.name)
@@ -121,10 +111,7 @@ class PopulationMeshAlgorithm:
                 level=Qgis.Info,
             )
 
-            # 人口データの取得と整形
-            QgsMessageLog.logMessage(
-                "e-Stat APIから人口データを取得中...", PLUGIN_NAME, level=Qgis.Info
-            )
+            # 人口データの取得と整形)
 
             # 取得したいデータのID（人口メッシュデータ）
             # TODO : 指定した自治体でIDを取得できるようにする
@@ -189,17 +176,8 @@ class PopulationMeshAlgorithm:
                     updated_count += 1
 
             population_mesh_layer.commitChanges()
-            QgsMessageLog.logMessage(
-                f"人口データを結合しました。更新されたフィーチャ数: {updated_count}",
-                PLUGIN_NAME,
-                level=Qgis.Info,
-            )
 
             # 可視化（段階分けレンダリング）
-            QgsMessageLog.logMessage(
-                "レイヤーのスタイルを設定中...", PLUGIN_NAME, level=Qgis.Info
-            )
-
             target_field = join_field_name
 
             # 5段階に分類して色分け

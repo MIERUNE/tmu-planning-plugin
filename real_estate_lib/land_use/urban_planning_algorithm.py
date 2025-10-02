@@ -14,7 +14,11 @@ from qgis.core import (
 from qgis.PyQt.QtCore import QEventLoop, QUrl
 from qgis.PyQt.QtNetwork import QNetworkRequest
 
-from ..connect import PLUGIN_NAME, URBAN_PLANNING_AREA_API_ENDPOINT
+from ..connect import (
+    PLUGIN_NAME,
+    URBAN_PLANNING_AREA_API_ENDPOINT,
+    ZOOM9_SCALE_THRESHOLD,
+)
 
 
 class UrbanPlanningAlgorithm:
@@ -96,5 +100,9 @@ class UrbanPlanningAlgorithm:
 
         layer_name = "都市計画区域"
         urban_planning_layer = QgsVectorTileLayer(get_real_estate_url, layer_name)
+
+        # ズームレベル９以下では表示しない
+        urban_planning_layer.setScaleBasedVisibility(True)
+        urban_planning_layer.setMinimumScale(ZOOM9_SCALE_THRESHOLD)
 
         return urban_planning_layer

@@ -28,7 +28,7 @@ from .connect import (
 )
 
 
-class PopulationMeshWorkflow:
+class PopulationMeshAlgorithm:
     """人口メッシュデータ取得クラス"""
 
     # メッシュコード
@@ -87,9 +87,8 @@ class PopulationMeshWorkflow:
         # 最初のシェープファイルのフルパスを文字列として返す
         return str(shapefiles[0])
 
-    def create_population_mesh_layer(self, api_key: str):
+    def create_population_mesh_layer(self):
         """人口メッシュデータの取得とQGISへのレイヤー追加
-
         Args:
             api_key (str): e-Stat APIキー
         Returns:
@@ -130,6 +129,8 @@ class PopulationMeshWorkflow:
             # 取得したいデータのID（人口メッシュデータ）
             # TODO : 指定した自治体でIDを取得できるようにする
             stats_data_id = "8003007181"
+            # TODO : APIキーを引数で受け取るようにする
+            api_key = "826caa70ecafc235546d72631891eb6d13d2028e" #　e-StatのAPIキー
             # パラメーター
             population_mesh_url_params = {
                 "appId": api_key,

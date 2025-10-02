@@ -117,7 +117,7 @@ class PopulationMeshAlgorithm:
             # TODO : 指定した自治体でIDを取得できるようにする
             stats_data_id = "8003007181"
             # TODO : APIキーを引数で受け取るようにする
-            api_key = "826caa70ecafc235546d72631891eb6d13d2028e" #　e-StatのAPIキー
+            api_key = "826caa70ecafc235546d72631891eb6d13d2028e"  # e-StatのAPIキー
             # パラメーター
             population_mesh_url_params = {
                 "appId": api_key,

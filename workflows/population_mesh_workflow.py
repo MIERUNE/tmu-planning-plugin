@@ -1,11 +1,11 @@
 from qgis.core import (
     Qgis,
     QgsMessageLog,
-    QgsProject,
 )
 
+from ..estat.connect import PLUGIN_NAME
 from ..estat.population_mesh_algorithm import PopulationMeshAlgorithm
-from ..estat.connect import PLUGIN_NAME 
+
 
 class PopulationMeshWorkflow:
     """人口メッシュデータの取得・可視化のためのワークフロー"""
@@ -25,7 +25,9 @@ class PopulationMeshWorkflow:
 
             if added_layer is None:
                 QgsMessageLog.logMessage(
-                    "人口メッシュレイヤーの取得に失敗しました。", PLUGIN_NAME, level=Qgis.Warning
+                    "人口メッシュレイヤーの取得に失敗しました。",
+                    PLUGIN_NAME,
+                    level=Qgis.Warning,
                 )
                 return False
 

@@ -222,4 +222,3 @@ class CoastlineWorkflow(BaseWorkflow):
                 "エラー", error_message, level=Qgis.Critical
             )
             return False
-            return False

@@ -26,19 +26,6 @@ UMI_SHIRU_API_CONFIG = {
     # },
 }
 
-# TODO: 将来的にはe-Stat専用ディレクトリへ移動する予定
-# e-Stat API 定義
-E_STAT_API_CONFIG = {
-    "base_url": "https://www.e-stat.go.jp/gis/statmap-search/data",
-    "default_params": {
-        "dlserveyId": "A002005212020",  # 国勢調査2020年
-        "coordSys": "1",  # 世界測地系
-        "format": "shape",  # シェープファイル形式
-        "downloadType": "5",  # 市区町村レベル
-        "datum": "2011",  # 測地系2011（JGD2011）
-    },
-}
-
 # 主要都市のデフォルト境界範囲
 CITY_DEFAULT_BOUNDS = {
     "01100": {  # 札幌市
@@ -62,28 +49,6 @@ BBOX_BUFFER_DEGREES = 0.01  # 約1km相当
 
 # ログメッセージ用プラグイン名
 PLUGIN_NAME = "Green Infra Plugin"
-
-
-def build_estat_municipality_url(municipality_code: str) -> str:
-    """
-    e-Stat API用の市区町村データ取得URLを構築
-    Args:
-        municipality_code (str): 5桁の市区町村コード
-    Returns:
-        str: 構築されたURL
-    """
-    params = E_STAT_API_CONFIG["default_params"].copy()
-    params["code"] = municipality_code
-
-    query = QUrlQuery()
-    for key, value in params.items():
-        query.addQueryItem(key, str(value))
-
-    # URLオブジェクトを生成
-    url = QUrl(E_STAT_API_CONFIG["base_url"])
-    url.setQuery(query)
-    return url.toString()
-
 
 class UmiShiruApiClient:
     """

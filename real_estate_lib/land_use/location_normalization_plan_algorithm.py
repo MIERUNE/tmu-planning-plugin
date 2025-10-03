@@ -21,7 +21,7 @@ from ..connect import (
 )
 
 
-class UrbanPlanningAlgorithm:
+class LocationNormalizationPlanAlgorithm:
     """立地適正化計画データ取得クラス"""
 
     def __init__(self, iface):
@@ -84,7 +84,7 @@ class UrbanPlanningAlgorithm:
 
         # QGIS用にエンコード
         encoded_for_qgis = encoded_params.replace("=", "%3D").replace("&", "%26")
-        encoded_tile_url = f"{URBAN_PLANNING_AREA_API_ENDPOINT}?{encoded_for_qgis}"
+        encoded_tile_url = f"{LOCATION_NORMALIZATION_PLAN_API_ENDPOINT}?{encoded_for_qgis}"
 
         # ベクトルタイルレイヤーのURLを作成
         get_real_estate_url = (
@@ -96,10 +96,10 @@ class UrbanPlanningAlgorithm:
         )
 
         layer_name = "立地適正化計画区域"
-        urban_planning_layer = QgsVectorTileLayer(get_real_estate_url, layer_name)
+        location_normalization_plan_layer = QgsVectorTileLayer(get_real_estate_url, layer_name)
 
         # ズームレベル９以下では表示しない
-        urban_planning_layer.setScaleBasedVisibility(True)
-        urban_planning_layer.setMinimumScale(ZOOM9_SCALE_THRESHOLD)
+        location_normalization_plan_layer.setScaleBasedVisibility(True)
+        location_normalization_plan_layer.setMinimumScale(ZOOM9_SCALE_THRESHOLD)
 
-        return urban_planning_layer
+        return location_normalization_plan_layer

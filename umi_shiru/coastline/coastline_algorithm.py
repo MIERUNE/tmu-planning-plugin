@@ -1,7 +1,10 @@
 import hashlib
 import json
+import os
+import tempfile
 from typing import Dict, List, Optional
 
+from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QColor
 from qgis.core import Qgis, QgsCoordinateReferenceSystem, QgsMessageLog, QgsVectorLayer
 
@@ -16,6 +19,13 @@ class CoastlineAlgorithm:
 
     def __init__(self, iface):
         self.iface = iface
+        # 作成した一時ファイルのリスト
+        self._temp_files = {}
+        # 削除予定のレイヤーIDを一時的に保持するリスト
+        self._layers_to_be_removed = []
+
+        # レイヤー削除時のシグナル接続
+        self._setup_signals()
 
     # ========================================
     # workflowから呼び出されるパブリックメソッド
@@ -88,27 +98,138 @@ class CoastlineAlgorithm:
         self, geojson_data: str, layer_name: str = "海岸線"
     ) -> QgsVectorLayer:
         """
-        GeoJSONデータからQGISレイヤーを作成
+        GeoJSONデータからQGISレイヤーを作成（一時ファイル使用）
         Args:
             geojson_data (str): GeoJSON文字列
             layer_name (str): レイヤー名
         Returns:
             QgsVectorLayer: 作成されたレイヤー（失敗時はNone）
         """
-        # ベクターレイヤーを作成
-        layer = QgsVectorLayer(geojson_data, layer_name, "ogr")
+        # 一時ファイルにGeoJSONを保存
+        temp_file = tempfile.NamedTemporaryFile(
+            mode="w", suffix=".geojson", delete=False, encoding="utf-8"
+        )
 
-        if not layer.isValid():
-            raise Exception("ベクターレイヤーの作成に失敗しました")
+        try:
+            temp_file.write(geojson_data)
+            temp_file.flush()
+            temp_file_path = temp_file.name
+            temp_file.close()
 
-        # CRSを設定
-        crs = QgsCoordinateReferenceSystem("EPSG:4326")
-        layer.setCrs(crs)
+            # 一時ファイルからベクターレイヤーを作成
+            layer = QgsVectorLayer(temp_file_path, layer_name, "ogr")
 
-        # スタイルを適用
-        self._apply_coastline_style(layer)
+            if not layer.isValid():
+                raise Exception("ベクターレイヤーの作成に失敗しました")
 
-        return layer
+            # CRSを設定
+            crs = QgsCoordinateReferenceSystem("EPSG:4326")
+            layer.setCrs(crs)
+
+            # スタイルを適用
+            self._apply_coastline_style(layer)
+
+            # レイヤーに一時ファイルパスを記録（デバッグ用）
+            QgsMessageLog.logMessage(
+                f"海岸線レイヤー用一時ファイル作成: {temp_file_path}",
+                PLUGIN_NAME,
+                level=Qgis.Info,
+            )
+
+            # 一時ファイルパスをレイヤーIDと関連付けて保存
+            self._temp_files[layer.id()] = temp_file_path
+
+            return layer
+
+        except Exception as e:
+            # エラー時は一時ファイルをクリーンアップ
+            if "temp_file_path" in locals() and os.path.exists(temp_file_path):
+                os.unlink(temp_file_path)
+            raise Exception(f"海岸線レイヤーの作成に失敗: {str(e)}")
+        finally:
+            if not temp_file.closed:
+                temp_file.close()
+
+    def _on_layers_will_be_removed(self, layer_ids: list):
+        """
+        レイヤーが削除される直前に、対象の一時ファイルパスを特定する
+        Args:
+            layer_ids (list): 削除される予定のレイヤーIDリスト
+        """
+        # 削除対象のレイヤーIDをリストに追加
+        self._layers_to_be_removed.extend(layer_ids)
+        QgsMessageLog.logMessage(
+            f"削除予定レイヤーを記録: {layer_ids}",
+            PLUGIN_NAME,
+            level=Qgis.Info,
+        )
+
+    def _on_layers_removed(self):
+        """
+        レイヤーが完全に削除された後に、タイマーを使って一時ファイルを削除する
+        """
+        for layer_id in self._layers_to_be_removed:
+            if layer_id in self._temp_files:
+                temp_file_path = self._temp_files[layer_id]
+
+                QTimer.singleShot(
+                    0,  # タイムアウト0msは「できるだけ早く、ただし現在のイベントの後で」という意味
+                    lambda p=temp_file_path, lid=layer_id: self._delete_temp_file(
+                        p, lid
+                    ),
+                )
+
+        self._layers_to_be_removed.clear()
+
+    def _delete_temp_file(self, file_path: str, layer_id: str):
+        """
+        一時ファイルを実際に削除するメソッド
+        Args:
+            file_path (str): 削除する一時ファイルのパス
+            layer_id (str): レイヤーID
+        """
+        try:
+            if os.path.exists(file_path):
+                os.unlink(file_path)
+                QgsMessageLog.logMessage(
+                    f"レイヤー削除に伴い一時ファイルを削除: {file_path}",
+                    PLUGIN_NAME,
+                    level=Qgis.Info,
+                )
+
+            if layer_id in self._temp_files:
+                del self._temp_files[layer_id]
+        except Exception as e:
+            QgsMessageLog.logMessage(
+                f"レイヤー削除時の一時ファイル削除エラー: {file_path} - {str(e)}",
+                PLUGIN_NAME,
+                level=Qgis.Warning,
+            )
+
+    def _setup_signals(self):
+        """
+        QGISシグナルの接続を設定
+        """
+        try:
+            from qgis.core import QgsProject
+
+            project = QgsProject.instance()
+
+            # 2つのシグナルを接続
+            project.layersWillBeRemoved.connect(self._on_layers_will_be_removed)  # type: ignore
+            project.layersRemoved.connect(self._on_layers_removed)  # type: ignore
+
+            QgsMessageLog.logMessage(
+                "レイヤー削除追跡シグナルを接続しました",
+                PLUGIN_NAME,
+                level=Qgis.Info,
+            )
+        except Exception as e:
+            QgsMessageLog.logMessage(
+                f"シグナル接続エラー: {str(e)}",
+                PLUGIN_NAME,
+                level=Qgis.Warning,
+            )
 
     # ===========================================================
     # fetch_coastline_data_dividedから呼び出されるプライベートメソッド

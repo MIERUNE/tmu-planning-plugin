@@ -124,17 +124,9 @@ class CoastlineAlgorithm:
             # スタイルを適用
             self._apply_coastline_style(layer)
 
-            # レイヤーに一時ファイルパスを記録（デバッグ用）
-            QgsMessageLog.logMessage(
-                f"海岸線レイヤー用一時ファイル作成: {temp_file_path}",
-                PLUGIN_NAME,
-                level=Qgis.Info,
-            )
-
             return layer
 
         except Exception as e:
-            # エラー時は一時ファイルをクリーンアップ
             if temp_file_path and os.path.exists(temp_file_path):
                 os.unlink(temp_file_path)
             raise Exception(f"海岸線レイヤーの作成に失敗: {str(e)}")

@@ -29,7 +29,7 @@ class UrbanPlanningAlgorithm:
 
     def _check_api_connection(self, api_key: str) -> tuple[bool, Optional[int]]:
         """APIキーの有効性を確認するための事前接続チェック"""
-        # 接続テストとしてズームレベル0のタイルをリクエスト
+        # 接続テスト一部タイルをリクエスト
         test_url = (
             URBAN_PLANNING_AREA_API_ENDPOINT
             + "?response_format=geojson&z=13&x=7272&y=3225"
@@ -61,7 +61,7 @@ class UrbanPlanningAlgorithm:
 
     def create_layer(self, api_key: str) -> Optional[QgsVectorTileLayer]:
         """
-        指定した市区町村の都市計画区域データをAPIから取得する
+        都市計画区域データをAPIから取得する
         Args:
             api_key (str): APIキー
         Returns:

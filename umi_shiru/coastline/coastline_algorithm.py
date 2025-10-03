@@ -129,7 +129,7 @@ class CoastlineAlgorithm:
         except Exception as e:
             if temp_file_path and os.path.exists(temp_file_path):
                 os.unlink(temp_file_path)
-            raise Exception(f"海岸線レイヤーの作成に失敗: {str(e)}")
+            raise Exception(f"海岸線レイヤーの作成に失敗: {str(e)}") from e
         finally:
             if not temp_file.closed:
                 temp_file.close()

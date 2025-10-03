@@ -1,9 +1,9 @@
 import os
 
+from qgis.core import Qgis, QgsMessageLog
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
-from qgis.core import Qgis, QgsMessageLog
 
 from .real_estate_lib.land_use.location_normalization_plan_algorithm import (
     LocationNormalizationPlanAlgorithm,
@@ -119,7 +119,7 @@ class GreenInfraPlugin:
         self.basemap_workflow.execute(self.dockwidget.get_selected_basemaps())
 
         if real_estate_api_key:
-        # 都市計画区域の可視化
+            # 都市計画区域の可視化
             if self.dockwidget.checkBox_urban_area.isChecked():
                 self.layer_workflow.execute(
                     self.urban_planning_algorithm,
@@ -139,7 +139,9 @@ class GreenInfraPlugin:
                     api_key=real_estate_api_key,
                 )
         else:
-            message = "不動産情報ライブラリAPIキーが未設定のため、関連処理をスキップします。"
+            message = (
+                "不動産情報ライブラリAPIキーが未設定のため、関連処理をスキップします。"
+            )
             QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
             self.iface.messageBar().pushMessage(
                 "不動産APIキー未設定",

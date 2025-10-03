@@ -1,10 +1,12 @@
 import os
 
-from qgis.core import Qgis, QgsMessageLog
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
+from .real_estate_lib.land_use.location_normalization_plan_algorithm import (
+    LocationNormalizationPlanAlgorithm,
+)
 from .real_estate_lib.land_use.urban_planning_algorithm import UrbanPlanningAlgorithm
 from .real_estate_lib.land_use.zoning_district_algorithm import ZoningDistrictAlgorithm
 from .ui.apikey_dialog import ApikeyDialog
@@ -32,6 +34,9 @@ class GreenInfraPlugin:
         self.layer_workflow = LayerWorkflow(iface)
         self.urban_planning_algorithm = UrbanPlanningAlgorithm(iface)
         self.zoning_district_algorithm = ZoningDistrictAlgorithm(iface)
+        self.location_normalization_plan_algorithm = LocationNormalizationPlanAlgorithm(
+            iface
+        )
         self.coastline_workflow = CoastlineWorkflow(iface)
 
     def add_action(
@@ -115,40 +120,23 @@ class GreenInfraPlugin:
         # Phase 2: 不動産情報ライブラリの可視化
         # 都市計画区域の可視化
         if self.dockwidget.checkBox_urban_area.isChecked():
-                self.layer_workflow.execute(
-                    self.urban_planning_algorithm,
-                    api_key=real_estate_api_key,
-                )
+            self.layer_workflow.execute(
+                self.urban_planning_algorithm,
+                api_key=real_estate_api_key,
+            )
 
         # 用途地域の可視化
         if self.dockwidget.checkBox_use_district.isChecked():
-             self.layer_workflow.execute(
-                    self.zoning_district_algorithm, api_key=real_estate_api_key
-                )
+            self.layer_workflow.execute(
+                self.zoning_district_algorithm, api_key=real_estate_api_key
+            )
 
-        # # 立地適正化計画の可視化
-        # if self.dockwidget.checkBox_location_normalization_plan.isChecked():
-        #     message = (
-        #         "不動産情報ライブラリAPIキーが未設定のため、処理をスキップします。"
-        #     )
-        #     if not real_estate_api_key:
-        #         QgsMessageLog.logMessage(
-        #             message,
-        #             PLUGIN_NAME,
-        #             level=Qgis.Warning,
-        #         )
-        #         self.iface.messageBar().pushMessage(
-        #             message,
-        #             level=Qgis.Warning,
-        #         )
-        #     else:
-        #         # Workflowを実行
-        #         location_normalization_plan_layer = self.layer_workflow.execute(
-        #             self.location_normalization_plan_algorithm,
-        #             api_key=real_estate_api_key
-        #         )
-        #         if location_normalization_plan_layer:
-        #             QgsProject.instance().addMapLayer(location_normalization_plan_layer)
+        # 立地適正化計画の可視化
+        if self.dockwidget.checkBox_location_normalization_plan.isChecked():
+            self.layer_workflow.execute(
+                self.location_normalization_plan_algorithm,
+                api_key=real_estate_api_key,
+            )
 
         # Phase 3: 海岸線データの可視化
         umi_shiru_api_key = ApikeyDialog.get_umi_shiru_api_key()

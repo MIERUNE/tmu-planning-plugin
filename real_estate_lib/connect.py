@@ -16,6 +16,10 @@ ZONING_DISTRICT_AREA_API_ENDPOINT = (
     "https://www.reinfolib.mlit.go.jp/ex-api/external/XKT002"
 )
 
+# 立地適正化計画区域データAPI
+LOCATION_NORMALIZATION_PLAN_API_ENDPOINT = (
+    "https://www.reinfolib.mlit.go.jp/ex-api/external/XKT003"
+)
 
 
 # ログメッセージ用プラグイン名

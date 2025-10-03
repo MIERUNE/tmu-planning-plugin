@@ -105,12 +105,15 @@ class CoastlineAlgorithm:
         Returns:
             QgsVectorLayer: 作成されたレイヤー（失敗時はNone）
         """
+        temp_file_path = None
+
         # 一時ファイルにGeoJSONを保存
         temp_file = tempfile.NamedTemporaryFile(
             mode="w", suffix=".geojson", delete=False, encoding="utf-8"
         )
 
         try:
+            # GeoJSONデータを一時ファイルに書き込み
             temp_file.write(geojson_data)
             temp_file.flush()
             temp_file_path = temp_file.name
@@ -143,7 +146,7 @@ class CoastlineAlgorithm:
 
         except Exception as e:
             # エラー時は一時ファイルをクリーンアップ
-            if "temp_file_path" in locals() and os.path.exists(temp_file_path):
+            if temp_file_path and os.path.exists(temp_file_path):
                 os.unlink(temp_file_path)
             raise Exception(f"海岸線レイヤーの作成に失敗: {str(e)}")
         finally:

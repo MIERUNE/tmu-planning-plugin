@@ -53,7 +53,7 @@ class PopulationMeshAlgorithm:
         mesh_request_url = f"{MESH_SHAPE_DOWNLOAD_URL}?{encode_params}"
 
         # メッシュ形状データのダウンロード
-        mesh_data = requests.get(mesh_request_url)
+        mesh_data = requests.get(mesh_request_url, timeout=60)
         # エラーチェック
         mesh_data.raise_for_status()
         zip_data = io.BytesIO(mesh_data.content)
@@ -128,7 +128,7 @@ class PopulationMeshAlgorithm:
             encoded_params = urllib.parse.urlencode(population_mesh_url_params)
             population_mesh_url = f"{POPULATION_MESH_API_ENDPOINT}?{encoded_params}"
 
-            response_pop = requests.get(population_mesh_url)
+            response_pop = requests.get(population_mesh_url, timeout=60)
             response_pop.raise_for_status()
 
             # 取得したJSONデータをパース
@@ -145,8 +145,6 @@ class PopulationMeshAlgorithm:
             }
 
             # データの結合
-            print("人口データをレイヤーに結合中...")
-
             join_field_name = "population"
             key_field_name = (
                 "KEY_CODE"  # e-Statのシェープファイルのメッシュコードのフィールド名
@@ -160,7 +158,6 @@ class PopulationMeshAlgorithm:
                     [QgsField(join_field_name, QVariant.Int)]
                 )
                 population_mesh_layer.updateFields()
-                print(f"フィールド「{join_field_name}」を追加しました。")
 
             join_field_idx = population_mesh_layer.fields().indexFromName(
                 join_field_name
@@ -175,7 +172,14 @@ class PopulationMeshAlgorithm:
                     )
                     updated_count += 1
 
-            population_mesh_layer.commitChanges()
+            if not population_mesh_layer.commitChanges():
+                QgsMessageLog.logMessage(
+                    "人口メッシュレイヤーのコミットに失敗しました。ロールバックを実行します。",
+                    PLUGIN_NAME,
+                    level=Qgis.Critical,
+                )
+                population_mesh_layer.rollBack()
+                return None
 
             # 可視化（段階分けレンダリング）
             target_field = join_field_name

@@ -15,8 +15,8 @@ from qgis.PyQt.QtCore import QEventLoop, QUrl
 from qgis.PyQt.QtNetwork import QNetworkRequest
 
 from ..connect import (
-    PLUGIN_NAME,
     LOCATION_NORMALIZATION_PLAN_API_ENDPOINT,
+    PLUGIN_NAME,
     ZOOM9_SCALE_THRESHOLD,
 )
 
@@ -84,7 +84,9 @@ class LocationNormalizationPlanAlgorithm:
 
         # QGIS用にエンコード
         encoded_for_qgis = encoded_params.replace("=", "%3D").replace("&", "%26")
-        encoded_tile_url = f"{LOCATION_NORMALIZATION_PLAN_API_ENDPOINT}?{encoded_for_qgis}"
+        encoded_tile_url = (
+            f"{LOCATION_NORMALIZATION_PLAN_API_ENDPOINT}?{encoded_for_qgis}"
+        )
 
         # ベクトルタイルレイヤーのURLを作成
         get_real_estate_url = (
@@ -96,7 +98,9 @@ class LocationNormalizationPlanAlgorithm:
         )
 
         layer_name = "立地適正化計画区域"
-        location_normalization_plan_layer = QgsVectorTileLayer(get_real_estate_url, layer_name)
+        location_normalization_plan_layer = QgsVectorTileLayer(
+            get_real_estate_url, layer_name
+        )
 
         # ズームレベル９以下では表示しない
         location_normalization_plan_layer.setScaleBasedVisibility(True)

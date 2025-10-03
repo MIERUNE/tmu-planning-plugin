@@ -16,7 +16,7 @@ from qgis.PyQt.QtNetwork import QNetworkRequest
 
 from ..connect import (
     PLUGIN_NAME,
-    URBAN_PLANNING_AREA_API_ENDPOINT,
+    LOCATION_NORMALIZATION_PLAN_API_ENDPOINT,
     ZOOM9_SCALE_THRESHOLD,
 )
 
@@ -31,7 +31,7 @@ class UrbanPlanningAlgorithm:
         """APIキーの有効性を確認するための事前接続チェック"""
         # 接続テストとしてズームレベル0のタイルをリクエスト
         test_url = (
-            URBAN_PLANNING_AREA_API_ENDPOINT
+            LOCATION_NORMALIZATION_PLAN_API_ENDPOINT
             + "?response_format=geojson&z=13&x=7272&y=3225"
         )
 
@@ -56,9 +56,6 @@ class UrbanPlanningAlgorithm:
             reply.deleteLater()
             return False, http_status
 
-        QgsMessageLog.logMessage(
-            "APIキーの有効性を確認しました (HTTP 200)", PLUGIN_NAME, level=Qgis.Info
-        )
         reply.deleteLater()
         return True, http_status
 

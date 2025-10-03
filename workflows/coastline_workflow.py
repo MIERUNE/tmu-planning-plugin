@@ -116,12 +116,6 @@ class CoastlineWorkflow(BaseWorkflow):
             "max_lat": calculated_bbox["max_lat"] + BBOX_BUFFER_DEGREES,
         }
 
-        QgsMessageLog.logMessage(
-            f"市区町村bbox（バッファ付き）: {bounds}",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
-
         return bounds
 
     def execute(

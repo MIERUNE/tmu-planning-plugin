@@ -56,12 +56,6 @@ class CoastlineAlgorithm:
         Returns:
             str: 取得・処理後のGeoJSON文字列
         """
-        QgsMessageLog.logMessage(
-            f"市区町村「{display_name}」はデータ数が多いため、分割してデータを取得します",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
-
         # bboxを最適な方向に分割
         bbox_list = self._split_bbox_optimally(bounds, division_count)
 
@@ -87,12 +81,6 @@ class CoastlineAlgorithm:
 
         # 重複を削除
         final_data = self._remove_duplicate_features(merged_data)
-
-        QgsMessageLog.logMessage(
-            f"市区町村「{display_name}」: 分割取得完了（{len(bbox_list)}個の範囲をマージ）",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
 
         return final_data
 

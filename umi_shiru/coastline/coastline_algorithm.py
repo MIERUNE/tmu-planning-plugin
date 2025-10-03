@@ -4,7 +4,6 @@ import os
 import tempfile
 from typing import Dict, List, Optional
 
-from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QColor
 from qgis.core import Qgis, QgsCoordinateReferenceSystem, QgsMessageLog, QgsVectorLayer
 
@@ -19,13 +18,6 @@ class CoastlineAlgorithm:
 
     def __init__(self, iface):
         self.iface = iface
-        # 作成した一時ファイルのリスト
-        self._temp_files = {}
-        # 削除予定のレイヤーIDを一時的に保持するリスト
-        self._layers_to_be_removed = []
-
-        # レイヤー削除時のシグナル接続
-        self._setup_signals()
 
     # ========================================
     # workflowから呼び出されるパブリックメソッド
@@ -139,9 +131,6 @@ class CoastlineAlgorithm:
                 level=Qgis.Info,
             )
 
-            # 一時ファイルパスをレイヤーIDと関連付けて保存
-            self._temp_files[layer.id()] = temp_file_path
-
             return layer
 
         except Exception as e:
@@ -152,87 +141,6 @@ class CoastlineAlgorithm:
         finally:
             if not temp_file.closed:
                 temp_file.close()
-
-    def _on_layers_will_be_removed(self, layer_ids: list):
-        """
-        レイヤーが削除される直前に、対象の一時ファイルパスを特定する
-        Args:
-            layer_ids (list): 削除される予定のレイヤーIDリスト
-        """
-        # 削除対象のレイヤーIDをリストに追加
-        self._layers_to_be_removed.extend(layer_ids)
-        QgsMessageLog.logMessage(
-            f"削除予定レイヤーを記録: {layer_ids}",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
-
-    def _on_layers_removed(self):
-        """
-        レイヤーが完全に削除された後に、タイマーを使って一時ファイルを削除する
-        """
-        for layer_id in self._layers_to_be_removed:
-            if layer_id in self._temp_files:
-                temp_file_path = self._temp_files[layer_id]
-
-                QTimer.singleShot(
-                    0,  # タイムアウト0msは「できるだけ早く、ただし現在のイベントの後で」という意味
-                    lambda p=temp_file_path, lid=layer_id: self._delete_temp_file(
-                        p, lid
-                    ),
-                )
-
-        self._layers_to_be_removed.clear()
-
-    def _delete_temp_file(self, file_path: str, layer_id: str):
-        """
-        一時ファイルを実際に削除するメソッド
-        Args:
-            file_path (str): 削除する一時ファイルのパス
-            layer_id (str): レイヤーID
-        """
-        try:
-            if os.path.exists(file_path):
-                os.unlink(file_path)
-                QgsMessageLog.logMessage(
-                    f"レイヤー削除に伴い一時ファイルを削除: {file_path}",
-                    PLUGIN_NAME,
-                    level=Qgis.Info,
-                )
-
-            if layer_id in self._temp_files:
-                del self._temp_files[layer_id]
-        except Exception as e:
-            QgsMessageLog.logMessage(
-                f"レイヤー削除時の一時ファイル削除エラー: {file_path} - {str(e)}",
-                PLUGIN_NAME,
-                level=Qgis.Warning,
-            )
-
-    def _setup_signals(self):
-        """
-        QGISシグナルの接続を設定
-        """
-        try:
-            from qgis.core import QgsProject
-
-            project = QgsProject.instance()
-
-            # 2つのシグナルを接続
-            project.layersWillBeRemoved.connect(self._on_layers_will_be_removed)  # type: ignore
-            project.layersRemoved.connect(self._on_layers_removed)  # type: ignore
-
-            QgsMessageLog.logMessage(
-                "レイヤー削除追跡シグナルを接続しました",
-                PLUGIN_NAME,
-                level=Qgis.Info,
-            )
-        except Exception as e:
-            QgsMessageLog.logMessage(
-                f"シグナル接続エラー: {str(e)}",
-                PLUGIN_NAME,
-                level=Qgis.Warning,
-            )
 
     # ===========================================================
     # fetch_coastline_data_dividedから呼び出されるプライベートメソッド

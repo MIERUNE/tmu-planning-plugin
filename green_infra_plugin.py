@@ -3,6 +3,7 @@ import os
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
+from qgis.core import Qgis, QgsMessageLog
 
 from .real_estate_lib.land_use.location_normalization_plan_algorithm import (
     LocationNormalizationPlanAlgorithm,
@@ -117,25 +118,33 @@ class GreenInfraPlugin:
         # Phase 1: ベースマップレイヤーの可視化
         self.basemap_workflow.execute(self.dockwidget.get_selected_basemaps())
 
-        # Phase 2: 不動産情報ライブラリの可視化
+        if real_estate_api_key:
         # 都市計画区域の可視化
-        if self.dockwidget.checkBox_urban_area.isChecked():
-            self.layer_workflow.execute(
-                self.urban_planning_algorithm,
-                api_key=real_estate_api_key,
-            )
+            if self.dockwidget.checkBox_urban_area.isChecked():
+                self.layer_workflow.execute(
+                    self.urban_planning_algorithm,
+                    api_key=real_estate_api_key,
+                )
 
-        # 用途地域の可視化
-        if self.dockwidget.checkBox_use_district.isChecked():
-            self.layer_workflow.execute(
-                self.zoning_district_algorithm, api_key=real_estate_api_key
-            )
+            # 用途地域の可視化
+            if self.dockwidget.checkBox_use_district.isChecked():
+                self.layer_workflow.execute(
+                    self.zoning_district_algorithm, api_key=real_estate_api_key
+                )
 
-        # 立地適正化計画の可視化
-        if self.dockwidget.checkBox_location_normalization_plan.isChecked():
-            self.layer_workflow.execute(
-                self.location_normalization_plan_algorithm,
-                api_key=real_estate_api_key,
+            # 立地適正化計画の可視化
+            if self.dockwidget.checkBox_location_normalization_plan.isChecked():
+                self.layer_workflow.execute(
+                    self.location_normalization_plan_algorithm,
+                    api_key=real_estate_api_key,
+                )
+        else:
+            message = "不動産情報ライブラリAPIキーが未設定のため、関連処理をスキップします。"
+            QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+            self.iface.messageBar().pushMessage(
+                "不動産APIキー未設定",
+                message,
+                level=Qgis.Warning,
             )
 
         # Phase 3: 海岸線データの可視化

@@ -18,22 +18,7 @@ class LayerWorkflow:
         指定されたアルゴリズムを実行し、レイヤーをQGISに追加する
         """
         try:
-            added_layer = algorithm.create_layer(api_key)
-
-            if not api_key:
-                message = (
-                    "不動産情報ライブラリAPIキーが未設定のため、処理をスキップします。"
-                )
-                QgsMessageLog.logMessage(
-                    message,
-                    PLUGIN_NAME,
-                    level=Qgis.Warning,
-                )
-                self.iface.messageBar().pushMessage(
-                    message,
-                    level=Qgis.Warning,
-                )
-
+            added_layer = algorithm.create_layer(api_key)    
             if not added_layer:
                 # メッセージを汎用的に変更
                 QgsMessageLog.logMessage(

@@ -2,28 +2,53 @@
 海しるAPIの接続情報とAPIクライアント
 """
 
-from PyQt5.QtCore import QEventLoop, QUrl
+from PyQt5.QtCore import QEventLoop, QUrl, QUrlQuery
 from PyQt5.QtNetwork import QNetworkRequest
 from qgis.core import Qgis, QgsMessageLog, QgsNetworkAccessManager
 
 # 海しるAPI ベースURL
 UMI_SHIRU_BASE_URL = "https://api.msil.go.jp"
 
-# 海しるAPI エンドポイント定義
-API_ENDPOINTS = {
-    "coastline": "/coastline-type-ESI/v2/MapServer",
+# 海しるAPI 定義（エンドポイントとレイヤー情報）
+UMI_SHIRU_API_CONFIG = {
+    "coastline": {
+        "endpoint": "/coastline-type-ESI/v2/MapServer",
+        "layer": "1",  # 海岸線
+    },
     # 今後追加予定:
-    # "fishing_port": "/fishing-port-area/v2/MapServer",
-    # "port_area": "/port-area/v2/MapServer",
+    # "fishing_port": {
+    #     "endpoint": "/fishing-port-area/v2/MapServer",
+    #     "layer": "3",  # 漁港区域
+    # },
+    # "port_area": {
+    #     "endpoint": "/port-area/v2/MapServer",
+    #     "layer": "3",  # 港湾区域
+    # },
 }
 
-# 海しるAPI レイヤー選択定義（データごとのデフォルト値）
-LAYER_SELECTIONS = {
-    "coastline": "1",  # 海岸線
-    # 今後追加予定:
-    # "fishing_port": "3",   # 漁港区域
-    # "port_area": "3",      # 港湾区域
+# 主要都市のデフォルト境界範囲
+CITY_DEFAULT_BOUNDS = {
+    "01100": {  # 札幌市
+        "min_lon": 141.0,
+        "min_lat": 42.8,
+        "max_lon": 141.6,
+        "max_lat": 43.4,
+    },
+    # 他の都市も必要に応じて追加可能
 }
+
+# 分割取得が必要な市区町村の設定
+CITY_DIVISION_CONFIG = {
+    "34202": {  # 呉市（広島県）
+        "division_count": 4,
+    },
+    "42209": {  # 対馬市（長崎県）
+        "division_count": 3,
+    },
+}
+
+# データ取得時のバッファサイズ
+BBOX_BUFFER_DEGREES = 0.01  # 約1km相当
 
 # ログメッセージ用プラグイン名
 PLUGIN_NAME = "Green Infra Plugin"
@@ -45,33 +70,31 @@ class UmiShiruApiClient:
     def request(self, data_type: str, params: dict) -> str:
         """
         海しるAPIへのリクエストを実行
-
         Args:
             data_type (str): データタイプ（例: "coastline", "port_area"等）
             params (dict): クエリパラメータ
-
         Returns:
             str: レスポンスデータ（GeoJSON文字列）
-
         Raises:
             Exception: APIリクエスト失敗時
         """
-        if data_type not in API_ENDPOINTS:
+        if data_type not in UMI_SHIRU_API_CONFIG:
             raise ValueError(f"未定義のデータタイプ: {data_type}")
 
-        if data_type not in LAYER_SELECTIONS:
-            raise ValueError(f"未定義のレイヤー設定: {data_type}")
+        api_def = UMI_SHIRU_API_CONFIG[data_type]
+        endpoint = api_def["endpoint"]
+        layer_selection = api_def["layer"]
 
-        endpoint = API_ENDPOINTS[data_type]
-        layer_selection = LAYER_SELECTIONS[data_type]
+        base_full_url = f"{self.base_url}{endpoint}/{layer_selection}/query"
 
-        # URLを構築
-        param_str = "&".join([f"{k}={v}" for k, v in params.items()])
-        full_url = f"{self.base_url}{endpoint}/{layer_selection}/query?{param_str}"
+        query = QUrlQuery()
+        for key, value in params.items():
+            query.addQueryItem(key, str(value))
 
-        QgsMessageLog.logMessage(
-            f"海しるAPIリクエスト開始: {full_url}", PLUGIN_NAME, level=Qgis.Info
-        )
+        # URLオブジェクトを生成
+        url = QUrl(base_full_url)
+        url.setQuery(query)
+        full_url = url.toString()
 
         # ネットワークリクエスト実行
         request = QNetworkRequest(QUrl(full_url))

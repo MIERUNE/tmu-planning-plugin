@@ -100,6 +100,7 @@ class BaseMapAlgorithm:
             Optional[QgsVectorTileLayer]: 作成されたレイヤー
         """
         try:
+            # TODO: URLクエリパラメータを安全に構築する方法へ変更
             uri = (
                 f"type=xyz&url={gsi_tile_url}&zmax={tile_zoom_max}&zmin={tile_zoom_min}"
             )

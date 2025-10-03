@@ -16,6 +16,8 @@ ZONING_DISTRICT_AREA_API_ENDPOINT = (
     "https://www.reinfolib.mlit.go.jp/ex-api/external/XKT002"
 )
 
+
+
 # ログメッセージ用プラグイン名
 PLUGIN_NAME = "Green Infra Plugin"
 

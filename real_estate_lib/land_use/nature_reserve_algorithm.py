@@ -24,14 +24,8 @@ from ..connect import (
 class NatureReserveAlgorithm:
     """自然公園地域データ取得クラス"""
 
-    def __init__(self, prefecture_code: str, iface):
-        """
-        Args:
-            prefecture_code (str): 対象の都道府県コード (例: "01", "13")
-            iface: QGISインターフェース
-        """
+    def __init__(self,  iface):
         self.iface = iface
-        self.prefecture_code = prefecture_code
 
     def _check_api_connection(self, api_key: str) -> tuple[bool, Optional[int]]:
         """APIキーの有効性を確認するための事前接続チェック"""
@@ -65,7 +59,7 @@ class NatureReserveAlgorithm:
         reply.deleteLater()
         return True, http_status
 
-    def create_layer(self, api_key: str) -> Optional[QgsVectorTileLayer]:
+    def create_layer(self, api_key: str, prefecture_code: str) -> Optional[QgsVectorTileLayer]:
         """
         自然公園地域データをAPIから取得する
         Args:
@@ -74,6 +68,11 @@ class NatureReserveAlgorithm:
             QgsVectorTileLayer : 追加に成功した場合はレイヤーオブジェクト
         """
         success, status_code = self._check_api_connection(api_key)
+        QgsMessageLog.logMessage(
+            f"選択した都道府県コード: {prefecture_code}",
+            PLUGIN_NAME,
+            level=Qgis.Info,
+        )
         # 接続チェック
         if not success:
             user_message = "APIサーバーへの接続に失敗しました。"
@@ -90,7 +89,7 @@ class NatureReserveAlgorithm:
             "z": "{z}",
             "x": "{x}",
             "y": "{y}",
-            "prefectureCode": self.prefecture_code,
+            "prefectureCode": prefecture_code,
         }
         encoded_params = urllib.parse.urlencode(params, safe="{}")
 

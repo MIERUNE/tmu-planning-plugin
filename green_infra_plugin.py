@@ -10,6 +10,7 @@ from .real_estate_lib.land_use.location_normalization_plan_algorithm import (
 )
 from .real_estate_lib.land_use.urban_planning_algorithm import UrbanPlanningAlgorithm
 from .real_estate_lib.land_use.zoning_district_algorithm import ZoningDistrictAlgorithm
+from .real_estate_lib.land_use.nature_reserve_algorithm import NatureReserveAlgorithm
 from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .workflows.area_workflow import AreaWorkflow
@@ -38,6 +39,7 @@ class GreenInfraPlugin:
         self.location_normalization_plan_algorithm = LocationNormalizationPlanAlgorithm(
             iface
         )
+        self.nature_reserve_algorithm = NatureReserveAlgorithm(iface)
         self.coastline_workflow = CoastlineWorkflow(iface)
 
     def add_action(
@@ -129,7 +131,8 @@ class GreenInfraPlugin:
             # 用途地域の可視化
             if self.dockwidget.checkBox_use_district.isChecked():
                 self.layer_workflow.execute(
-                    self.zoning_district_algorithm, api_key=real_estate_api_key
+                    self.zoning_district_algorithm, 
+                    api_key=real_estate_api_key
                 )
 
             # 立地適正化計画の可視化
@@ -137,6 +140,15 @@ class GreenInfraPlugin:
                 self.layer_workflow.execute(
                     self.location_normalization_plan_algorithm,
                     api_key=real_estate_api_key,
+                )
+
+            # 自然公園地域の可視化
+            if self.dockwidget.checkBox_nature_reserve.isChecked():
+                self.layer_workflow.execute(
+                    self.nature_reserve_algorithm,
+                    api_key=real_estate_api_key,
+                    prefecture_code=self.dockwidget.comboBox_prefecture.currentData(),
+
                 )
         else:
             message = (

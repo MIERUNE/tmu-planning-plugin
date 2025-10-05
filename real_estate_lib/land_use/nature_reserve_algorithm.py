@@ -68,11 +68,6 @@ class NatureReserveAlgorithm:
             QgsVectorTileLayer : 追加に成功した場合はレイヤーオブジェクト
         """
         success, status_code = self._check_api_connection(api_key)
-        QgsMessageLog.logMessage(
-            f"選択した都道府県コード: {prefecture_code}",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
         # 接続チェック
         if not success:
             user_message = "APIサーバーへの接続に失敗しました。"

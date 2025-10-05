@@ -144,11 +144,14 @@ class GreenInfraPlugin:
 
             # 自然公園地域の可視化
             if self.dockwidget.checkBox_nature_reserve.isChecked():
+                # 都道府県コードが１桁の場合0を削除
+                prefecture_code=self.dockwidget.comboBox_prefecture.currentData()
+                api_prefecture_code = str(int(prefecture_code))
+                
                 self.layer_workflow.execute(
                     self.nature_reserve_algorithm,
                     api_key=real_estate_api_key,
-                    prefecture_code=self.dockwidget.comboBox_prefecture.currentData(),
-
+                    prefecture_code=api_prefecture_code
                 )
         else:
             message = (

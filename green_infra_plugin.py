@@ -10,10 +10,12 @@ from .real_estate_lib.land_use.zoning_district_algorithm import ZoningDistrictAl
 from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .umi_shiru.coastline.coastline_algorithm import CoastlineAlgorithm
+
 # from .umi_shiru.fishing_port.fishing_port_algorithm import FishingPortAlgorithm
 from .workflows.area_workflow import AreaWorkflow
 from .workflows.basemap_workflow import BasemapWorkflow
 from .workflows.land_use_layer_workflow import LayerWorkflow
+from .workflows.population_mesh_workflow import PopulationMeshWorkflow
 from .workflows.umishiru_workflow import UmiShiruWorkflow
 
 PLUGIN_NAME = "Green Infra Plugin"
@@ -32,6 +34,7 @@ class GreenInfraPlugin:
         self.area_workflow = AreaWorkflow(iface)
         self.basemap_workflow = BasemapWorkflow(iface)
         self.layer_workflow = LayerWorkflow(iface)
+        self.population_mesh_workflow = PopulationMeshWorkflow(iface)
         self.umishiru_workflow = UmiShiruWorkflow(iface)
         self.urban_planning_algorithm = UrbanPlanningAlgorithm(iface)
         self.zoning_district_algorithm = ZoningDistrictAlgorithm(iface)
@@ -194,4 +197,5 @@ class GreenInfraPlugin:
 
         self.area_workflow.load_municipality_dropdown(
             self.dockwidget, api_key, selected_code
+        )
         )

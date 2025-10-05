@@ -13,6 +13,7 @@ from .workflows.area_workflow import AreaWorkflow
 from .workflows.basemap_workflow import BasemapWorkflow
 from .workflows.coastline_workflow import CoastlineWorkflow
 from .workflows.land_use_layer_workflow import LayerWorkflow
+from .workflows.population_mesh_workflow import PopulationMeshWorkflow
 
 PLUGIN_NAME = "Green Infra Plugin"
 
@@ -33,6 +34,7 @@ class GreenInfraPlugin:
         self.urban_planning_algorithm = UrbanPlanningAlgorithm(iface)
         self.zoning_district_algorithm = ZoningDistrictAlgorithm(iface)
         self.coastline_workflow = CoastlineWorkflow(iface)
+        self.population_mesh_workflow = PopulationMeshWorkflow(iface)
 
     def add_action(
         self,
@@ -171,6 +173,10 @@ class GreenInfraPlugin:
             )
         # 漁港区域の可視化
         # 港湾区域の可視化
+
+        # Phase 4: 人口メッシュデータの可視化
+        if self.dockwidget.checkBox_population_mesh.isChecked():
+            self.population_mesh_workflow.execute()
 
     def on_prefecture_changed(self):
         """都道府県選択変更時の処理"""

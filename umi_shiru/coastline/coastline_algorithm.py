@@ -46,7 +46,7 @@ class CoastlineAlgorithm:
         return client.request("coastline", params)
 
     def fetch_coastline_data_divided(
-        self, api_key: str, bounds: dict, division_count: int, display_name: str
+        self, api_key: str, bounds: dict, division_count: int
     ) -> str:
         """
         海岸線データをAPIから取得（分割取得）

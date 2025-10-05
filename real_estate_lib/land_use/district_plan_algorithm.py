@@ -1,5 +1,5 @@
 """
-都市計画区域データの取得機能モジュール
+地区計画区域データの取得機能モジュール
 """
 
 import urllib.parse
@@ -16,13 +16,13 @@ from qgis.PyQt.QtNetwork import QNetworkRequest
 
 from ..connect import (
     PLUGIN_NAME,
-    URBAN_PLANNING_AREA_API_ENDPOINT,
+    DISTRICT_PLAN_AREA_API_ENDPOINT,
     ZOOM9_SCALE_THRESHOLD,
 )
 
 
-class UrbanPlanningAlgorithm:
-    """都市計画区域データ取得クラス"""
+class DistrictPlanAlgorithm:
+    """地区計画区域データ取得クラス"""
 
     def __init__(self, iface):
         self.iface = iface
@@ -31,7 +31,7 @@ class UrbanPlanningAlgorithm:
         """APIキーの有効性を確認するための事前接続チェック"""
         # 接続テストとしてズームレベル0のタイルをリクエスト
         test_url = (
-            URBAN_PLANNING_AREA_API_ENDPOINT
+            DISTRICT_PLAN_AREA_API_ENDPOINT
             + "?response_format=geojson&z=13&x=7272&y=3225"
         )
 
@@ -64,7 +64,7 @@ class UrbanPlanningAlgorithm:
 
     def create_layer(self, api_key: str) -> Optional[QgsVectorTileLayer]:
         """
-        指定した市区町村の都市計画区域データをAPIから取得する
+        地区計画区域データをAPIから取得する
         Args:
             api_key (str): APIキー
         Returns:
@@ -87,7 +87,7 @@ class UrbanPlanningAlgorithm:
 
         # QGIS用にエンコード
         encoded_for_qgis = encoded_params.replace("=", "%3D").replace("&", "%26")
-        encoded_tile_url = f"{URBAN_PLANNING_AREA_API_ENDPOINT}?{encoded_for_qgis}"
+        encoded_tile_url = f"{DISTRICT_PLAN_AREA_API_ENDPOINT}?{encoded_for_qgis}"
 
         # ベクトルタイルレイヤーのURLを作成
         get_real_estate_url = (
@@ -98,11 +98,11 @@ class UrbanPlanningAlgorithm:
             f"&http-header:Ocp-Apim-Subscription-Key={api_key}"
         )
 
-        layer_name = "都市計画区域"
-        urban_planning_layer = QgsVectorTileLayer(get_real_estate_url, layer_name)
+        layer_name = "地区計画区域"
+        district_plan_layer = QgsVectorTileLayer(get_real_estate_url, layer_name)
 
         # ズームレベル９以下では表示しない
-        urban_planning_layer.setScaleBasedVisibility(True)
-        urban_planning_layer.setMinimumScale(ZOOM9_SCALE_THRESHOLD)
+        district_plan_layer.setScaleBasedVisibility(True)
+        district_plan_layer.setMinimumScale(ZOOM9_SCALE_THRESHOLD)
 
-        return urban_planning_layer
+        return district_plan_layer

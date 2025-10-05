@@ -162,16 +162,13 @@ class CoastlineWorkflow(BaseWorkflow):
             if municipality_code in CITY_DIVISION_CONFIG:
                 division_config = CITY_DIVISION_CONFIG[municipality_code]
                 division_count = division_config["division_count"]
-                geojson_data = self.algorithm.fetch_coastline_data_divided(
+                geojson_data = self.algorithm.fetch_data_divided(
                     api_key=api_key,
                     bounds=bounds,
                     division_count=division_count,
-                    display_name=display_name,
                 )
             else:
-                geojson_data = self.algorithm.fetch_coastline_data(
-                    api_key=api_key, bounds=bounds
-                )
+                geojson_data = self.algorithm.fetch_data(api_key=api_key, bounds=bounds)
 
             if not geojson_data:
                 message = "海しるAPIからのデータ取得に失敗しました。"
@@ -187,7 +184,7 @@ class CoastlineWorkflow(BaseWorkflow):
 
             # 4. レイヤー作成
             layer_name = f"海岸線_{display_name}"
-            layer = self.algorithm.create_coastline_layer(geojson_data, layer_name)
+            layer = self.algorithm.create_layer(geojson_data, layer_name)
 
             # 5. QGISプロジェクトに追加
             QgsProject.instance().addMapLayer(layer)

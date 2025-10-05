@@ -12,7 +12,7 @@ from typing import Dict, List, Optional
 from PyQt5.QtGui import QColor
 from qgis.core import Qgis, QgsCoordinateReferenceSystem, QgsMessageLog, QgsVectorLayer
 
-from ..connect import PLUGIN_NAME, UmiShiruApiClient
+from ..client import PLUGIN_NAME, UmiShiruApiClient
 from .layer_settings import UmiShiruLayerSettings
 
 

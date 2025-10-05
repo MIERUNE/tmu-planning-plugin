@@ -7,6 +7,7 @@ from qgis.core import Qgis, QgsMessageLog
 
 from .real_estate_lib.land_use.urban_planning_algorithm import UrbanPlanningAlgorithm
 from .real_estate_lib.land_use.zoning_district_algorithm import ZoningDistrictAlgorithm
+from .real_estate_lib.land_use.district_plan_algorithm import DistrictPlanAlgorithm
 from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .workflows.area_workflow import AreaWorkflow
@@ -33,6 +34,7 @@ class GreenInfraPlugin:
         self.layer_workflow = LayerWorkflow(iface)
         self.urban_planning_algorithm = UrbanPlanningAlgorithm(iface)
         self.zoning_district_algorithm = ZoningDistrictAlgorithm(iface)
+        self.district_plan_algorithm = DistrictPlanAlgorithm(iface)
         self.coastline_workflow = CoastlineWorkflow(iface)
         self.population_mesh_workflow = PopulationMeshWorkflow(iface)
 
@@ -130,6 +132,10 @@ class GreenInfraPlugin:
                 )
 
             # 地区計画の可視化
+            if self.dockwidget.checkBox_district_planning.isChecked():
+                self.layer_workflow.execute(
+                    self.district_plan_algorithm, api_key=real_estate_api_key
+                )
         else:
             message = (
                 "不動産情報ライブラリAPIキーが未設定のため、関連処理をスキップします。"

@@ -32,10 +32,3 @@ class CoastlineLayerSettings(UmiShiruLayerSettings):
         """
         return "海岸線"
 
-
-# 後方互換性のための従来の定数（廃止予定）
-COASTLINE_STYLE = {
-    "color": "#0066CC",
-    "width": 0.5,
-    "opacity": 0.8,
-}

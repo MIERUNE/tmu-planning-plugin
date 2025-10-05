@@ -31,4 +31,3 @@ class CoastlineLayerSettings(UmiShiruLayerSettings):
             str: レイヤー名
         """
         return "海岸線"
-

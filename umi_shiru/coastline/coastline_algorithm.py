@@ -68,12 +68,6 @@ class CoastlineAlgorithm:
 
             if geojson_data:
                 geojson_list.append(geojson_data)
-            else:
-                QgsMessageLog.logMessage(
-                    f"分割範囲 {i+1}/{len(bbox_list)} のデータ取得に失敗しました",
-                    PLUGIN_NAME,
-                    level=Qgis.Warning,
-                )
 
         if not geojson_list:
             return ""

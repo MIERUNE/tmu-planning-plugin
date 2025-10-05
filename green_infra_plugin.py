@@ -198,4 +198,3 @@ class GreenInfraPlugin:
         self.area_workflow.load_municipality_dropdown(
             self.dockwidget, api_key, selected_code
         )
-        )

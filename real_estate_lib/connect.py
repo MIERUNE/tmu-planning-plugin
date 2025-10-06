@@ -16,11 +16,15 @@ ZONING_DISTRICT_AREA_API_ENDPOINT = (
     "https://www.reinfolib.mlit.go.jp/ex-api/external/XKT002"
 )
 
+# 地区計画の都市計画決定GISデータ（地区計画）API
+DISTRICT_PLAN_AREA_API_ENDPOINT = (
+    "https://www.reinfolib.mlit.go.jp/ex-api/external/XKT023"
+)
+
 # 立地適正化計画区域データAPI
 LOCATION_NORMALIZATION_PLAN_API_ENDPOINT = (
     "https://www.reinfolib.mlit.go.jp/ex-api/external/XKT003"
 )
-
 
 # ログメッセージ用プラグイン名
 PLUGIN_NAME = "Green Infra Plugin"

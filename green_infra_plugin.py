@@ -117,35 +117,42 @@ class GreenInfraPlugin:
         self.basemap_workflow.execute(self.dockwidget.get_selected_basemaps())
 
         # Phase 2: 不動産情報ライブラリの可視化
-        if real_estate_api_key:
-            # 都市計画区域の可視化
-            if self.dockwidget.checkBox_urban_area.isChecked():
+        # 都市計画区域の可視化
+        if self.dockwidget.checkBox_urban_area.isChecked():
+            if real_estate_api_key:
+                # Workflowを実行
                 self.layer_workflow.execute(
                     self.urban_planning_algorithm,
                     api_key=real_estate_api_key,
                 )
+            else:
+                message = "不動産情報ライブラリAPIキーが未設定のため、都市計画区域の取得をスキップします。"
+                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
 
-            # 用途地域の可視化
-            if self.dockwidget.checkBox_use_district.isChecked():
+        # 用途地域の可視化
+        if self.dockwidget.checkBox_use_district.isChecked():
+            if real_estate_api_key:
+                # Workflowを実行
                 self.layer_workflow.execute(
                     self.zoning_district_algorithm, api_key=real_estate_api_key
                 )
+            else:
+                message = "不動産情報ライブラリAPIキーが未設定のため、用途地域の取得をスキップします。"
+                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
 
-            # 地区計画の可視化
-            if self.dockwidget.checkBox_district_planning.isChecked():
+        # 地区計画の可視化
+        if self.dockwidget.checkBox_district_planning.isChecked():
+            if real_estate_api_key:
+                # Workflowを実行
                 self.layer_workflow.execute(
                     self.district_plan_algorithm, api_key=real_estate_api_key
                 )
-        else:
-            message = (
-                "不動産情報ライブラリAPIキーが未設定のため、関連処理をスキップします。"
-            )
-            QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-            self.iface.messageBar().pushMessage(
-                "不動産APIキー未設定",
-                message,
-                level=Qgis.Warning,
-            )
+            else:
+                message = "不動産情報ライブラリAPIキーが未設定のため、地区計画の取得をスキップします。"
+                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
 
         # Phase 3: 海岸線データの可視化
         umi_shiru_api_key = ApikeyDialog.get_umi_shiru_api_key()

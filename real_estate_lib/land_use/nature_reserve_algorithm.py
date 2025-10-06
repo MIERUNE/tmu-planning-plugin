@@ -13,6 +13,8 @@ from qgis.core import (
 )
 from qgis.PyQt.QtCore import QEventLoop, QUrl
 from qgis.PyQt.QtNetwork import QNetworkRequest
+from ..area.area_settings import PREFECTURE_LIST
+
 
 from ..connect import (
     NATURE_RESERVE_AREA_API_ENDPOINT,
@@ -26,6 +28,12 @@ class NatureReserveAlgorithm:
 
     def __init__(self,  iface):
         self.iface = iface
+
+    def _get_prefecture_name(self, prefecture_code: str) -> Optional[str]:
+        """都道府県コードから都道府県名を取得"""
+        prefecture_dict = dict(PREFECTURE_LIST)
+
+        return prefecture_dict.get(prefecture_code, None)
 
     def _check_api_connection(self, api_key: str) -> tuple[bool, Optional[int]]:
         """APIキーの有効性を確認するための事前接続チェック"""
@@ -59,7 +67,7 @@ class NatureReserveAlgorithm:
         reply.deleteLater()
         return True, http_status
 
-    def create_layer(self, api_key: str, prefecture_code: str) -> Optional[QgsVectorTileLayer]:
+    def create_layer(self, api_key: str, prefecture_code: Optional[str] = None) -> Optional[QgsVectorTileLayer]:
         """
         自然公園地域データをAPIから取得する
         Args:
@@ -101,7 +109,13 @@ class NatureReserveAlgorithm:
             f"&http-header:Ocp-Apim-Subscription-Key={api_key}"
         )
 
-        layer_name = "自然公園地域"
+        prefecture_name = self._get_prefecture_name(prefecture_code)
+
+        # 都道府県名が取得できた場合はレイヤー名に付加する
+        if prefecture_name:
+            layer_name = f"自然公園地域_{prefecture_name}"
+        else:
+            layer_name = "自然公園地域"
         nature_reserve_layer = QgsVectorTileLayer(get_real_estate_url, layer_name)
 
         # ズームレベル９以下では表示しない

@@ -19,7 +19,6 @@ class LayerWorkflow:
         """
         try:
             added_layer = algorithm.create_layer(api_key)
-
             if not added_layer:
                 # メッセージを汎用的に変更
                 QgsMessageLog.logMessage(

@@ -29,7 +29,7 @@ class ZoningDistrictAlgorithm:
 
     def _check_api_connection(self, api_key: str) -> tuple[bool, Optional[int]]:
         """APIキーの有効性を確認するための事前接続チェック"""
-        # 接続テストとしてズームレベル0のタイルをリクエスト
+        # 接続テスト一部タイルをリクエスト
         test_url = (
             ZONING_DISTRICT_AREA_API_ENDPOINT
             + "?response_format=geojson&z=13&x=7272&y=3225"

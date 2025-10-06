@@ -496,7 +496,7 @@ QToolButton:hover {
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="checkBox_forest_area">
+             <widget class="QCheckBox" name="checkBox_location_normalization_plan">
               <property name="text">
                <string>立地適正化計画</string>
               </property>

@@ -1,5 +1,7 @@
 import hashlib
 import json
+import os
+import tempfile
 from typing import Dict, List, Optional
 
 from PyQt5.QtGui import QColor
@@ -66,12 +68,6 @@ class CoastlineAlgorithm:
 
             if geojson_data:
                 geojson_list.append(geojson_data)
-            else:
-                QgsMessageLog.logMessage(
-                    f"分割範囲 {i+1}/{len(bbox_list)} のデータ取得に失敗しました",
-                    PLUGIN_NAME,
-                    level=Qgis.Warning,
-                )
 
         if not geojson_list:
             return ""
@@ -88,27 +84,49 @@ class CoastlineAlgorithm:
         self, geojson_data: str, layer_name: str = "海岸線"
     ) -> QgsVectorLayer:
         """
-        GeoJSONデータからQGISレイヤーを作成
+        GeoJSONデータからQGISレイヤーを作成（一時ファイル使用）
         Args:
             geojson_data (str): GeoJSON文字列
             layer_name (str): レイヤー名
         Returns:
             QgsVectorLayer: 作成されたレイヤー（失敗時はNone）
         """
-        # ベクターレイヤーを作成
-        layer = QgsVectorLayer(geojson_data, layer_name, "ogr")
+        temp_file_path = None
 
-        if not layer.isValid():
-            raise Exception("ベクターレイヤーの作成に失敗しました")
+        # 一時ファイルにGeoJSONを保存
+        temp_file = tempfile.NamedTemporaryFile(
+            mode="w", suffix=".geojson", delete=False, encoding="utf-8"
+        )
 
-        # CRSを設定
-        crs = QgsCoordinateReferenceSystem("EPSG:4326")
-        layer.setCrs(crs)
+        try:
+            # GeoJSONデータを一時ファイルに書き込み
+            temp_file.write(geojson_data)
+            temp_file.flush()
+            temp_file_path = temp_file.name
+            temp_file.close()
 
-        # スタイルを適用
-        self._apply_coastline_style(layer)
+            # 一時ファイルからベクターレイヤーを作成
+            layer = QgsVectorLayer(temp_file_path, layer_name, "ogr")
 
-        return layer
+            if not layer.isValid():
+                raise Exception("ベクターレイヤーの作成に失敗しました")
+
+            # CRSを設定
+            crs = QgsCoordinateReferenceSystem("EPSG:4326")
+            layer.setCrs(crs)
+
+            # スタイルを適用
+            self._apply_coastline_style(layer)
+
+            return layer
+
+        except Exception as e:
+            if temp_file_path and os.path.exists(temp_file_path):
+                os.unlink(temp_file_path)
+            raise Exception(f"海岸線レイヤーの作成に失敗: {str(e)}") from e
+        finally:
+            if not temp_file.closed:
+                temp_file.close()
 
     # ===========================================================
     # fetch_coastline_data_dividedから呼び出されるプライベートメソッド

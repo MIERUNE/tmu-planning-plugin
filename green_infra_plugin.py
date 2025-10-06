@@ -10,6 +10,7 @@ from .real_estate_lib.land_use.location_normalization_plan_algorithm import (
 )
 from .real_estate_lib.land_use.urban_planning_algorithm import UrbanPlanningAlgorithm
 from .real_estate_lib.land_use.zoning_district_algorithm import ZoningDistrictAlgorithm
+from .umi_shiru.coastline.coastline_algorithm import CoastlineAlgorithm
 from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .workflows.area_workflow import AreaWorkflow

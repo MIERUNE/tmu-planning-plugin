@@ -5,6 +5,9 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 from qgis.core import Qgis, QgsMessageLog
 
+from .real_estate_lib.land_use.location_normalization_plan_algorithm import (
+    LocationNormalizationPlanAlgorithm,
+)
 from .real_estate_lib.land_use.urban_planning_algorithm import UrbanPlanningAlgorithm
 from .real_estate_lib.land_use.zoning_district_algorithm import ZoningDistrictAlgorithm
 from .real_estate_lib.land_use.district_plan_algorithm import DistrictPlanAlgorithm
@@ -35,6 +38,9 @@ class GreenInfraPlugin:
         self.urban_planning_algorithm = UrbanPlanningAlgorithm(iface)
         self.zoning_district_algorithm = ZoningDistrictAlgorithm(iface)
         self.district_plan_algorithm = DistrictPlanAlgorithm(iface)
+        self.location_normalization_plan_algorithm = LocationNormalizationPlanAlgorithm(
+            iface
+        )
         self.coastline_workflow = CoastlineWorkflow(iface)
         self.population_mesh_workflow = PopulationMeshWorkflow(iface)
 
@@ -116,7 +122,6 @@ class GreenInfraPlugin:
         # Phase 1: ベースマップレイヤーの可視化
         self.basemap_workflow.execute(self.dockwidget.get_selected_basemaps())
 
-        # Phase 2: 不動産情報ライブラリの可視化
         # 都市計画区域の可視化
         if self.dockwidget.checkBox_urban_area.isChecked():
             if real_estate_api_key:
@@ -151,6 +156,20 @@ class GreenInfraPlugin:
                 )
             else:
                 message = "不動産情報ライブラリAPIキーが未設定のため、地区計画の取得をスキップします。"
+                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+
+        # 立地適正化計画の可視化
+        if self.dockwidget.checkBox_location_normalization_plan.isChecked():
+            if real_estate_api_key:
+                # APIキーがあればWorkflowを実行
+                self.layer_workflow.execute(
+                    self.location_normalization_plan_algorithm,
+                    api_key=real_estate_api_key,
+                )
+            else:
+                # APIキーがなければスキップメッセージを表示
+                message = "不動産情報ライブラリAPIキーが未設定のため、立地適正化計画の取得をスキップします。"
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
                 self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
 

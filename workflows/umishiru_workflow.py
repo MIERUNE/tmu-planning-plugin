@@ -126,14 +126,14 @@ class UmiShiruWorkflow(BaseWorkflow):
         self,
         algorithm: UmiShiruBaseAlgorithm,
         api_key: Optional[str],
-        municipality_code: Optional[str] = None,
-        municipality_name: Optional[str] = None,
+        municipality_code,
+        municipality_name,
     ) -> bool:
         """
         指定されたアルゴリズムを実行し、海しるAPIデータレイヤーをQGISに追加する
         Args:
             algorithm (UmiShiruBaseAlgorithm): データタイプ固有のアルゴリズム
-            api_key (str): 海しるAPIキー
+            api_key (str, optional): 海しるAPIキー
             municipality_code (str, optional): 市区町村コード（5桁）
             municipality_name (str, optional): 市区町村名
         Returns:

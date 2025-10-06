@@ -1,15 +1,16 @@
 import os
 
-from qgis.core import Qgis, QgsMessageLog
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
+from qgis.core import Qgis, QgsMessageLog
 
 from .real_estate_lib.land_use.location_normalization_plan_algorithm import (
     LocationNormalizationPlanAlgorithm,
 )
 from .real_estate_lib.land_use.urban_planning_algorithm import UrbanPlanningAlgorithm
 from .real_estate_lib.land_use.zoning_district_algorithm import ZoningDistrictAlgorithm
+from .real_estate_lib.land_use.district_plan_algorithm import DistrictPlanAlgorithm
 from .umi_shiru.coastline.coastline_algorithm import CoastlineAlgorithm
 from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
@@ -38,6 +39,7 @@ class GreenInfraPlugin:
         self.layer_workflow = LayerWorkflow(iface)
         self.urban_planning_algorithm = UrbanPlanningAlgorithm(iface)
         self.zoning_district_algorithm = ZoningDistrictAlgorithm(iface)
+        self.district_plan_algorithm = DistrictPlanAlgorithm(iface)
         self.location_normalization_plan_algorithm = LocationNormalizationPlanAlgorithm(
             iface
         )
@@ -117,6 +119,12 @@ class GreenInfraPlugin:
         if not self.dockwidget:
             return
 
+        if not self.dockwidget.comboBox_municipality.currentData():
+            message = "市区町村が選択されていません。市区町村を選択してください。"
+            QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+            self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+            return
+
         real_estate_api_key = ApikeyDialog.get_real_estate_api_key()
 
         # Phase 1: ベースマップレイヤーの可視化
@@ -138,13 +146,24 @@ class GreenInfraPlugin:
         # 用途地域の可視化
         if self.dockwidget.checkBox_use_district.isChecked():
             if real_estate_api_key:
-                # APIキーがあればWorkflowを実行
+                # Workflowを実行
                 self.layer_workflow.execute(
                     self.zoning_district_algorithm, api_key=real_estate_api_key
                 )
             else:
-                # APIキーがなければスキップメッセージを表示
                 message = "不動産情報ライブラリAPIキーが未設定のため、用途地域の取得をスキップします。"
+                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+
+        # 地区計画の可視化
+        if self.dockwidget.checkBox_district_planning.isChecked():
+            if real_estate_api_key:
+                # Workflowを実行
+                self.layer_workflow.execute(
+                    self.district_plan_algorithm, api_key=real_estate_api_key
+                )
+            else:
+                message = "不動産情報ライブラリAPIキーが未設定のため、地区計画の取得をスキップします。"
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
                 self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
 

@@ -15,8 +15,8 @@ from qgis.PyQt.QtCore import QEventLoop, QUrl
 from qgis.PyQt.QtNetwork import QNetworkRequest
 
 from ..connect import (
-    PLUGIN_NAME,
     DISTRICT_PLAN_AREA_API_ENDPOINT,
+    PLUGIN_NAME,
     ZOOM9_SCALE_THRESHOLD,
 )
 
@@ -29,7 +29,7 @@ class DistrictPlanAlgorithm:
 
     def _check_api_connection(self, api_key: str) -> tuple[bool, Optional[int]]:
         """APIキーの有効性を確認するための事前接続チェック"""
-        # 接続テストとしてズームレベル0のタイルをリクエスト
+        # 接続テストとして一部のタイルをリクエスト
         test_url = (
             DISTRICT_PLAN_AREA_API_ENDPOINT
             + "?response_format=geojson&z=13&x=7272&y=3225"

@@ -117,6 +117,12 @@ class GreenInfraPlugin:
         if not self.dockwidget:
             return
 
+        if not self.dockwidget.comboBox_municipality.currentData():
+            message = "市区町村が選択されていません。市区町村を選択してください。"
+            QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+            self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+            return
+
         real_estate_api_key = ApikeyDialog.get_real_estate_api_key()
 
         # Phase 1: ベースマップレイヤーの可視化

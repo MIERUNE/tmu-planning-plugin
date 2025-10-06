@@ -131,9 +131,7 @@ class GreenInfraPlugin:
             else:
                 message = "不動産情報ライブラリAPIキーが未設定のため、都市計画区域の取得をスキップします。"
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-                self.iface.messageBar().pushMessage(
-                    "警告", message, level=Qgis.Warning
-                )
+                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
 
         # 用途地域の可視化
         if self.dockwidget.checkBox_use_district.isChecked():
@@ -146,9 +144,7 @@ class GreenInfraPlugin:
                 # APIキーがなければスキップメッセージを表示
                 message = "不動産情報ライブラリAPIキーが未設定のため、用途地域の取得をスキップします。"
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-                self.iface.messageBar().pushMessage(
-                    "警告", message, level=Qgis.Warning
-                )
+                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
 
         # 立地適正化計画の可視化
         if self.dockwidget.checkBox_location_normalization_plan.isChecked():
@@ -162,10 +158,7 @@ class GreenInfraPlugin:
                 # APIキーがなければスキップメッセージを表示
                 message = "不動産情報ライブラリAPIキーが未設定のため、立地適正化計画の取得をスキップします。"
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-                self.iface.messageBar().pushMessage(
-                    "警告", message, level=Qgis.Warning
-                )
-        
+                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
 
         # Phase 3: 海岸線データの可視化
         umi_shiru_api_key = ApikeyDialog.get_umi_shiru_api_key()

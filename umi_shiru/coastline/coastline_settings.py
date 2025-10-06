@@ -20,7 +20,7 @@ class CoastlineLayerSettings(UmiShiruLayerSettings):
         """
         return {
             "color": "#0066CC",  # 海岸線の色（青）
-            "width": 0.5,  # 線の太さ
+            "width": 1.0,  # 線の太さ
             "opacity": 0.8,  # 透明度
         }
 

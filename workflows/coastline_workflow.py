@@ -121,15 +121,15 @@ class CoastlineWorkflow(BaseWorkflow):
     def execute(
         self,
         api_key: Optional[str],
-        municipality_code: Optional[str] = None,
-        municipality_name: Optional[str] = None,
+        municipality_code,
+        municipality_name,
     ) -> bool:
         """
         ワークフローを実行し、海岸線レイヤーをQGISに追加する
         Args:
             api_key (str): 海しるAPIキー
-            municipality_code (str, optional): 市区町村コード（5桁）
-            municipality_name (str, optional): 市区町村名
+            municipality_code (str): 市区町村コード（5桁）
+            municipality_name (str): 市区町村名
         Returns:
             bool: 成功した場合はTrue、失敗した場合はFalse
         """
@@ -139,12 +139,6 @@ class CoastlineWorkflow(BaseWorkflow):
                 message = (
                     "海しるAPIキーが未設定のため、海岸線データの処理をスキップします。"
                 )
-                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
-                return False
-
-            if not municipality_code:
-                message = "海岸線を表示するには市区町村を選択してください。"
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
                 self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
                 return False

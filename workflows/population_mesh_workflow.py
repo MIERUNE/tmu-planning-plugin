@@ -14,14 +14,16 @@ class PopulationMeshWorkflow:
         self.iface = iface
         self.algorithm = PopulationMeshAlgorithm(iface)
 
-    def execute(self) -> bool:
+    def execute(self, municipality_code: str, api_key: str) -> bool:
         """
         指定されたアルゴリズムを実行し、レイヤーをQGISに追加する
         Returns:
             bool: 成功した場合はTrue、失敗した場合はFalse
         """
         try:
-            added_layer = self.algorithm.create_population_mesh_layer()
+            added_layer = self.algorithm.create_population_mesh_layer(
+                municipality_code, api_key
+            )
 
             if added_layer is None:
                 QgsMessageLog.logMessage(

@@ -180,7 +180,10 @@ class GreenInfraPlugin:
                 f"e-Stat APIキー: {estat_api_key}", PLUGIN_NAME, level=Qgis.Info
             )
 
-            self.population_mesh_workflow.execute()
+            self.population_mesh_workflow.execute(
+                api_key=estat_api_key,
+                municipality_code=self.dockwidget.comboBox_municipality.currentData(),
+            )
 
     def on_prefecture_changed(self):
         """都道府県選択変更時の処理"""

@@ -1,24 +1,25 @@
 import os
 
-from qgis.core import Qgis, QgsMessageLog
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
+from qgis.core import Qgis, QgsMessageLog
 
-from .real_estate_lib.land_use.district_plan_algorithm import DistrictPlanAlgorithm
 from .real_estate_lib.land_use.location_normalization_plan_algorithm import (
     LocationNormalizationPlanAlgorithm,
 )
 from .real_estate_lib.land_use.urban_planning_algorithm import UrbanPlanningAlgorithm
 from .real_estate_lib.land_use.zoning_district_algorithm import ZoningDistrictAlgorithm
+from .real_estate_lib.land_use.district_plan_algorithm import DistrictPlanAlgorithm
+from .umi_shiru.coastline.coastline_algorithm import CoastlineAlgorithm
 from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .workflows.area_workflow import AreaWorkflow
 from .workflows.basemap_workflow import BasemapWorkflow
-from .workflows.coastline_workflow import CoastlineWorkflow
 from .workflows.land_use_layer_workflow import LayerWorkflow
 from .workflows.population_mesh_workflow import PopulationMeshWorkflow
-
+from .workflows.umishiru_workflow import UmiShiruWorkflow
+# from .umi_shiru.fishing_port.fishing_port_algorithm import FishingPortAlgorithm
 
 PLUGIN_NAME = "Green Infra Plugin"
 
@@ -43,7 +44,7 @@ class GreenInfraPlugin:
             iface
         )
         self.population_mesh_workflow = PopulationMeshWorkflow(iface)
-        self.coastline_workflow = CoastlineWorkflow(iface)
+        self.umishiru_workflow = UmiShiruWorkflow(iface)
 
     def add_action(
         self,
@@ -185,7 +186,9 @@ class GreenInfraPlugin:
 
         # 海岸線データの可視化
         if self.dockwidget.checkBox_coast_line.isChecked():
-            self.coastline_workflow.execute(
+            coastline_algorithm = CoastlineAlgorithm(self.iface)
+            self.umishiru_workflow.execute(
+                algorithm=coastline_algorithm,
                 api_key=umi_shiru_api_key,
                 municipality_code=self.dockwidget.comboBox_municipality.currentData(),
                 municipality_name=self.dockwidget.comboBox_municipality.currentText(),
@@ -193,7 +196,9 @@ class GreenInfraPlugin:
 
         # 漁港区域データの可視化
         # if self.dockwidget.checkBox_fishing_port_area.isChecked():
-        #     self.fishing_port_workflow.execute(
+        #     fishing_port_algorithm = FishingPortAlgorithm(self.iface)
+        #     self.umishiru_workflow.execute(
+        #         algorithm=fishing_port_algorithm,
         #         api_key=umi_shiru_api_key,
         #         municipality_code=self.dockwidget.comboBox_municipality.currentData(),
         #         municipality_name=self.dockwidget.comboBox_municipality.currentText(),

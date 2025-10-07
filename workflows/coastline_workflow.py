@@ -126,8 +126,8 @@ class CoastlineWorkflow(BaseWorkflow):
     def execute(
         self,
         api_key: Optional[str],
-        municipality_code: Optional[str] = None,
-        municipality_name: Optional[str] = None,
+        municipality_code: Optional[str],
+        municipality_name: Optional[str],
     ) -> bool:
         """
         海岸線ワークフローを実行し、海岸線レイヤーをQGISに追加する

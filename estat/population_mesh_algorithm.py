@@ -42,12 +42,12 @@ class PopulationMeshAlgorithm:
         self.temp_dir = tempfile.TemporaryDirectory()
         self.dataset_id = GetDatasetId(iface)
 
-    def _get_mesh_data(self) -> Optional[str]:
+    def _get_mesh_data(self, mesh_code: str) -> Optional[str]:
         """メッシュ形状データをダウンロードして取得"""
         # パラメーター
         mesh_request_params = {
             "dlserveyId": "S",
-            "code": "6441",
+            "code": mesh_code,
             "coordSys": "1",
             "format": "shape",
             "downloadType": "5",
@@ -80,34 +80,22 @@ class PopulationMeshAlgorithm:
         # 最初のシェープファイルのフルパスを文字列として返す
         return str(shapefiles[0])
 
-    def create_population_mesh_layer(self, municipality_code: str, api_key: str):
+    def create_population_mesh_layer(self, api_key: str, mesh_code: str, stats_data_id: str) -> Optional[QgsVectorLayer]:
         """人口メッシュデータの取得とQGISへのレイヤー追加
         Args:
             api_key (str): e-Stat APIキー
         Returns:
-
+            QgsVectorLayer: 追加に成功した場合はレイヤーオブジェクト、失敗した場合はNone
         """
-        QgsMessageLog.logMessage(
-            f"自治体コード '{municipality_code}' の処理を開始します。", PLUGIN_NAME, level=Qgis.Info
-        )
-        
-        # 行政区域ポリゴンの取得
-        polygon_layer = self.dataset_id.fetch_dataset_ids_for_municipality(municipality_code, api_key)
-        
-        # polygon_layerを使ったBBOX計算などの処理をここに追加していく
-        if polygon_layer:
-            # TODO: polygon_layerからBBOXを計算し、メッシュ番号を特定する処理
-            pass
-
         try:
             # メッシュ形状データのダウンロードとシェープファイルのパス取得
-            shp_path = self._get_mesh_data()
+            shp_path = self._get_mesh_data(mesh_code)
             if not shp_path:
                 return None
 
             # QGISにレイヤーとして追加
             # TODO : レイヤー名指定した自治体名+人口メッシュにする
-            layer_name = "人口メッシュ_1km"
+            layer_name = f"人口メッシュ_({mesh_code})"
 
             population_mesh_layer = QgsVectorLayer(str(shp_path), layer_name, "ogr")
             if not population_mesh_layer.isValid():
@@ -125,13 +113,8 @@ class PopulationMeshAlgorithm:
                 level=Qgis.Info,
             )
 
-            # 人口データの取得と整形)
+            # 人口データの取得と整形
 
-            # 取得したいデータのID（人口メッシュデータ）
-            # TODO : 指定した自治体でIDを取得できるようにする
-            stats_data_id = "8003007181"
-            # TODO : APIキーを引数で受け取るようにする
-            api_key = ""  # e-StatのAPIキー
             # パラメーター
             population_mesh_url_params = {
                 "appId": api_key,
@@ -215,14 +198,6 @@ class PopulationMeshAlgorithm:
             population_mesh_layer.triggerRepaint()  # 地図を再描画
 
             return population_mesh_layer
-
-        except requests.exceptions.RequestException as e:
-            QgsMessageLog.logMessage(
-                f"エラー: データ取得に失敗しました。URLやAPIキー、ネットワーク接続を確認してください。\n{e}",
-                PLUGIN_NAME,
-                level=Qgis.Critical,
-            )
-            return None
         except Exception as e:
             QgsMessageLog.logMessage(
                 f"予期せぬエラーが発生しました: {e}", PLUGIN_NAME, level=Qgis.Critical

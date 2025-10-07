@@ -1,5 +1,5 @@
 import json
-from typing import List, Optional
+from typing import Optional
 
 import requests
 from qgis.core import Qgis, QgsMessageLog
@@ -139,14 +139,14 @@ class GetDatasetId:
 
     def fetch_dataset_ids_for_municipality(
         self, municipality_code: str, api_key: str
-    ) -> List[str]:
+    ) -> dict[str, str]:
         """
         自治体コードを元にメッシュコードを取得し、各メッシュコードに対応する
         データセットIDのリストを取得する。
         Args:
             municipality_code (str): 自治体コード
         Returns:
-            List[str]: 取得したデータセットIDのリスト
+           -> dict[str, str]: 取得したデータセットIDの辞書
         """
         mesh_codes = self._get_mesh_codes(municipality_code)
 
@@ -156,17 +156,17 @@ class GetDatasetId:
                 PLUGIN_NAME,
                 level=Qgis.Warning,
             )
-            return []
+            return {}
 
-        dataset_ids = []
+        dataset_id_dict = {}
         for mesh_code in mesh_codes:
             dataset_id = self._get_dataset_id(mesh_code, api_key)
             if dataset_id:
-                dataset_ids.append(dataset_id)
+                dataset_id_dict[mesh_code] = dataset_id
 
         QgsMessageLog.logMessage(
-            f"最終的に取得したデータセットIDリスト: {dataset_ids}",
+            f"最終的に取得したデータセットIDリスト: {dataset_id_dict}",
             PLUGIN_NAME,
             level=Qgis.Success,
         )
-        return dataset_ids
+        return dataset_id_dict

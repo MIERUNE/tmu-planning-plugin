@@ -517,6 +517,13 @@ QToolButton:hover {
              </widget>
             </item>
             <item>
+             <widget class="QCheckBox" name="checkBox_nature_reserve">
+              <property name="text">
+               <string>自然公園地域</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="Line" name="line_urban">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>

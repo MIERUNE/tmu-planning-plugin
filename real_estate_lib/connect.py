@@ -26,6 +26,11 @@ LOCATION_NORMALIZATION_PLAN_API_ENDPOINT = (
     "https://www.reinfolib.mlit.go.jp/ex-api/external/XKT003"
 )
 
+# 自然公園地域データAPI
+NATURE_RESERVE_AREA_API_ENDPOINT = (
+    "https://www.reinfolib.mlit.go.jp/ex-api/external/XKT019"
+)
+
 # ログメッセージ用プラグイン名
 PLUGIN_NAME = "Green Infra Plugin"
 

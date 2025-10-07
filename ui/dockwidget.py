@@ -46,6 +46,7 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
         self.checkBox_location_normalization_plan: QCheckBox = (
             self.checkBox_location_normalization_plan
         )
+        self.checkBox_nature_reserve: QCheckBox = self.checkBox_nature_reserve
         self.checkBox_population_mesh: QCheckBox = self.checkBox_population_mesh
 
         self.apikey_keep: QPushButton = self.findChild(QPushButton, "apikey_keep")

@@ -24,7 +24,7 @@ from ..connect import (
 class NatureReserveAlgorithm:
     """自然公園地域データ取得クラス"""
 
-    def __init__(self,  iface):
+    def __init__(self, iface):
         self.iface = iface
 
     def _check_api_connection(self, api_key: str) -> tuple[bool, Optional[int]]:
@@ -59,7 +59,9 @@ class NatureReserveAlgorithm:
         reply.deleteLater()
         return True, http_status
 
-    def create_layer(self, api_key: str, prefecture_code: str) -> Optional[QgsVectorTileLayer]:
+    def create_layer(
+        self, api_key: str, prefecture_code: str
+    ) -> Optional[QgsVectorTileLayer]:
         """
         自然公園地域データをAPIから取得する
         Args:

@@ -13,9 +13,8 @@ from qgis.core import (
 )
 from qgis.PyQt.QtCore import QEventLoop, QUrl
 from qgis.PyQt.QtNetwork import QNetworkRequest
+
 from ..area.area_settings import PREFECTURE_LIST
-
-
 from ..connect import (
     NATURE_RESERVE_AREA_API_ENDPOINT,
     PLUGIN_NAME,
@@ -26,7 +25,7 @@ from ..connect import (
 class NatureReserveAlgorithm:
     """自然公園地域データ取得クラス"""
 
-    def __init__(self,  iface):
+    def __init__(self, iface):
         self.iface = iface
 
     def _get_prefecture_name(self, prefecture_code: str) -> Optional[str]:
@@ -67,7 +66,9 @@ class NatureReserveAlgorithm:
         reply.deleteLater()
         return True, http_status
 
-    def create_layer(self, api_key: str, prefecture_code: Optional[str] = None) -> Optional[QgsVectorTileLayer]:
+    def create_layer(
+        self, api_key: str, prefecture_code: Optional[str] = None
+    ) -> Optional[QgsVectorTileLayer]:
         """
         自然公園地域データをAPIから取得する
         Args:

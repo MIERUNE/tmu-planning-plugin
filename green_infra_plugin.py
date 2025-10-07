@@ -45,7 +45,6 @@ class GreenInfraPlugin:
         self.population_mesh_workflow = PopulationMeshWorkflow(iface)
         self.coastline_workflow = CoastlineWorkflow(iface)
 
-
     def add_action(
         self,
         icon_path,

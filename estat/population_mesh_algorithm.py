@@ -21,13 +21,12 @@ from qgis.core import (
 )
 from qgis.PyQt.QtCore import QVariant
 
-from .get_dataset_id import GetDatasetId
-
 from .connect import (
     MESH_SHAPE_DOWNLOAD_URL,
     PLUGIN_NAME,
     POPULATION_MESH_API_ENDPOINT,
 )
+from .get_dataset_id import GetDatasetId
 
 
 class PopulationMeshAlgorithm:
@@ -80,10 +79,14 @@ class PopulationMeshAlgorithm:
         # 最初のシェープファイルのフルパスを文字列として返す
         return str(shapefiles[0])
 
-    def create_population_mesh_layer(self, api_key: str, mesh_code: str, stats_data_id: str) -> Optional[QgsVectorLayer]:
-        """人口メッシュデータの取得とQGISへのレイヤー追加
+    def create_single_population_layer(
+        self, api_key: str, mesh_code: str, stats_data_id: str
+    ) -> Optional[QgsVectorLayer]:
+        """人口メッシュデータの取得
         Args:
             api_key (str): e-Stat APIキー
+            mesh_code (str): 1kmメッシュコード
+            stats_data_id (str): e-StatのデータセットID
         Returns:
             QgsVectorLayer: 追加に成功した場合はレイヤーオブジェクト、失敗した場合はNone
         """
@@ -105,13 +108,6 @@ class PopulationMeshAlgorithm:
                     level=Qgis.Critical,
                 )
                 return None
-
-            QgsProject.instance().addMapLayer(population_mesh_layer)
-            QgsMessageLog.logMessage(
-                f"レイヤー「{layer_name}」を追加しました。",
-                PLUGIN_NAME,
-                level=Qgis.Info,
-            )
 
             # 人口データの取得と整形
 
@@ -169,37 +165,98 @@ class PopulationMeshAlgorithm:
                     )
                     updated_count += 1
 
-            if not population_mesh_layer.commitChanges():
-                QgsMessageLog.logMessage(
-                    "人口メッシュレイヤーのコミットに失敗しました。ロールバックを実行します。",
-                    PLUGIN_NAME,
-                    level=Qgis.Critical,
-                )
-                population_mesh_layer.rollBack()
-                return None
-
-            # 可視化（段階分けレンダリング）
-            target_field = join_field_name
-
-            # 5段階に分類して色分け
-            class_count = 5
-
-            renderer = QgsGraduatedSymbolRenderer(target_field)
-            renderer.setClassAttribute(target_field)
-
-            color_ramp = QgsStyle.defaultStyle().colorRamp("Viridis")
-            renderer.setSourceColorRamp(color_ramp)
-
-            renderer.updateClasses(
-                population_mesh_layer, QgsGraduatedSymbolRenderer.Jenks, class_count
+            population_mesh_layer.commitChanges()
+            QgsMessageLog.logMessage(
+                f"人口データを{updated_count}件更新しました。",
+                PLUGIN_NAME,
+                level=Qgis.Info,
             )
-
-            population_mesh_layer.setRenderer(renderer)
-            population_mesh_layer.triggerRepaint()  # 地図を再描画
-
             return population_mesh_layer
+
+            # if not population_mesh_layer.commitChanges():
+            #     QgsMessageLog.logMessage(
+            #         "人口メッシュレイヤーのコミットに失敗しました。ロールバックを実行します。",
+            #         PLUGIN_NAME,
+            #         level=Qgis.Critical,
+            #     )
+            #     population_mesh_layer.rollBack()
+            #     return None
+
+            # # 可視化（段階分けレンダリング）
+            # target_field = join_field_name
+
+            # # 5段階に分類して色分け
+            # class_count = 5
+
+            # renderer = QgsGraduatedSymbolRenderer(target_field)
+            # renderer.setClassAttribute(target_field)
+
+            # color_ramp = QgsStyle.defaultStyle().colorRamp("Viridis")
+            # renderer.setSourceColorRamp(color_ramp)
+
+            # renderer.updateClasses(
+            #     population_mesh_layer, QgsGraduatedSymbolRenderer.Jenks, class_count
+            # )
+
+            # population_mesh_layer.setRenderer(renderer)
+            # population_mesh_layer.triggerRepaint()  # 地図を再描画
+
+            # return population_mesh_layer
         except Exception as e:
             QgsMessageLog.logMessage(
                 f"予期せぬエラーが発生しました: {e}", PLUGIN_NAME, level=Qgis.Critical
             )
             return None
+
+    def merge_population_layers(
+        self, layers_to_merge: list[QgsVectorLayer], merged_layer_name: str
+    ) -> Optional[QgsVectorLayer]:
+        """複数の人口メッシュレイヤーを結合して1つのレイヤーにまとめる
+        Args:
+            layers (list[QgsVectorLayer]): 結合するレイヤーのリスト
+            merged_layer_name (str): 結合後のレイヤー名
+        Returns:
+            QgsVectorLayer: 結合に成功した場合はレイヤーオブジェクト、失敗した場合はNone
+        """
+        if not layers_to_merge:
+            QgsMessageLog.logMessage(
+                "結合するレイヤーが指定されていません。",
+                PLUGIN_NAME,
+                level=Qgis.Warning,
+            )
+            return None
+
+        # 最初のレイヤーをベースにして結合
+        source_layer = layers_to_merge[0]
+        target_crs = source_layer.crs()
+        target_fields = source_layer.fields()
+
+        # 結果を格納する「メモリレイヤー」を作成
+        merged_layer = QgsVectorLayer(
+            f"Polygon?crs={target_crs.toWkt()}", merged_layer_name, "memory"
+        )
+        provider = merged_layer.dataProvider()
+        provider.addAttributes(target_fields)
+        merged_layer.updateFields()
+
+        # すべてのレイヤーから地物をコピー
+        features_to_add = []
+        for layer in layers_to_merge:
+            for feature in layer.getFeatures():
+                features_to_add.append(feature)
+        provider.addFeatures(features_to_add)
+        merged_layer.updateExtents()
+
+        # 可視化（段階分けレンダリング）
+        target_field = "population"
+        renderer = QgsGraduatedSymbolRenderer(target_field)
+        renderer.setClassAttribute(target_field)
+        color_ramp = QgsStyle.defaultStyle().colorRamp("Viridis")
+        if color_ramp:
+            renderer.setSourceColorRamp(color_ramp)
+        renderer.updateClasses(merged_layer, QgsGraduatedSymbolRenderer.Jenks, 5)
+        merged_layer.setRenderer(renderer)
+
+        # 最終的なレイヤーをプロジェクトに追加
+        QgsProject.instance().addMapLayer(merged_layer)
+        return merged_layer

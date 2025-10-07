@@ -176,7 +176,7 @@ class GreenInfraPlugin:
         # Phase 4: 人口メッシュデータの可視化
         if self.dockwidget.checkBox_population_mesh.isChecked():
             estat_api_key = ApikeyDialog.get_estat_api_key()
-    
+
             self.population_mesh_workflow.execute(
                 api_key=estat_api_key,
                 municipality_code=self.dockwidget.comboBox_municipality.currentData(),

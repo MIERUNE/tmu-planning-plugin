@@ -5,18 +5,20 @@ from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
+from .real_estate_lib.land_use.district_plan_algorithm import DistrictPlanAlgorithm
 from .real_estate_lib.land_use.location_normalization_plan_algorithm import (
     LocationNormalizationPlanAlgorithm,
 )
+from .real_estate_lib.land_use.nature_reserve_algorithm import NatureReserveAlgorithm
 from .real_estate_lib.land_use.urban_planning_algorithm import UrbanPlanningAlgorithm
 from .real_estate_lib.land_use.zoning_district_algorithm import ZoningDistrictAlgorithm
-from .real_estate_lib.land_use.nature_reserve_algorithm import NatureReserveAlgorithm
 from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .workflows.area_workflow import AreaWorkflow
 from .workflows.basemap_workflow import BasemapWorkflow
 from .workflows.coastline_workflow import CoastlineWorkflow
 from .workflows.land_use_layer_workflow import LayerWorkflow
+from .workflows.population_mesh_workflow import PopulationMeshWorkflow
 
 PLUGIN_NAME = "Green Infra Plugin"
 
@@ -36,11 +38,13 @@ class GreenInfraPlugin:
         self.layer_workflow = LayerWorkflow(iface)
         self.urban_planning_algorithm = UrbanPlanningAlgorithm(iface)
         self.zoning_district_algorithm = ZoningDistrictAlgorithm(iface)
+        self.district_plan_algorithm = DistrictPlanAlgorithm(iface)
         self.location_normalization_plan_algorithm = LocationNormalizationPlanAlgorithm(
             iface
         )
         self.nature_reserve_algorithm = NatureReserveAlgorithm(iface)
         self.coastline_workflow = CoastlineWorkflow(iface)
+        self.population_mesh_workflow = PopulationMeshWorkflow(iface)
 
     def add_action(
         self,
@@ -115,54 +119,83 @@ class GreenInfraPlugin:
         if not self.dockwidget:
             return
 
+        if not self.dockwidget.comboBox_municipality.currentData():
+            message = "市区町村が選択されていません。市区町村を選択してください。"
+            QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+            self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+            return
+
         real_estate_api_key = ApikeyDialog.get_real_estate_api_key()
 
         # Phase 1: ベースマップレイヤーの可視化
         self.basemap_workflow.execute(self.dockwidget.get_selected_basemaps())
 
-        if real_estate_api_key:
-            # 都市計画区域の可視化
-            if self.dockwidget.checkBox_urban_area.isChecked():
+        # 都市計画区域の可視化
+        if self.dockwidget.checkBox_urban_area.isChecked():
+            if real_estate_api_key:
+                # Workflowを実行
                 self.layer_workflow.execute(
                     self.urban_planning_algorithm,
                     api_key=real_estate_api_key,
                 )
+            else:
+                message = "不動産情報ライブラリAPIキーが未設定のため、都市計画区域の取得をスキップします。"
+                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
 
-            # 用途地域の可視化
-            if self.dockwidget.checkBox_use_district.isChecked():
+        # 用途地域の可視化
+        if self.dockwidget.checkBox_use_district.isChecked():
+            if real_estate_api_key:
+                # Workflowを実行
                 self.layer_workflow.execute(
-                    self.zoning_district_algorithm, 
-                    api_key=real_estate_api_key
+                    self.zoning_district_algorithm, api_key=real_estate_api_key
                 )
+            else:
+                message = "不動産情報ライブラリAPIキーが未設定のため、用途地域の取得をスキップします。"
+                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
 
-            # 立地適正化計画の可視化
-            if self.dockwidget.checkBox_location_normalization_plan.isChecked():
+        # 地区計画の可視化
+        if self.dockwidget.checkBox_district_planning.isChecked():
+            if real_estate_api_key:
+                # Workflowを実行
+                self.layer_workflow.execute(
+                    self.district_plan_algorithm, api_key=real_estate_api_key
+                )
+            else:
+                message = "不動産情報ライブラリAPIキーが未設定のため、地区計画の取得をスキップします。"
+                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+
+        # 立地適正化計画の可視化
+        if self.dockwidget.checkBox_location_normalization_plan.isChecked():
+            if real_estate_api_key:
+                # Workflowを実行
                 self.layer_workflow.execute(
                     self.location_normalization_plan_algorithm,
                     api_key=real_estate_api_key,
                 )
+            else:
+                message = "不動産情報ライブラリAPIキーが未設定のため、立地適正化計画の取得をスキップします。"
+                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
 
-            # 自然公園地域の可視化
-            if self.dockwidget.checkBox_nature_reserve.isChecked():
+        # 自然公園地域の可視化
+        if self.dockwidget.checkBox_nature_reserve.isChecked():
+            if real_estate_api_key:
                 # 都道府県コードが１桁の場合0を削除
-                prefecture_code=self.dockwidget.comboBox_prefecture.currentData()
+                prefecture_code = self.dockwidget.comboBox_prefecture.currentData()
                 api_prefecture_code = str(int(prefecture_code))
-                
+
                 self.layer_workflow.execute(
                     self.nature_reserve_algorithm,
                     api_key=real_estate_api_key,
-                    prefecture_code=api_prefecture_code
+                    prefecture_code=api_prefecture_code,
                 )
-        else:
-            message = (
-                "不動産情報ライブラリAPIキーが未設定のため、関連処理をスキップします。"
-            )
-            QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-            self.iface.messageBar().pushMessage(
-                "不動産APIキー未設定",
-                message,
-                level=Qgis.Warning,
-            )
+            else:
+                message = "不動産情報ライブラリAPIキーが未設定のため、自然公園地域の取得をスキップします。"
+                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
 
         # Phase 3: 海岸線データの可視化
         umi_shiru_api_key = ApikeyDialog.get_umi_shiru_api_key()
@@ -176,6 +209,10 @@ class GreenInfraPlugin:
             )
         # 漁港区域の可視化
         # 港湾区域の可視化
+
+        # Phase 4: 人口メッシュデータの可視化
+        if self.dockwidget.checkBox_population_mesh.isChecked():
+            self.population_mesh_workflow.execute()
 
     def on_prefecture_changed(self):
         """都道府県選択変更時の処理"""

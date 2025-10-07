@@ -184,38 +184,34 @@ class GreenInfraPlugin:
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
                 self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
 
-            # 自然公園地域の可視化
-            if self.dockwidget.checkBox_nature_reserve.isChecked():
-                if real_estate_api_key:
-                    # 都道府県コードが１桁の場合0を削除
-                    prefecture_code = self.dockwidget.comboBox_prefecture.currentData()
-                    api_prefecture_code = str(int(prefecture_code))
+        # 自然公園地域の可視化
+        if self.dockwidget.checkBox_nature_reserve.isChecked():
+            if real_estate_api_key:
+                # 都道府県コードが１桁の場合0を削除
+                prefecture_code = self.dockwidget.comboBox_prefecture.currentData()
+                api_prefecture_code = str(int(prefecture_code))
 
-                    self.layer_workflow.execute(
-                        self.nature_reserve_algorithm,
-                        api_key=real_estate_api_key,
-                        prefecture_code=api_prefecture_code,
-                    )
-                else:
-                    message = "不動産情報ライブラリAPIキーが未設定のため、自然公園地域の取得をスキップします。"
-                    QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-                    self.iface.messageBar().pushMessage(
-                        "警告", message, level=Qgis.Warning
-                    )
+                self.layer_workflow.execute(
+                    self.nature_reserve_algorithm,
+                    api_key=real_estate_api_key,
+                    prefecture_code=api_prefecture_code,
+                )
+            else:
+                message = "不動産情報ライブラリAPIキーが未設定のため、自然公園地域の取得をスキップします。"
+                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
 
-            # 高度利用地区の可視化
-            if self.dockwidget.checkBox_high_level_use_districts.isChecked():
-                if real_estate_api_key:
-                    self.layer_workflow.execute(
-                        self.high_utilization_zone_algorithm,
-                        api_key=real_estate_api_key,
-                    )
-                else:
-                    message = "不動産情報ライブラリAPIキーが未設定のため、高度利用地区の取得をスキップします。"
-                    QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-                    self.iface.messageBar().pushMessage(
-                        "警告", message, level=Qgis.Warning
-                    )
+        # 高度利用地区の可視化
+        if self.dockwidget.checkBox_high_level_use_districts.isChecked():
+            if real_estate_api_key:
+                self.layer_workflow.execute(
+                    self.high_utilization_zone_algorithm,
+                    api_key=real_estate_api_key,
+                )
+            else:
+                message = "不動産情報ライブラリAPIキーが未設定のため、高度利用地区の取得をスキップします。"
+                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
 
         # Phase 3: 海岸線データの可視化
         umi_shiru_api_key = ApikeyDialog.get_umi_shiru_api_key()

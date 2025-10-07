@@ -15,8 +15,8 @@ from qgis.PyQt.QtCore import QEventLoop, QUrl
 from qgis.PyQt.QtNetwork import QNetworkRequest
 
 from ..connect import (
-    PLUGIN_NAME,
     HEIGHTENED_USE_DISTRICT_API_ENDPOINT,
+    PLUGIN_NAME,
     ZOOM9_SCALE_THRESHOLD,
 )
 
@@ -96,7 +96,15 @@ class HighUtilizationZoneAlgorithm:
         )
 
         layer_name = "高度利用地区"
-        high_utilization_zone_layer = QgsVectorTileLayer(get_real_estate_url, layer_name)
+        high_utilization_zone_layer = QgsVectorTileLayer(
+            get_real_estate_url, layer_name
+        )
+
+        QgsMessageLog.logMessage(
+            f"'{layer_name}' レイヤーの取得に成功しました。",
+            PLUGIN_NAME,
+            level=Qgis.Info,
+        )
 
         # ズームレベル９以下では表示しない
         high_utilization_zone_layer.setScaleBasedVisibility(True)

@@ -132,7 +132,7 @@ class CoastlineWorkflow(BaseWorkflow):
         """
         海岸線ワークフローを実行し、海岸線レイヤーをQGISに追加する
         Args:
-            api_key (str): 海しるAPIキー
+            api_key (str, optional): 海しるAPIキー
             municipality_code (str, optional): 市区町村コード（5桁）
             municipality_name (str, optional): 市区町村名
         Returns:

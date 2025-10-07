@@ -23,6 +23,11 @@ class GetDatasetId:
         Args:
             municipality_code (str): 自治体コード
         """
+        QgsMessageLog.logMessage(
+            f"[_get_mesh_codes] メッシュコードの取得開始 (municipality_code: {municipality_code})",
+            PLUGIN_NAME,
+            level=Qgis.Info,
+        )
         # e-Statに行政区域ポリゴンが存在しない自治体コードの場合
         if municipality_code == "01100":
             mesh_codes = ["6441", "6541"]
@@ -31,7 +36,11 @@ class GetDatasetId:
         else:
             # e-Statから行政区域ポリゴンレイヤーを取得
             client = AdministrativeAreaClient(PLUGIN_NAME)
+            # === ログ追加 B ===
+            QgsMessageLog.logMessage("[_get_mesh_codes] 行政区域ポリゴンの取得開始...", PLUGIN_NAME, level=Qgis.Info)
             municipality_layer = client.fetch_municipality_polygon(municipality_code)
+            # === ログ追加 C ===
+            QgsMessageLog.logMessage("[_get_mesh_codes] 行政区域ポリゴンの取得完了", PLUGIN_NAME, level=Qgis.Info)
 
             # 取得したレイヤーが有効か確認
             if municipality_layer is not None and municipality_layer.isValid():

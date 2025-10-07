@@ -12,11 +12,9 @@ from typing import Optional
 import requests
 from qgis.core import (
     Qgis,
+    QgsFeature,
     QgsField,
-    QgsGraduatedSymbolRenderer,
     QgsMessageLog,
-    QgsProject,
-    QgsStyle,
     QgsVectorLayer,
 )
 from qgis.PyQt.QtCore import QVariant
@@ -26,23 +24,20 @@ from .connect import (
     PLUGIN_NAME,
     POPULATION_MESH_API_ENDPOINT,
 )
-from .get_dataset_id import GetDatasetId
+
+# from .get_dataset_id import GetDatasetId
 
 
 class PopulationMeshAlgorithm:
     """人口メッシュデータ取得クラス"""
 
     # メッシュコード
-    # TODO : 指定した自治体でIDを取得できるようにする
-    mesh_number = "6441"  # 1kmメッシュコード
-
     def __init__(self, iface):
         self.iface = iface
-        self.temp_dir = tempfile.TemporaryDirectory()
-        self.dataset_id = GetDatasetId(iface)
+        # self.dataset_id = GetDatasetId(iface)
 
-    def _get_mesh_data(self, mesh_code: str) -> Optional[str]:
-        """メッシュ形状データをダウンロードして取得"""
+    def _get_mesh_data(self, mesh_code: str) -> Optional[QgsVectorLayer]:
+        """メッシュ形状データをダウンロードして取得、メモリレイヤーとして取得"""
         # パラメーター
         mesh_request_params = {
             "dlserveyId": "S",
@@ -54,30 +49,74 @@ class PopulationMeshAlgorithm:
         encode_params = urllib.parse.urlencode(mesh_request_params)
         mesh_request_url = f"{MESH_SHAPE_DOWNLOAD_URL}?{encode_params}"
 
-        # メッシュ形状データのダウンロード
-        mesh_data = requests.get(mesh_request_url, timeout=60)
-        # エラーチェック
-        mesh_data.raise_for_status()
-        zip_data = io.BytesIO(mesh_data.content)
+        try:
+            # メッシュ形状データのダウンロード
+            mesh_data = requests.get(mesh_request_url, timeout=60)
+            # エラーチェック
+            mesh_data.raise_for_status()
+            zip_data = io.BytesIO(mesh_data.content)
 
-        # ダウンロードしたZIPファイルを一時ディレクトリに展開
-        with zipfile.ZipFile(zip_data, "r") as zip_ref:
-            zip_ref.extractall(self.temp_dir.name)
+            # ダウンロードしたZIPファイルを一時ディレクトリに展開
+            with tempfile.TemporaryDirectory() as temp_dir:
+                with zipfile.ZipFile(zip_data, "r") as zip_ref:
+                    zip_ref.extractall(temp_dir)
 
-        # 展開したファイルの中からシェープファイル（.shp）を探す
-        temp_dir_path = Path(self.temp_dir.name)
-        shapefiles = list(temp_dir_path.glob("*.shp"))
+                temp_dir_path = Path(temp_dir)
+                shapefiles = list(temp_dir_path.glob("*.shp"))
 
-        if not shapefiles:
+                if not shapefiles:
+                    QgsMessageLog.logMessage(
+                        "展開されたZIPファイル内にシェープファイルが見つかりませんでした。",
+                        PLUGIN_NAME,
+                        level=Qgis.Critical,
+                    )
+                    return None
+
+                # シェープファイルをレイヤーとして読み込む
+                temp_layer = QgsVectorLayer(
+                    str(shapefiles[0]), f"temp_mesh_{mesh_code}", "ogr"
+                )
+                if not temp_layer.isValid():
+                    QgsMessageLog.logMessage(
+                        "シェープファイルから一時レイヤーを作成できませんでした。",
+                        PLUGIN_NAME,
+                        level=Qgis.Critical,
+                    )
+                    return None
+
+                # メモリレイヤーの準備
+                mem_layer = QgsVectorLayer(
+                    f"Polygon?crs={temp_layer.crs().authid()}",
+                    f"memory_mesh_{mesh_code}",
+                    "memory",
+                )
+                provider = mem_layer.dataProvider()
+                provider.addAttributes(temp_layer.fields())
+                mem_layer.updateFields()
+
+                # 地物のコピー
+                features_to_add = []
+                for feature in temp_layer.getFeatures():
+                    f = QgsFeature()
+                    f.setGeometry(feature.geometry())
+                    f.setAttributes(feature.attributes())
+                    features_to_add.append(f)
+
+                provider.addFeatures(features_to_add)
+
+                del temp_layer
+                return mem_layer
+
+        except requests.RequestException as e:
             QgsMessageLog.logMessage(
-                "展開されたZIPファイル内にシェープファイルが見つかりませんでした。",
+                f"メッシュ形状データのダウンロードに失敗しました: {e}",
                 PLUGIN_NAME,
                 level=Qgis.Critical,
             )
             return None
 
-        # 最初のシェープファイルのフルパスを文字列として返す
-        return str(shapefiles[0])
+        # # 最初のシェープファイルのフルパスを文字列として返す
+        # return str(shapefiles[0])
 
     def create_single_population_layer(
         self, api_key: str, mesh_code: str, stats_data_id: str
@@ -92,25 +131,14 @@ class PopulationMeshAlgorithm:
         """
         try:
             # メッシュ形状データのダウンロードとシェープファイルのパス取得
-            shp_path = self._get_mesh_data(mesh_code)
-            if not shp_path:
+            population_mesh_layer = self._get_mesh_data(mesh_code)
+            if population_mesh_layer is None:
                 return None
 
             # QGISにレイヤーとして追加
-            # TODO : レイヤー名指定した自治体名+人口メッシュにする
-            layer_name = f"人口メッシュ_({mesh_code})"
-
-            population_mesh_layer = QgsVectorLayer(str(shp_path), layer_name, "ogr")
-            if not population_mesh_layer.isValid():
-                QgsMessageLog.logMessage(
-                    "シェープファイルからレイヤーを作成できませんでした。",
-                    PLUGIN_NAME,
-                    level=Qgis.Critical,
-                )
-                return None
+            population_mesh_layer.setName(f"人口メッシュ_({mesh_code})")
 
             # 人口データの取得と整形
-
             # パラメーター
             population_mesh_url_params = {
                 "appId": api_key,
@@ -165,22 +193,28 @@ class PopulationMeshAlgorithm:
                     )
                     updated_count += 1
 
-            population_mesh_layer.commitChanges()
+            # population_mesh_layer.commitChanges()
+            # QgsMessageLog.logMessage(
+            #     f"人口データを{updated_count}件更新しました。",
+            #     PLUGIN_NAME,
+            #     level=Qgis.Info,
+            # )
+            # return population_mesh_layer
+
+            if not population_mesh_layer.commitChanges():
+                QgsMessageLog.logMessage(
+                    "人口メッシュレイヤーのコミットに失敗しました。",
+                    PLUGIN_NAME,
+                    level=Qgis.Critical,
+                )
+                return None
+
             QgsMessageLog.logMessage(
                 f"人口データを{updated_count}件更新しました。",
                 PLUGIN_NAME,
                 level=Qgis.Info,
             )
             return population_mesh_layer
-
-            # if not population_mesh_layer.commitChanges():
-            #     QgsMessageLog.logMessage(
-            #         "人口メッシュレイヤーのコミットに失敗しました。ロールバックを実行します。",
-            #         PLUGIN_NAME,
-            #         level=Qgis.Critical,
-            #     )
-            #     population_mesh_layer.rollBack()
-            #     return None
 
             # # 可視化（段階分けレンダリング）
             # target_field = join_field_name
@@ -244,19 +278,52 @@ class PopulationMeshAlgorithm:
         for layer in layers_to_merge:
             for feature in layer.getFeatures():
                 features_to_add.append(feature)
+
+        # === ログ追加 ===
+        QgsMessageLog.logMessage(
+            "[merge] 地物のコピーを開始", PLUGIN_NAME, level=Qgis.Info
+        )
         provider.addFeatures(features_to_add)
         merged_layer.updateExtents()
+        # === ログ追加 ===
+        QgsMessageLog.logMessage(
+            "[merge] 地物のコピー完了", PLUGIN_NAME, level=Qgis.Info
+        )
 
-        # 可視化（段階分けレンダリング）
-        target_field = "population"
-        renderer = QgsGraduatedSymbolRenderer(target_field)
-        renderer.setClassAttribute(target_field)
-        color_ramp = QgsStyle.defaultStyle().colorRamp("Viridis")
-        if color_ramp:
-            renderer.setSourceColorRamp(color_ramp)
-        renderer.updateClasses(merged_layer, QgsGraduatedSymbolRenderer.Jenks, 5)
-        merged_layer.setRenderer(renderer)
+        # # 可視化（段階分けレンダリング）
+        # target_field = "population"
+        # renderer = QgsGraduatedSymbolRenderer(target_field)
+        # renderer.setClassAttribute(target_field)
+        # color_ramp = QgsStyle.defaultStyle().colorRamp("Viridis")
+        # if color_ramp:
+        #     renderer.setSourceColorRamp(color_ramp)
+        # # === ログ追加 ===
+        # QgsMessageLog.logMessage(
+        #     "[merge] レンダラーのクラス分類を開始 (updateClasses)",
+        #     PLUGIN_NAME,
+        #     level=Qgis.Info,
+        # )
+        # renderer.updateClasses(merged_layer, QgsGraduatedSymbolRenderer.Jenks, 5)
+        # # === ログ追加 ===
+        # QgsMessageLog.logMessage(
+        #     "[merge] レンダラーのクラス分類を完了", PLUGIN_NAME, level=Qgis.Info
+        # )
+        # === テストのため、一時的に単純なレンダリングに置き換える ===
+        from qgis.core import QgsFillSymbol, QgsSingleSymbolRenderer
 
-        # 最終的なレイヤーをプロジェクトに追加
-        QgsProject.instance().addMapLayer(merged_layer)
+        symbol = QgsFillSymbol.createSimple(
+            {
+                "color": "191,15,198,100",  # 紫色 (半透明)
+                "outline_color": "black",
+                "outline_width": "0.26",
+            }
+        )
+        merged_layer.setRenderer(QgsSingleSymbolRenderer(symbol))
+        QgsMessageLog.logMessage(
+            "[merge] 単純なシンボルを設定しました。", PLUGIN_NAME, level=Qgis.Info
+        )
+        # =======================================================
+
+        # merged_layer.setRenderer(renderer)
+
         return merged_layer

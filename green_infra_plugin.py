@@ -176,7 +176,9 @@ class GreenInfraPlugin:
         # Phase 4: 人口メッシュデータの可視化
         if self.dockwidget.checkBox_population_mesh.isChecked():
             estat_api_key = ApikeyDialog.get_estat_api_key()
-            QgsMessageLog.logMessage(f"e-Stat APIキー: {estat_api_key}", PLUGIN_NAME, level=Qgis.Info)
+            QgsMessageLog.logMessage(
+                f"e-Stat APIキー: {estat_api_key}", PLUGIN_NAME, level=Qgis.Info
+            )
 
             self.population_mesh_workflow.execute()
 

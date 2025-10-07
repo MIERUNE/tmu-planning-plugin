@@ -173,6 +173,35 @@ class PopulationMeshAlgorithm:
             )
             return population_mesh_layer
 
+            # if not population_mesh_layer.commitChanges():
+            #     QgsMessageLog.logMessage(
+            #         "人口メッシュレイヤーのコミットに失敗しました。ロールバックを実行します。",
+            #         PLUGIN_NAME,
+            #         level=Qgis.Critical,
+            #     )
+            #     population_mesh_layer.rollBack()
+            #     return None
+
+            # # 可視化（段階分けレンダリング）
+            # target_field = join_field_name
+
+            # # 5段階に分類して色分け
+            # class_count = 5
+
+            # renderer = QgsGraduatedSymbolRenderer(target_field)
+            # renderer.setClassAttribute(target_field)
+
+            # color_ramp = QgsStyle.defaultStyle().colorRamp("Viridis")
+            # renderer.setSourceColorRamp(color_ramp)
+
+            # renderer.updateClasses(
+            #     population_mesh_layer, QgsGraduatedSymbolRenderer.Jenks, class_count
+            # )
+
+            # population_mesh_layer.setRenderer(renderer)
+            # population_mesh_layer.triggerRepaint()  # 地図を再描画
+
+            # return population_mesh_layer
         except Exception as e:
             QgsMessageLog.logMessage(
                 f"予期せぬエラーが発生しました: {e}", PLUGIN_NAME, level=Qgis.Critical

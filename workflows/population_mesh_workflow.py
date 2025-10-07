@@ -8,7 +8,7 @@ from qgis.core import (
 
 from ..estat.connect import PLUGIN_NAME
 from ..estat.get_dataset_id import GetDatasetId
-from ..estat.population_mesh_algorithm import PopulationMeshAlgorithm
+from ..estat.population_mesh_algorithm import PopulationMeshAlgorithm 
 
 
 class PopulationMeshTask(QgsTask):
@@ -122,3 +122,9 @@ class PopulationMeshWorkflow:
         )
         # QGISのタスクマネージャーにタスクを登録
         QgsApplication.taskManager().addTask(task)
+
+        QgsMessageLog.logMessage(
+            "人口メッシュデータのバックグラウンド処理を開始しました。",
+            PLUGIN_NAME,
+            level=Qgis.Info,
+        )

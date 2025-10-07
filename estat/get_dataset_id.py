@@ -1,91 +1,172 @@
-import requests
 import json
+from typing import List, Optional
+
+import requests
 from qgis.core import Qgis, QgsMessageLog
-from typing import Optional
 
-# --- 設定項目 ---
-# あなたのe-StatアプリケーションIDに置き換えてください
-APP_ID = "" 
-# 検索したいメッシュコード（リスト形式に変更）
-MESH_CODES = ["6441", "6440"]  # 例として2つのメッシュコードを指定
-# ログを見やすくするためのタグ
-LOG_TAG = "eStatJsonTest"
+from ..utils.estat.bbox import calculate_municipality_bbox
+from ..utils.estat.client import AdministrativeAreaClient
+from ..utils.estat.mesh import get_mesh_codes_from_bbox
+from .connect import (
+    GET_STATS_LIST_API_ENDPOINT,
+    PLUGIN_NAME,
+)
 
-def get_dataset_id(mesh_code: str) -> Optional[str]:
-    """
-    指定されたメッシュコードを使い、e-Stat APIからデータセットIDを取得します。
-    結果はQGISログメッセージパネルに出力します。
 
-    Args:
-        mesh_code (str): 検索する一次メッシュコード
+class GetDatasetId:
+    def __init__(self, iface):
+        self.iface = iface
 
-    Returns:
-        Optional[str]: 取得したデータセットID。失敗した場合はNone。
-    """
-    api_endpoint = "https://api.e-stat.go.jp/rest/3.0/app/json/getStatsList"
-    search_word = f"M{mesh_code} AND 世界測地系(1KMメッシュ)"
-    params = {
-        "appId": APP_ID, "lang": "J", "surveyYears": "2020",
-        "statsCode": "00200521", "searchKind": "2", 
-        "searchWord": search_word, "limit": 10
-    }
+    def _get_mesh_codes(self, municipality_code: str):
+        """
+        指定された自治体コードからメッシュコードを取得
+        Args:
+            municipality_code (str): 自治体コード
+        """
+        # e-Statに行政区域ポリゴンが存在しない自治体コードの場合
+        if municipality_code == "01100":
+            mesh_codes = ["6441", "6541"]
+            return mesh_codes
 
-    try:
-        QgsMessageLog.logMessage(f"APIリクエストを開始します (メッシュコード: {mesh_code})", LOG_TAG, level=Qgis.Info)
-        response = requests.get(api_endpoint, params=params, timeout=60)
-        response.raise_for_status()
-        json_data = response.json()
-        
-        # --- @id 抽出処理 ---
-        # 安全にネストされた辞書の値を取得
-        datalist_inf = json_data.get("GET_STATS_LIST", {}).get("DATALIST_INF", {})
-        table_info = datalist_inf.get("TABLE_INF")
-        
-        dataset_id = None
-        # table_infoが存在するかチェック
-        if table_info:
-            # 検索結果が複数の場合はリスト、1件の場合は辞書になるため両対応
-            if isinstance(table_info, list) and len(table_info) > 0:
-                # リストの場合、最初の要素から@idを取得
-                dataset_id = table_info[0].get("@id")
-            elif isinstance(table_info, dict):
-                # 辞書の場合、直接@idを取得
-                dataset_id = table_info.get("@id")
-        
-        if dataset_id:
-            QgsMessageLog.logMessage(f"dataSetId '{dataset_id}' の取得に成功しました。", LOG_TAG, level=Qgis.Success)
-            return dataset_id
         else:
-            QgsMessageLog.logMessage(f"メッシュコード '{mesh_code}' のdataSetIdが見つかりませんでした。", LOG_TAG, level=Qgis.Warning)
+            # e-Statから行政区域ポリゴンレイヤーを取得
+            client = AdministrativeAreaClient(PLUGIN_NAME)
+            municipality_layer = client.fetch_municipality_polygon(municipality_code)
+
+            # 取得したレイヤーが有効か確認
+            if municipality_layer is not None and municipality_layer.isValid():
+                # BBOXを計算
+                bbox = None
+                bbox = calculate_municipality_bbox(municipality_layer)
+
+                if bbox:
+                    mesh_codes = get_mesh_codes_from_bbox(bbox)
+                    QgsMessageLog.logMessage(
+                        f"取得したメッシュコード: {mesh_codes}",
+                        PLUGIN_NAME,
+                        level=Qgis.Success,
+                    )
+                    return mesh_codes
+                else:
+                    QgsMessageLog.logMessage(
+                        "BBOXの計算に失敗しました。", PLUGIN_NAME, level=Qgis.Warning
+                    )
+                    return []
+
+    def _get_dataset_id(self, mesh_code: str, api_key: str) -> Optional[str]:
+        """
+        指定されたメッシュコードを使い、e-Stat APIからデータセットIDを取得。
+        Args:
+            mesh_code (str): 検索する一次メッシュコード
+        Returns:
+            Optional[str]: 取得したデータセットID。失敗した場合はNone。
+        """
+        search_word = f"M{mesh_code} AND 世界測地系(1KMメッシュ)"
+        params = {
+            "appId": api_key,
+            "lang": "J",
+            "surveyYears": "2020",
+            "statsCode": "00200521",
+            "searchKind": "2",
+            "searchWord": search_word,
+        }
+
+        try:
+            QgsMessageLog.logMessage(
+                f"APIリクエストを開始します (メッシュコード: {mesh_code})",
+                PLUGIN_NAME,
+                level=Qgis.Info,
+            )
+            response = requests.get(
+                GET_STATS_LIST_API_ENDPOINT, params=params, timeout=60
+            )
+            response.raise_for_status()
+            json_data = response.json()
+
+            # @id 抽出処理
+            table_info = (
+                json_data.get("GET_STATS_LIST", {})
+                .get("DATALIST_INF", {})
+                .get("TABLE_INF")
+            )
+
+            dataset_id = None
+            # table_infoが存在するかチェック
+            if table_info:
+                if isinstance(table_info, list) and len(table_info) > 0:
+                    # リストの場合、最初の要素から@idを取得
+                    dataset_id = table_info[0].get("@id")
+                elif isinstance(table_info, dict):
+                    # 辞書の場合、直接@idを取得
+                    dataset_id = table_info.get("@id")
+
+            if dataset_id:
+                QgsMessageLog.logMessage(
+                    f"dataSetId '{dataset_id}' の取得に成功しました。",
+                    PLUGIN_NAME,
+                    level=Qgis.Success,
+                )
+                return dataset_id
+            else:
+                QgsMessageLog.logMessage(
+                    f"メッシュコード '{mesh_code}' のdataSetIdが見つかりませんでした。",
+                    PLUGIN_NAME,
+                    level=Qgis.Warning,
+                )
+                return None
+
+        except requests.exceptions.RequestException as e:
+            QgsMessageLog.logMessage(
+                f"APIリクエストでエラーが発生しました (メッシュコード: {mesh_code}): {e}",
+                PLUGIN_NAME,
+                level=Qgis.Critical,
+            )
+            return None
+        except json.JSONDecodeError:
+            QgsMessageLog.logMessage(
+                f"レスポンスのJSONパースに失敗しました (メッシュコード: {mesh_code})。レスポンス内容: \n{response.text}",
+                PLUGIN_NAME,
+                level=Qgis.Critical,
+            )
+            return None
+        except Exception as e:
+            QgsMessageLog.logMessage(
+                f"予期せぬエラーが発生しました (メッシュコード: {mesh_code}): {e}",
+                PLUGIN_NAME,
+                level=Qgis.Critical,
+            )
             return None
 
-    except requests.exceptions.RequestException as e:
-        QgsMessageLog.logMessage(f"APIリクエストでエラーが発生しました (メッシュコード: {mesh_code}): {e}", LOG_TAG, level=Qgis.Critical)
-        return None
-    except json.JSONDecodeError:
-        QgsMessageLog.logMessage(f"レスポンスのJSONパースに失敗しました (メッシュコード: {mesh_code})。レスポンス内容: \n{response.text}", LOG_TAG, level=Qgis.Critical)
-        return None
-    except Exception as e:
-        QgsMessageLog.logMessage(f"予期せぬエラーが発生しました (メッシュコード: {mesh_code}): {e}", LOG_TAG, level=Qgis.Critical)
-        return None
+    def fetch_dataset_ids_for_municipality(
+        self, municipality_code: str, api_key: str
+    ) -> List[str]:
+        """
+        自治体コードを元にメッシュコードを取得し、各メッシュコードに対応する
+        データセットIDのリストを取得する。
+        Args:
+            municipality_code (str): 自治体コード
+        Returns:
+            List[str]: 取得したデータセットIDのリスト
+        """
+        mesh_codes = self._get_mesh_codes(municipality_code)
 
-# --- スクリプトの実行 ---
-def run_extraction_test_for_multiple_meshes():
-    """複数のメッシュコードに対して抽出処理のテストを実行する"""
-    
-    QgsMessageLog.logMessage(f"--- 複数メッシュの処理を開始します ---", LOG_TAG, level=Qgis.Info)
-    
-    # 取得したIDを格納する辞書 {メッシュコード: dataSetId}
-    retrieved_ids = {}
+        if not mesh_codes:
+            QgsMessageLog.logMessage(
+                "有効なメッシュコードが取得できなかったため、処理を終了します。",
+                PLUGIN_NAME,
+                level=Qgis.Warning,
+            )
+            return []
 
-    # リスト内の各メッシュコードでループ処理
-    for code in MESH_CODES:
-        QgsMessageLog.logMessage(f"--- メッシュ: {code} の処理を開始 ---", LOG_TAG, level=Qgis.Info)
-        dataset_id = get_dataset_id(code)
-        retrieved_ids[code] = dataset_id  # 成功しても失敗(None)しても結果を格納
-    
-    QgsMessageLog.logMessage(f"--- 全ての処理が完了しました ---", LOG_TAG, level=Qgis.Info)
-    QgsMessageLog.logMessage(f"最終結果: {retrieved_ids}", LOG_TAG, level=Qgis.Info)
+        dataset_ids = []
+        for mesh_code in mesh_codes:
+            dataset_id = self._get_dataset_id(mesh_code, api_key)
+            if dataset_id:
+                dataset_ids.append(dataset_id)
 
-run_extraction_test_for_multiple_meshes()
-
+        QgsMessageLog.logMessage(
+            f"最終的に取得したデータセットIDリスト: {dataset_ids}",
+            PLUGIN_NAME,
+            level=Qgis.Success,
+        )
+        return dataset_ids

@@ -21,6 +21,8 @@ from qgis.core import (
 )
 from qgis.PyQt.QtCore import QVariant
 
+from .get_dataset_id import GetDatasetId
+
 from .connect import (
     MESH_SHAPE_DOWNLOAD_URL,
     PLUGIN_NAME,
@@ -38,6 +40,7 @@ class PopulationMeshAlgorithm:
     def __init__(self, iface):
         self.iface = iface
         self.temp_dir = tempfile.TemporaryDirectory()
+        self.dataset_id = GetDatasetId(iface)
 
     def _get_mesh_data(self) -> Optional[str]:
         """メッシュ形状データをダウンロードして取得"""
@@ -77,13 +80,24 @@ class PopulationMeshAlgorithm:
         # 最初のシェープファイルのフルパスを文字列として返す
         return str(shapefiles[0])
 
-    def create_population_mesh_layer(self):
+    def create_population_mesh_layer(self, municipality_code: str, api_key: str):
         """人口メッシュデータの取得とQGISへのレイヤー追加
         Args:
             api_key (str): e-Stat APIキー
         Returns:
 
         """
+        QgsMessageLog.logMessage(
+            f"自治体コード '{municipality_code}' の処理を開始します。", PLUGIN_NAME, level=Qgis.Info
+        )
+        
+        # 行政区域ポリゴンの取得
+        polygon_layer = self.dataset_id.fetch_dataset_ids_for_municipality(municipality_code, api_key)
+        
+        # polygon_layerを使ったBBOX計算などの処理をここに追加していく
+        if polygon_layer:
+            # TODO: polygon_layerからBBOXを計算し、メッシュ番号を特定する処理
+            pass
 
         try:
             # メッシュ形状データのダウンロードとシェープファイルのパス取得

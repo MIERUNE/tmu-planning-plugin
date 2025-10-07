@@ -37,10 +37,19 @@ class GetDatasetId:
             # e-Statから行政区域ポリゴンレイヤーを取得
             client = AdministrativeAreaClient(PLUGIN_NAME)
             # === ログ追加 B ===
-            QgsMessageLog.logMessage("[_get_mesh_codes] 行政区域ポリゴンの取得開始...", PLUGIN_NAME, level=Qgis.Info)
+            QgsMessageLog.logMessage(
+                "[_get_mesh_codes] 行政区域ポリゴンの取得開始...",
+                PLUGIN_NAME,
+                level=Qgis.Info,
+            )
             municipality_layer = client.fetch_municipality_polygon(municipality_code)
+            QgsMessageLog.logMessage(municipality_code, PLUGIN_NAME, level=Qgis.Info)
             # === ログ追加 C ===
-            QgsMessageLog.logMessage("[_get_mesh_codes] 行政区域ポリゴンの取得完了", PLUGIN_NAME, level=Qgis.Info)
+            QgsMessageLog.logMessage(
+                "[_get_mesh_codes] 行政区域ポリゴンの取得完了",
+                PLUGIN_NAME,
+                level=Qgis.Info,
+            )
 
             # 取得したレイヤーが有効か確認
             if municipality_layer is not None and municipality_layer.isValid():

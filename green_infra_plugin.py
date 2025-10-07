@@ -180,7 +180,7 @@ class GreenInfraPlugin:
             self.population_mesh_workflow.execute(
                 api_key=estat_api_key,
                 municipality_code=self.dockwidget.comboBox_municipality.currentData(),
-                layer_name=self.dockwidget.comboBox_municipality.currentText(),
+                layer_name=f"人口メッシュ_{self.dockwidget.comboBox_municipality.currentText()}",
             )
 
     def on_prefecture_changed(self):

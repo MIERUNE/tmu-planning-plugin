@@ -1,3 +1,5 @@
+import traceback
+
 from qgis.core import (
     Qgis,
     QgsApplication,
@@ -14,42 +16,27 @@ from ..estat.population_mesh_algorithm import PopulationMeshAlgorithm
 class PopulationMeshTask(QgsTask):
     """人口メッシュ取得処理をバックグラウンドで実行するためのタスク"""
 
-    def __init__(self, description, api_key, municipality_code, layer_name, iface):
+    def __init__(self, description, api_key, municipality_code, layer_name, algorithm, dataset_id_getter):
         super().__init__(description, QgsTask.CanCancel)
         self.api_key = api_key
         self.municipality_code = municipality_code
         self.layer_name = layer_name
-        self.iface = iface
         self.final_layer = None
         self.exception = None
+        self.algorithm = algorithm
+        self.dataset_id_getter = dataset_id_getter
 
     def run(self):
         """
         バックグラウンドスレッドで実行されるメインの処理。
-        GUIに関わる操作（addMapLayerなど）は絶対にここで行わない。
         """
-
         try:
-            # === ログ追加 1 ===
-            QgsMessageLog.logMessage("Task.run() 開始", PLUGIN_NAME, level=Qgis.Info)
+            QgsMessageLog.logMessage("Task run: 開始", PLUGIN_NAME, level=Qgis.Info)
+            # self.algorithm = PopulationMeshAlgorithm(None)
+            # dataset_id_getter = GetDatasetId(None)
 
-            self.algorithm = PopulationMeshAlgorithm(None)
-            dataset_id_getter = GetDatasetId(None)
-
-            # === ログ追加 2 ===
-            QgsMessageLog.logMessage(
-                f"データセットIDの取得開始: municipality_code={self.municipality_code}",
-                PLUGIN_NAME,
-                level=Qgis.Info,
-            )
-            dataset_id_dict = dataset_id_getter.fetch_dataset_ids_for_municipality(
+            dataset_id_dict = self.dataset_id_getter.fetch_dataset_ids_for_municipality(
                 self.municipality_code, self.api_key
-            )
-            # === ログ追加 3 ===
-            QgsMessageLog.logMessage(
-                f"データセットIDの取得完了: {len(dataset_id_dict)}件見つかりました。",
-                PLUGIN_NAME,
-                level=Qgis.Info,
             )
 
             if not dataset_id_dict:
@@ -57,6 +44,7 @@ class PopulationMeshTask(QgsTask):
 
             layers_to_merge = []
             total_steps = len(dataset_id_dict)
+            
             for i, (mesh_code, stats_data_id) in enumerate(dataset_id_dict.items()):
                 # ユーザーがキャンセルボタンを押したかチェック
                 if self.isCanceled():
@@ -80,57 +68,15 @@ class PopulationMeshTask(QgsTask):
 
             return False
 
-        except Exception as e:
-            self.exception = e
+        except Exception:
+            self.exception = traceback.format_exc()
             return False
 
     def finished(self, result):
-        """
-        runメソッド完了後、自動的にメインスレッドで実行される。
-        GUI操作（レイヤー追加、メッセージ表示）はここで行う。
-        """
-        QgsMessageLog.logMessage(
-            "[finished] タスク完了。メインスレッドで最終処理を開始します。",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
-        QgsMessageLog.logMessage(
-            f"[finished] result: {result}", PLUGIN_NAME, level=Qgis.Info
-        )
-
+        """人口メッシュ取得処理をバックグラウンドで実行するためのタスク"""
         if result:
-            # 成功した場合
-            if self.final_layer is not None and self.final_layer.isValid():
-                QgsMessageLog.logMessage(
-                    f"[finished] 最終レイヤー '{self.final_layer.name()}' は有効です。",
-                    PLUGIN_NAME,
-                    level=Qgis.Info,
-                )
-                QgsMessageLog.logMessage(
-                    f"[finished] 地物数: {self.final_layer.featureCount()}",
-                    PLUGIN_NAME,
-                    level=Qgis.Info,
-                )
-
-                # レイヤーをプロジェクトに追加
+            if self.final_layer is not None:
                 QgsProject.instance().addMapLayer(self.final_layer)
-                QgsMessageLog.logMessage(
-                    "[finished] レイヤーをプロジェクトに追加しました。",
-                    PLUGIN_NAME,
-                    level=Qgis.Info,
-                )
-
-                # ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-                # ★★★ これが決定打：追加したレイヤーの範囲にズームする ★★★
-                # ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-                self.iface.mapCanvas().setExtent(self.final_layer.extent())
-                self.iface.mapCanvas().refresh()
-                QgsMessageLog.logMessage(
-                    "[finished] レイヤーの範囲にズームしました。",
-                    PLUGIN_NAME,
-                    level=Qgis.Info,
-                )
-
                 QgsMessageLog.logMessage(
                     f"レイヤー「{self.layer_name}」の作成が完了しました。",
                     PLUGIN_NAME,
@@ -138,12 +84,11 @@ class PopulationMeshTask(QgsTask):
                 )
             else:
                 QgsMessageLog.logMessage(
-                    "タスクは成功しましたが、最終的なレイヤーが無効か、見つかりません。",
+                    "タスクは成功しましたが、最終的なレイヤーが見つかりません。",
                     PLUGIN_NAME,
                     level=Qgis.Warning,
                 )
         else:
-            # 失敗またはキャンセルされた場合
             if self.exception:
                 QgsMessageLog.logMessage(
                     f"エラーが発生しました: {self.exception}",
@@ -163,6 +108,8 @@ class PopulationMeshWorkflow:
 
     def __init__(self, iface):
         self.iface = iface
+        self.algorithm = PopulationMeshAlgorithm(iface)
+        self.dataset_id_getter = GetDatasetId(iface)
 
     def execute(self, municipality_code: str, api_key: str, layer_name: str):
         """
@@ -179,7 +126,8 @@ class PopulationMeshWorkflow:
             api_key,
             municipality_code,
             layer_name,
-            self.iface,
+            self.algorithm,
+            self.dataset_id_getter,
         )
         # QGISのタスクマネージャーにタスクを登録
         QgsApplication.taskManager().addTask(task)

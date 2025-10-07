@@ -183,7 +183,7 @@ class GreenInfraPlugin:
         # 自然公園地域の可視化
         if self.dockwidget.checkBox_nature_reserve.isChecked():
             if real_estate_api_key:
-                # 都道府県コードが１桁の場合0を削除
+                # 都道府県コードが1桁の場合0を削除
                 prefecture_code = self.dockwidget.comboBox_prefecture.currentData()
                 api_prefecture_code = str(int(prefecture_code))
 

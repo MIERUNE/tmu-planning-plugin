@@ -73,6 +73,7 @@ class NatureReserveAlgorithm:
         自然公園地域データをAPIから取得する
         Args:
             api_key (str): APIキー
+            prefecture_code (Optional[str], optional): 都道府県コード。
         Returns:
             QgsVectorTileLayer : 追加に成功した場合はレイヤーオブジェクト
         """

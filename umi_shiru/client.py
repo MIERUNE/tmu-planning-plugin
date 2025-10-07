@@ -1,5 +1,5 @@
 """
-海しるAPIの接続情報とAPIクライアント
+海しるAPIクライアントとAPI設定
 """
 
 from PyQt5.QtCore import QEventLoop, QUrl, QUrlQuery

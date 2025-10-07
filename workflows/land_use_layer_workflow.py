@@ -13,12 +13,12 @@ class LayerWorkflow:
     def __init__(self, iface):
         self.iface = iface
 
-    def execute(self, algorithm, api_key: str) -> bool:
+    def execute(self, algorithm, api_key: str, **kwargs) -> bool:
         """
         指定されたアルゴリズムを実行し、レイヤーをQGISに追加する
         """
         try:
-            added_layer = algorithm.create_layer(api_key)
+            added_layer = algorithm.create_layer(api_key, **kwargs)
             if not added_layer:
                 # メッセージを汎用的に変更
                 QgsMessageLog.logMessage(

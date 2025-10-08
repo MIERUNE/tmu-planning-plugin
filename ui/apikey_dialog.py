@@ -118,7 +118,7 @@ class ApikeyDialog(QDialog, ui_dialog):
             str: 海しるAPIキーの値
         """
         return ApikeyDialog.get_saved_api_key_by_id(2)
-    
+
     @staticmethod
     def get_estat_api_key() -> str:
         """e-Stat APIキー（ID:3）を取得

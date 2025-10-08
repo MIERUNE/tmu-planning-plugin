@@ -20,6 +20,7 @@ from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .workflows.area_workflow import AreaWorkflow
 from .workflows.basemap_workflow import BasemapWorkflow
 from .workflows.coastline_workflow import CoastlineWorkflow
+from .workflows.fishing_port_workflow import FishingPortWorkflow
 from .workflows.land_use_layer_workflow import LayerWorkflow
 from .workflows.population_mesh_workflow import PopulationMeshWorkflow
 
@@ -49,6 +50,8 @@ class GreenInfraPlugin:
         self.high_utilization_zone_algorithm = HighUtilizationZoneAlgorithm(iface)
         self.coastline_workflow = CoastlineWorkflow(iface)
         self.population_mesh_workflow = PopulationMeshWorkflow(iface)
+        self.coastline_workflow = CoastlineWorkflow(iface)
+        self.fishing_port_workflow = FishingPortWorkflow(iface)
 
     def add_action(
         self,
@@ -174,7 +177,7 @@ class GreenInfraPlugin:
         # 立地適正化計画の可視化
         if self.dockwidget.checkBox_location_normalization_plan.isChecked():
             if real_estate_api_key:
-                # APIキーがあればWorkflowを実行
+                # Workflowを実行
                 self.layer_workflow.execute(
                     self.location_normalization_plan_algorithm,
                     api_key=real_estate_api_key,
@@ -223,8 +226,13 @@ class GreenInfraPlugin:
                 municipality_code=self.dockwidget.comboBox_municipality.currentData(),
                 municipality_name=self.dockwidget.comboBox_municipality.currentText(),
             )
-        # 漁港区域の可視化
-        # 港湾区域の可視化
+        # 漁港区域データの可視化
+        if self.dockwidget.checkBox_fishing_port_area.isChecked():
+            self.fishing_port_workflow.execute(
+                api_key=umi_shiru_api_key,
+                municipality_code=self.dockwidget.comboBox_municipality.currentData(),
+                municipality_name=self.dockwidget.comboBox_municipality.currentText(),
+            )
 
         # Phase 4: 人口メッシュデータの可視化
         if self.dockwidget.checkBox_population_mesh.isChecked():

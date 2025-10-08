@@ -3,22 +3,27 @@ from typing import Optional
 
 from qgis.core import Qgis, QgsMessageLog, QgsProject
 
-from ..umi_shiru.coastline.coastline_algorithm import CoastlineAlgorithm
-from ..umi_shiru.connect import (
+from ..umi_shiru.client import (
     BBOX_BUFFER_DEGREES,
     CITY_DEFAULT_BOUNDS,
     CITY_DIVISION_CONFIG,
     PLUGIN_NAME,
 )
+from ..umi_shiru.coastline.coastline_algorithm import CoastlineAlgorithm
 from ..utils.estat.bbox import calculate_municipality_bbox
 from ..utils.estat.client import AdministrativeAreaClient
 from .base_workflow import BaseWorkflow
 
 
 class CoastlineWorkflow(BaseWorkflow):
-    """海岸線データ取得・可視化ワークフロー"""
+    """海岸線データ取得・可視化専用ワークフロー"""
 
     def __init__(self, iface):
+        """
+        海岸線ワークフローの初期化
+        Args:
+            iface: QGISインターフェース
+        """
         super().__init__(iface)
         self.algorithm = CoastlineAlgorithm(iface)
         self.estat_client = AdministrativeAreaClient(PLUGIN_NAME)
@@ -121,15 +126,15 @@ class CoastlineWorkflow(BaseWorkflow):
     def execute(
         self,
         api_key: Optional[str],
-        municipality_code,
-        municipality_name,
+        municipality_code: Optional[str],
+        municipality_name: Optional[str],
     ) -> bool:
         """
-        ワークフローを実行し、海岸線レイヤーをQGISに追加する
+        海岸線ワークフローを実行し、海岸線レイヤーをQGISに追加する
         Args:
             api_key (str, optional): 海しるAPIキー
-            municipality_code (str): 市区町村コード（5桁）
-            municipality_name (str): 市区町村名
+            municipality_code (str, optional): 市区町村コード（5桁）
+            municipality_name (str, optional): 市区町村名
         Returns:
             bool: 成功した場合はTrue、失敗した場合はFalse
         """
@@ -143,6 +148,12 @@ class CoastlineWorkflow(BaseWorkflow):
                 self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
                 return False
 
+            if not municipality_code:
+                message = "海岸線を表示するには市区町村を選択してください。"
+                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+                return False
+
             display_name = self._get_display_name(municipality_code, municipality_name)
 
             # 市区町村の境界範囲を計算
@@ -152,20 +163,17 @@ class CoastlineWorkflow(BaseWorkflow):
             if not bounds:
                 return False
 
-            # 2. データ取得（海岸線分割取得が必要な市区町村かチェック）
+            # 2. データ取得（分割取得が必要な市区町村かチェック）
             if municipality_code in CITY_DIVISION_CONFIG:
                 division_config = CITY_DIVISION_CONFIG[municipality_code]
                 division_count = division_config["division_count"]
-                geojson_data = self.algorithm.fetch_coastline_data_divided(
+                geojson_data = self.algorithm.fetch_data_divided(
                     api_key=api_key,
                     bounds=bounds,
                     division_count=division_count,
-                    display_name=display_name,
                 )
             else:
-                geojson_data = self.algorithm.fetch_coastline_data(
-                    api_key=api_key, bounds=bounds
-                )
+                geojson_data = self.algorithm.fetch_data(api_key=api_key, bounds=bounds)
 
             if not geojson_data:
                 message = "海しるAPIからのデータ取得に失敗しました。"
@@ -181,7 +189,7 @@ class CoastlineWorkflow(BaseWorkflow):
 
             # 4. レイヤー作成
             layer_name = f"海岸線_{display_name}"
-            layer = self.algorithm.create_coastline_layer(geojson_data, layer_name)
+            layer = self.algorithm.create_layer(geojson_data, layer_name)
 
             # 5. QGISプロジェクトに追加
             QgsProject.instance().addMapLayer(layer)

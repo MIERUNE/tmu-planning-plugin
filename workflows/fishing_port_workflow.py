@@ -124,8 +124,8 @@ class FishingPortWorkflow(BaseWorkflow):
     def execute(
         self,
         api_key: Optional[str],
-        municipality_code: Optional[str] = None,
-        municipality_name: Optional[str] = None,
+        municipality_code: Optional[str],
+        municipality_name: Optional[str],
     ) -> bool:
         """
         漁港区域ワークフローを実行し、漁港区域レイヤーをQGISに追加する

@@ -1,8 +1,9 @@
 """
 人口メッシュ（1km）データの取得機能モジュール
 """
-import os
+
 import io
+import os
 import urllib.parse
 import zipfile
 from typing import Optional
@@ -60,7 +61,8 @@ class PopulationMeshAlgorithm:
                 f.write(mesh_data.content)
             QgsMessageLog.logMessage(
                 f"ダウンロード内容を {debug_file_path} に保存しました。確認してください。",
-                PLUGIN_NAME, level=Qgis.Warning
+                PLUGIN_NAME,
+                level=Qgis.Warning,
             )
             # ▲▲▲【デバッグコードここまで】▲▲▲
             zip_data = io.BytesIO(mesh_data.content)
@@ -168,7 +170,6 @@ class PopulationMeshAlgorithm:
                 level=Qgis.Critical,
             )
             return None
-        
 
     def merge_population_layers(
         self, layers_to_merge: list[QgsVectorLayer], merged_layer_name: str

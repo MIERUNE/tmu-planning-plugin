@@ -1,12 +1,10 @@
 """
 人口メッシュ（1km）データの取得機能モジュール
 """
-
+import os
 import io
-import tempfile
 import urllib.parse
 import zipfile
-from pathlib import Path
 from typing import Optional
 
 import requests
@@ -14,6 +12,8 @@ from qgis.core import (
     Qgis,
     QgsFeature,
     QgsField,
+    QgsFields,
+    QgsGeometry,
     QgsGraduatedSymbolRenderer,
     QgsMessageLog,
     QgsStyle,
@@ -31,12 +31,13 @@ from .get_dataset_id import GetDatasetId
 
 class PopulationMeshAlgorithm:
     """人口メッシュデータ取得クラス"""
+
     def __init__(self, iface):
         self.iface = iface
         self.dataset_id = GetDatasetId(iface)
 
-    def _get_mesh_data(self, mesh_code: str, output_dir: str) -> Optional[str]:
-        """メッシュ形状データをダウンロードして取得"""
+    def _get_mesh_data(self, mesh_code: str) -> Optional[QgsGeometry]:
+        """メッシュ形状データをダウンロードしてジオメトリを取得"""
         # パラメーター
         mesh_request_params = {
             "dlserveyId": "S",
@@ -48,81 +49,64 @@ class PopulationMeshAlgorithm:
         encode_params = urllib.parse.urlencode(mesh_request_params)
         mesh_request_url = f"{MESH_SHAPE_DOWNLOAD_URL}?{encode_params}"
 
-        # メッシュ形状データのダウンロード
-        mesh_data = requests.get(mesh_request_url, timeout=60)
-
-        # エラーチェック
-        mesh_data.raise_for_status()
-        zip_data = io.BytesIO(mesh_data.content)
-        # ダウンロードしたZIPファイルを一時ディレクトリに展開
-        with zipfile.ZipFile(zip_data, "r") as zip_ref:
-            zip_ref.extractall(output_dir)
-
-        # 展開したファイルの中からシェープファイル（.shp）を探す
-        temp_dir_path = Path(output_dir)
-        shapefiles = list(temp_dir_path.glob("*.shp"))
-        if not shapefiles:
+        try:
+            mesh_data = requests.get(mesh_request_url, timeout=60)
+            # エラーチェック
+            mesh_data.raise_for_status()
+            # ▼▼▼【デバッグコード追加】ダウンロード内容をデスクトップに保存 ▼▼▼
+            desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
+            debug_file_path = os.path.join(desktop_path, f"debug_mesh_{mesh_code}.zip")
+            with open(debug_file_path, "wb") as f:
+                f.write(mesh_data.content)
             QgsMessageLog.logMessage(
-                "展開されたZIPファイル内にシェープファイルが見つかりませんでした。",
+                f"ダウンロード内容を {debug_file_path} に保存しました。確認してください。",
+                PLUGIN_NAME, level=Qgis.Warning
+            )
+            # ▲▲▲【デバッグコードここまで】▲▲▲
+            zip_data = io.BytesIO(mesh_data.content)
+
+            # メモリ上でZIPを展開し、シェープファイルを読み込む
+            with zipfile.ZipFile(zip_data, "r") as zf:
+                for filename in zf.namelist():
+                    if filename.endswith(".shp"):
+                        # シェープファイルをVSIL (Virtual File System) を使ってメモリから直接読む
+                        vsi_path = f"/vsimem/zip_{mesh_code}/{filename}"
+                        zf.extract(filename, f"/vsimem/zip_{mesh_code}/")
+                        temp_layer = QgsVectorLayer(vsi_path, "temp", "ogr")
+                        if temp_layer.isValid() and temp_layer.featureCount() > 0:
+                            # 最初のフィーチャーのジオメトリをコピーして返す
+                            feature: QgsFeature = next(temp_layer.getFeatures())
+                            return QgsGeometry(feature.geometry())
+
+            QgsMessageLog.logMessage(
+                f"メッシュコード {mesh_code} のジオメトリ取得に失敗",
                 PLUGIN_NAME,
-                level=Qgis.Critical,
+                level=Qgis.Warning,
             )
             return None
-        return str(shapefiles[0])
+
+        except requests.RequestException as e:
+            QgsMessageLog.logMessage(
+                f"メッシュデータDLエラー: {e}", PLUGIN_NAME, level=Qgis.Critical
+            )
+            return None
 
     def create_single_population_layer(
         self, api_key: str, mesh_code: str, stats_data_id: str
     ) -> Optional[QgsVectorLayer]:
-        """人口メッシュデータの取得
+        """単一のメッシュのジオメトリと人口データからメモリレイヤーを作成する
         Args:
             api_key (str): e-Stat APIキー
-            mesh_code (str): 1kmメッシュコード
-            stats_data_id (str): e-StatのデータセットID
+            mesh_code (str): メッシュコード
+            stats_data_id (str): データセットID
         Returns:
-            QgsVectorLayer: 追加に成功した場合はレイヤーオブジェクト、失敗した場合はNone
+            QgsVectorLayer: 作成したレイヤー、または None（失敗時
         """
         try:
-            population_mesh_layer = QgsVectorLayer(
-                "Polygon?crs=EPSG:6668", f"mesh_{mesh_code}", "memory"
-            )
-            with tempfile.TemporaryDirectory() as temp_dir_name:
-                # ステップ1の修正を使い、専用ディレクトリにシェープファイルをダウンロード
-                shp_path = self._get_mesh_data(mesh_code, temp_dir_name)
-                if not shp_path:
-                    return None
-
-                # 一時的にシェープファイルからレイヤーを読み込む
-                temp_layer = QgsVectorLayer(
-                    str(shp_path), f"temp_mesh_{mesh_code}", "ogr"
-                )
-                if not temp_layer.isValid():
-                    return None
-
-                population_mesh_layer = QgsVectorLayer(
-                    f"Polygon?crs={temp_layer.crs().toWkt()}",
-                    f"mesh_{mesh_code}",
-                    "memory",
-                )
-
-                # --- メモリレイヤーに形状と属性定義をコピー ---
-                provider = population_mesh_layer.dataProvider()
-                # フィールド（属性の列）をコピー
-                provider.addAttributes(temp_layer.fields())
-                population_mesh_layer.updateFields()
-
-                # 地物をコピー
-                new_features = []
-                for source_feature in temp_layer.getFeatures():
-                    # 1. コピー先のフィールド構成で空の地物を作成
-                    dest_feature = QgsFeature(population_mesh_layer.fields())
-                    # 2. ジオメトリをコピー
-                    dest_feature.setGeometry(source_feature.geometry())
-                    # 3. 属性値をコピー
-                    dest_feature.setAttributes(source_feature.attributes())
-                    new_features.append(dest_feature)
-
-                provider.addFeatures(new_features)
-                population_mesh_layer.updateExtents()
+            # メッシュのジオメトリを取得
+            mesh_geometry = self._get_mesh_data(mesh_code)
+            if not mesh_geometry:
+                return None
 
             # 人口データの取得と整形
             # パラメーター
@@ -134,8 +118,10 @@ class PopulationMeshAlgorithm:
             }
             encoded_params = urllib.parse.urlencode(population_mesh_url_params)
             population_mesh_url = f"{POPULATION_MESH_API_ENDPOINT}?{encoded_params}"
+
             response_pop = requests.get(population_mesh_url, timeout=60)
             response_pop.raise_for_status()
+
             # 取得したJSONデータをパース
             json_data = response_pop.json()
             stats_values = json_data["GET_STATS_DATA"]["STATISTICAL_DATA"]["DATA_INF"][
@@ -148,46 +134,41 @@ class PopulationMeshAlgorithm:
                 for item in stats_values
                 if "$" in item and str(item["$"]).isnumeric()
             }
-
-            # データの結合
-            join_field_name = "population"
-            key_field_name = (
-                "KEY_CODE"  # e-Statのシェープファイルのメッシュコードのフィールド名
+            # メモリレイヤーの準備
+            layer = QgsVectorLayer(
+                "Polygon?crs=EPSG:4326", f"temp_mesh_{mesh_code}", "memory"
             )
+            provider = layer.dataProvider()
+            fields = QgsFields()
+            fields.append(QgsField("KEY_CODE", QVariant.String))
+            fields.append(QgsField("population", QVariant.Int))
+            provider.addAttributes(fields)
+            layer.updateFields()
 
-            # レイヤーの編集を開始
-            population_mesh_layer.startEditing()
-            if population_mesh_layer.fields().indexFromName(join_field_name) == -1:
-                population_mesh_layer.dataProvider().addAttributes(
-                    [QgsField(join_field_name, QVariant.Int)]
-                )
-                population_mesh_layer.updateFields()
-            join_field_idx = population_mesh_layer.fields().indexFromName(
-                join_field_name
-            )
-            updated_count = 0
-            for feature in population_mesh_layer.getFeatures():
-                mesh_code = feature[key_field_name]
-                if mesh_code in population_dict:
-                    population_value = population_dict[mesh_code]
-                    population_mesh_layer.changeAttributeValue(
-                        feature.id(), join_field_idx, population_value
-                    )
-                    updated_count += 1
+            # ジオメトリと属性を持つフィーチャーを作成
+            for area_code, population in population_dict.items():
+                feature = QgsFeature()
+                # ジオメトリは最初に取得したメッシュ全体の形状を使いまわす
+                # (e-Statの仕様上、1メッシュ内の複数エリアでもジオメトリは同じはず)
+                feature.setGeometry(mesh_geometry)
+                feature.setAttributes([area_code, population])
+                provider.addFeature(feature)
 
-            population_mesh_layer.commitChanges()
             QgsMessageLog.logMessage(
-                f"人口データを{updated_count}件更新しました。",
+                f"メッシュコード {mesh_code} のメモリレイヤー作成完了",
                 PLUGIN_NAME,
                 level=Qgis.Info,
             )
-            return population_mesh_layer
+            return layer
 
         except Exception as e:
             QgsMessageLog.logMessage(
-                f"予期せぬエラーが発生しました: {e}", PLUGIN_NAME, level=Qgis.Critical
+                f"単一レイヤー作成中の予期せぬエラー: {e}",
+                PLUGIN_NAME,
+                level=Qgis.Critical,
             )
             return None
+        
 
     def merge_population_layers(
         self, layers_to_merge: list[QgsVectorLayer], merged_layer_name: str
@@ -238,4 +219,9 @@ class PopulationMeshAlgorithm:
         renderer.updateClasses(merged_layer, QgsGraduatedSymbolRenderer.Jenks, 5)
         merged_layer.setRenderer(renderer)
 
+        QgsMessageLog.logMessage(
+            f"レイヤー「{merged_layer}」の作成が完了しました。",
+            PLUGIN_NAME,
+            level=Qgis.Success,
+        )
         return merged_layer

@@ -167,6 +167,9 @@ class GetDatasetId:
            -> dict[str, str]: 取得したデータセットIDの辞書
         """
         mesh_codes = self._get_mesh_codes(municipality_code)
+        QgsMessageLog.logMessage(
+            f"取得したメッシュコードリスト: {mesh_codes}", PLUGIN_NAME, level=Qgis.Info
+        )
 
         if not mesh_codes:
             QgsMessageLog.logMessage(

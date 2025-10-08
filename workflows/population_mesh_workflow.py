@@ -16,15 +16,19 @@ from ..estat.population_mesh_algorithm import PopulationMeshAlgorithm
 class PopulationMeshTask(QgsTask):
     """人口メッシュ取得処理をバックグラウンドで実行するためのタスク"""
 
-    def __init__(self, description, api_key, municipality_code, layer_name, algorithm, dataset_id_getter):
+    def __init__(
+        self,
+        description,
+        api_key,
+        municipality_code,
+        layer_name,
+    ):
         super().__init__(description, QgsTask.CanCancel)
         self.api_key = api_key
         self.municipality_code = municipality_code
         self.layer_name = layer_name
         self.final_layer = None
         self.exception = None
-        self.algorithm = algorithm
-        self.dataset_id_getter = dataset_id_getter
 
     def run(self):
         """
@@ -32,10 +36,10 @@ class PopulationMeshTask(QgsTask):
         """
         try:
             QgsMessageLog.logMessage("Task run: 開始", PLUGIN_NAME, level=Qgis.Info)
-            # self.algorithm = PopulationMeshAlgorithm(None)
-            # dataset_id_getter = GetDatasetId(None)
+            self.algorithm = PopulationMeshAlgorithm(None)
+            dataset_id_getter = GetDatasetId(None)
 
-            dataset_id_dict = self.dataset_id_getter.fetch_dataset_ids_for_municipality(
+            dataset_id_dict = dataset_id_getter.fetch_dataset_ids_for_municipality(
                 self.municipality_code, self.api_key
             )
 
@@ -44,7 +48,7 @@ class PopulationMeshTask(QgsTask):
 
             layers_to_merge = []
             total_steps = len(dataset_id_dict)
-            
+
             for i, (mesh_code, stats_data_id) in enumerate(dataset_id_dict.items()):
                 # ユーザーがキャンセルボタンを押したかチェック
                 if self.isCanceled():
@@ -126,8 +130,6 @@ class PopulationMeshWorkflow:
             api_key,
             municipality_code,
             layer_name,
-            self.algorithm,
-            self.dataset_id_getter,
         )
         # QGISのタスクマネージャーにタスクを登録
         QgsApplication.taskManager().addTask(task)

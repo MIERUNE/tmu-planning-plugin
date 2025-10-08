@@ -7,8 +7,11 @@ from typing import Optional
 
 from qgis.core import (
     Qgis,
+    QgsFillSymbol,
     QgsMessageLog,
     QgsNetworkAccessManager,
+    QgsVectorTileBasicRenderer,
+    QgsVectorTileBasicRendererStyle,
     QgsVectorTileLayer,
 )
 from qgis.PyQt.QtCore import QEventLoop, QUrl
@@ -133,5 +136,29 @@ class DidAreaAlgorithm:
         # ズームレベル９以下では表示しない
         did_area_layer.setScaleBasedVisibility(True)
         did_area_layer.setMinimumScale(ZOOM9_SCALE_THRESHOLD)
+
+        # スタイルの設定
+        renderer = QgsVectorTileBasicRenderer()
+        polygon_style = QgsVectorTileBasicRendererStyle()
+        polygon_style.setStyleName("Polygons")
+        polygon_style.setLayerName("hits")
+        polygon_style.setEnabled(True)
+
+        polygon_style.setGeometryType(Qgis.GeometryType.Polygon)
+
+        # シンボルを作成
+        polygon_symbol = QgsFillSymbol.createSimple(
+            {
+                "color": "135,54,79,100",
+                "outline_color": "124,44,69,255",
+                "outline_width": "0.26",
+            }
+        )
+
+        polygon_style.setSymbol(polygon_symbol)
+        renderer.setStyles([polygon_style])
+        did_area_layer.setRenderer(renderer)
+
+        did_area_layer.triggerRepaint()
 
         return did_area_layer

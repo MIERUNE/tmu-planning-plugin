@@ -19,11 +19,10 @@ UMI_SHIRU_API_CONFIG = {
         "endpoint": "/fishing-port-area/v2/MapServer",
         "layer": "3",  # 漁港区域
     },
-    # 今後追加予定:
-    # "port_area": {
-    #     "endpoint": "/port-area/v2/MapServer",
-    #     "layer": "3",  # 港湾区域
-    # },
+    "port_area": {
+        "endpoint": "/port-area/v2/MapServer",
+        "layer": "3",  # 港湾区域
+    },
 }
 
 # 主要都市のデフォルト境界範囲

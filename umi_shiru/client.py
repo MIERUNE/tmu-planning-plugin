@@ -15,11 +15,11 @@ UMI_SHIRU_API_CONFIG = {
         "endpoint": "/coastline-type-ESI/v2/MapServer",
         "layer": "1",  # 海岸線
     },
+    "fishing_port": {
+        "endpoint": "/fishing-port-area/v2/MapServer",
+        "layer": "3",  # 漁港区域
+    },
     # 今後追加予定:
-    # "fishing_port": {
-    #     "endpoint": "/fishing-port-area/v2/MapServer",
-    #     "layer": "3",  # 漁港区域
-    # },
     # "port_area": {
     #     "endpoint": "/port-area/v2/MapServer",
     #     "layer": "3",  # 港湾区域

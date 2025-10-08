@@ -169,9 +169,7 @@ class FishingPortWorkflow(BaseWorkflow):
                     division_count=division_count,
                 )
             else:
-                geojson_data = self.algorithm.fetch_data(
-                    api_key=api_key, bounds=bounds
-                )
+                geojson_data = self.algorithm.fetch_data(api_key=api_key, bounds=bounds)
 
             if not geojson_data:
                 message = "海しるAPIからのデータ取得に失敗しました。"

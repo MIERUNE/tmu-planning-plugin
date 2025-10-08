@@ -10,7 +10,13 @@ from abc import ABC, abstractmethod
 from typing import Dict, List, Optional
 
 from PyQt5.QtGui import QColor
-from qgis.core import Qgis, QgsCoordinateReferenceSystem, QgsMessageLog, QgsVectorLayer, QgsWkbTypes
+from qgis.core import (
+    Qgis,
+    QgsCoordinateReferenceSystem,
+    QgsMessageLog,
+    QgsVectorLayer,
+    QgsWkbTypes,
+)
 
 from ..client import PLUGIN_NAME, UmiShiruApiClient
 from .layer_settings import UmiShiruLayerSettings

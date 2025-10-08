@@ -10,7 +10,13 @@ from abc import ABC, abstractmethod
 from typing import Dict, List, Optional
 
 from PyQt5.QtGui import QColor
-from qgis.core import Qgis, QgsCoordinateReferenceSystem, QgsMessageLog, QgsVectorLayer
+from qgis.core import (
+    Qgis,
+    QgsCoordinateReferenceSystem,
+    QgsMessageLog,
+    QgsVectorLayer,
+    QgsWkbTypes,
+)
 
 from ..client import PLUGIN_NAME, UmiShiruApiClient
 from .layer_settings import UmiShiruLayerSettings
@@ -347,7 +353,23 @@ class UmiShiruBaseAlgorithm(ABC):
             symbol = layer.renderer().symbol()
             color = QColor(style_config["color"])
             symbol.setColor(color)
-            symbol.setWidth(style_config["width"])
+
+            # ジオメトリタイプに応じて適切なスタイルを適用
+            geometry_type = layer.geometryType()
+
+            if geometry_type == QgsWkbTypes.PolygonGeometry:
+                # 面（Polygon）の場合
+                symbol_layer = symbol.symbolLayer(0)
+                if symbol_layer:
+                    symbol_layer.setStrokeWidth(style_config["width"])
+                    symbol_layer.setStrokeColor(color)
+                    fill_color = QColor(color)
+                    fill_color.setAlphaF(style_config["opacity"])
+                    symbol_layer.setFillColor(fill_color)
+            else:
+                # 線（LineString）や点（Point）の場合
+                symbol.setWidth(style_config["width"])
+
             symbol.setOpacity(style_config["opacity"])
             layer.triggerRepaint()
 

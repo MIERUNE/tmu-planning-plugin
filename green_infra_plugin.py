@@ -17,6 +17,7 @@ from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .workflows.area_workflow import AreaWorkflow
 from .workflows.basemap_workflow import BasemapWorkflow
 from .workflows.coastline_workflow import CoastlineWorkflow
+from .workflows.fishing_port_workflow import FishingPortWorkflow
 from .workflows.land_use_layer_workflow import LayerWorkflow
 from .workflows.population_mesh_workflow import PopulationMeshWorkflow
 
@@ -45,6 +46,7 @@ class GreenInfraPlugin:
         self.nature_reserve_algorithm = NatureReserveAlgorithm(iface)
         self.population_mesh_workflow = PopulationMeshWorkflow(iface)
         self.coastline_workflow = CoastlineWorkflow(iface)
+        self.fishing_port_workflow = FishingPortWorkflow(iface)
 
     def add_action(
         self,
@@ -203,6 +205,13 @@ class GreenInfraPlugin:
         # 海岸線データの可視化
         if self.dockwidget.checkBox_coast_line.isChecked():
             self.coastline_workflow.execute(
+                api_key=umi_shiru_api_key,
+                municipality_code=self.dockwidget.comboBox_municipality.currentData(),
+                municipality_name=self.dockwidget.comboBox_municipality.currentText(),
+            )
+        # 漁港区域データの可視化
+        if self.dockwidget.checkBox_fishing_port_area.isChecked():
+            self.fishing_port_workflow.execute(
                 api_key=umi_shiru_api_key,
                 municipality_code=self.dockwidget.comboBox_municipality.currentData(),
                 municipality_name=self.dockwidget.comboBox_municipality.currentText(),

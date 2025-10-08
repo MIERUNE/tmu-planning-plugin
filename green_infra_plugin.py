@@ -12,6 +12,7 @@ from .real_estate_lib.land_use.location_normalization_plan_algorithm import (
 from .real_estate_lib.land_use.nature_reserve_algorithm import NatureReserveAlgorithm
 from .real_estate_lib.land_use.urban_planning_algorithm import UrbanPlanningAlgorithm
 from .real_estate_lib.land_use.zoning_district_algorithm import ZoningDistrictAlgorithm
+from .real_estate_lib.land_use.did_algorithm import DidAreaAlgorithm
 from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .workflows.area_workflow import AreaWorkflow
@@ -44,6 +45,7 @@ class GreenInfraPlugin:
             iface
         )
         self.nature_reserve_algorithm = NatureReserveAlgorithm(iface)
+        self.did_area_algorithm = DidAreaAlgorithm(iface)
         self.population_mesh_workflow = PopulationMeshWorkflow(iface)
         self.coastline_workflow = CoastlineWorkflow(iface)
         self.fishing_port_workflow = FishingPortWorkflow(iface)
@@ -196,6 +198,20 @@ class GreenInfraPlugin:
                 )
             else:
                 message = "不動産情報ライブラリAPIキーが未設定のため、自然公園地域の取得をスキップします。"
+                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+
+        # 人口集中地区(DID)の可視化
+        if self.dockwidget.checkBox_did.isChecked():
+            if real_estate_api_key:
+                self.layer_workflow.execute(
+                    self.did_area_algorithm,
+                    api_key=real_estate_api_key,
+                    municipality_code=self.dockwidget.comboBox_municipality.currentData(),
+                    municipality_name=self.dockwidget.comboBox_municipality.currentText(),
+                )
+            else:
+                message = "不動産情報ライブラリAPIキーが未設定のため、人口集中地区(DID)の取得をスキップします。"
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
                 self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
 

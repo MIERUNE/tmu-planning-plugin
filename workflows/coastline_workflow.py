@@ -9,22 +9,23 @@ from ..umi_shiru.client import (
     CITY_DIVISION_CONFIG,
     PLUGIN_NAME,
 )
-from ..umi_shiru.common.base_algorithm import UmiShiruBaseAlgorithm
+from ..umi_shiru.coastline.coastline_algorithm import CoastlineAlgorithm
 from ..utils.estat.bbox import calculate_municipality_bbox
 from ..utils.estat.client import AdministrativeAreaClient
 from .base_workflow import BaseWorkflow
 
 
-class UmiShiruWorkflow(BaseWorkflow):
-    """海しるAPIデータ取得・可視化汎用ワークフロー"""
+class CoastlineWorkflow(BaseWorkflow):
+    """海岸線データ取得・可視化専用ワークフロー"""
 
     def __init__(self, iface):
         """
-        汎用ワークフローの初期化
+        海岸線ワークフローの初期化
         Args:
             iface: QGISインターフェース
         """
         super().__init__(iface)
+        self.algorithm = CoastlineAlgorithm(iface)
         self.estat_client = AdministrativeAreaClient(PLUGIN_NAME)
 
     def _get_display_name(
@@ -47,14 +48,12 @@ class UmiShiruWorkflow(BaseWorkflow):
         self,
         geojson_data: str,
         display_name: str,
-        layer_name: str,
     ) -> bool:
         """
         GeoJSONデータの内容を検証し、featuresが存在するかチェック
         Args:
             geojson_data (str): GeoJSON文字列
             display_name (str): 表示名（例：「札幌市（01100）」）
-            layer_name (str): レイヤー名（例：「海岸線」）
         Returns:
             bool: featuresが存在する場合True、存在しない場合False
         """
@@ -63,13 +62,15 @@ class UmiShiruWorkflow(BaseWorkflow):
             features = geojson_obj.get("features", [])
 
             if not features:
-                message = f"市区町村「{display_name}」の範囲には{layer_name}データが存在しません。"
+                message = (
+                    f"市区町村「{display_name}」の範囲には海岸線データが存在しません。"
+                )
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Info)
                 self.iface.messageBar().pushMessage("情報", message, level=Qgis.Info)
                 return False
 
             QgsMessageLog.logMessage(
-                f"{layer_name}データを取得しました（{len(features)} features）",
+                f"海岸線データを取得しました（{len(features)} features）",
                 PLUGIN_NAME,
                 level=Qgis.Info,
             )
@@ -124,15 +125,13 @@ class UmiShiruWorkflow(BaseWorkflow):
 
     def execute(
         self,
-        algorithm: UmiShiruBaseAlgorithm,
         api_key: Optional[str],
-        municipality_code,
-        municipality_name,
+        municipality_code: Optional[str],
+        municipality_name: Optional[str],
     ) -> bool:
         """
-        指定されたアルゴリズムを実行し、海しるAPIデータレイヤーをQGISに追加する
+        海岸線ワークフローを実行し、海岸線レイヤーをQGISに追加する
         Args:
-            algorithm (UmiShiruBaseAlgorithm): データタイプ固有のアルゴリズム
             api_key (str, optional): 海しるAPIキー
             municipality_code (str, optional): 市区町村コード（5桁）
             municipality_name (str, optional): 市区町村名
@@ -140,18 +139,17 @@ class UmiShiruWorkflow(BaseWorkflow):
             bool: 成功した場合はTrue、失敗した場合はFalse
         """
         try:
-            # アルゴリズムから設定を取得
-            layer_name = algorithm.layer_settings.get_default_layer_name()
-
             # 1. パラメータの準備とバリデーション
             if not api_key:
-                message = f"海しるAPIキーが未設定のため、{layer_name}データの処理をスキップします。"
+                message = (
+                    "海しるAPIキーが未設定のため、海岸線データの処理をスキップします。"
+                )
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
                 self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
                 return False
 
             if not municipality_code:
-                message = f"{layer_name}を表示するには市区町村を選択してください。"
+                message = "海岸線を表示するには市区町村を選択してください。"
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
                 self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
                 return False
@@ -169,13 +167,13 @@ class UmiShiruWorkflow(BaseWorkflow):
             if municipality_code in CITY_DIVISION_CONFIG:
                 division_config = CITY_DIVISION_CONFIG[municipality_code]
                 division_count = division_config["division_count"]
-                geojson_data = algorithm.fetch_data_divided(
+                geojson_data = self.algorithm.fetch_data_divided(
                     api_key=api_key,
                     bounds=bounds,
                     division_count=division_count,
                 )
             else:
-                geojson_data = algorithm.fetch_data(api_key=api_key, bounds=bounds)
+                geojson_data = self.algorithm.fetch_data(api_key=api_key, bounds=bounds)
 
             if not geojson_data:
                 message = "海しるAPIからのデータ取得に失敗しました。"
@@ -186,12 +184,12 @@ class UmiShiruWorkflow(BaseWorkflow):
                 return False
 
             # 3. GeoJSONデータの検証
-            if not self._validate_geojson_data(geojson_data, display_name, layer_name):
+            if not self._validate_geojson_data(geojson_data, display_name):
                 return False
 
             # 4. レイヤー作成
-            full_layer_name = f"{layer_name}_{display_name}"
-            layer = algorithm.create_layer(geojson_data, full_layer_name)
+            layer_name = f"海岸線_{display_name}"
+            layer = self.algorithm.create_layer(geojson_data, layer_name)
 
             # 5. QGISプロジェクトに追加
             QgsProject.instance().addMapLayer(layer)
@@ -199,9 +197,7 @@ class UmiShiruWorkflow(BaseWorkflow):
             # 6. UI更新
             self.iface.mapCanvas().refresh()
 
-            success_message = (
-                f"{layer_name}レイヤー '{full_layer_name}' が正常に追加されました"
-            )
+            success_message = f"海岸線レイヤー '{layer_name}' が正常に追加されました"
             QgsMessageLog.logMessage(success_message, PLUGIN_NAME, level=Qgis.Success)
             self.iface.messageBar().pushMessage(
                 "成功", success_message, level=Qgis.Success
@@ -209,12 +205,7 @@ class UmiShiruWorkflow(BaseWorkflow):
             return True
 
         except Exception as e:
-            layer_name = getattr(algorithm, "layer_settings", None)
-            if layer_name and hasattr(layer_name, "get_default_layer_name"):
-                layer_name = layer_name.get_default_layer_name()
-            else:
-                layer_name = "データ"
-            error_message = f"{layer_name}の可視化中にエラーが発生: {str(e)}"
+            error_message = f"海岸線の可視化中にエラーが発生: {str(e)}"
             QgsMessageLog.logMessage(error_message, PLUGIN_NAME, level=Qgis.Critical)
             self.iface.messageBar().pushMessage(
                 "エラー", error_message, level=Qgis.Critical

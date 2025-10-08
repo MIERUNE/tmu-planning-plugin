@@ -14,14 +14,11 @@ from .real_estate_lib.land_use.urban_planning_algorithm import UrbanPlanningAlgo
 from .real_estate_lib.land_use.zoning_district_algorithm import ZoningDistrictAlgorithm
 from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
-from .umi_shiru.coastline.coastline_algorithm import CoastlineAlgorithm
 from .workflows.area_workflow import AreaWorkflow
 from .workflows.basemap_workflow import BasemapWorkflow
+from .workflows.coastline_workflow import CoastlineWorkflow
 from .workflows.land_use_layer_workflow import LayerWorkflow
 from .workflows.population_mesh_workflow import PopulationMeshWorkflow
-from .workflows.umishiru_workflow import UmiShiruWorkflow
-
-# from .umi_shiru.fishing_port.fishing_port_algorithm import FishingPortAlgorithm
 
 PLUGIN_NAME = "Green Infra Plugin"
 
@@ -47,7 +44,7 @@ class GreenInfraPlugin:
         )
         self.nature_reserve_algorithm = NatureReserveAlgorithm(iface)
         self.population_mesh_workflow = PopulationMeshWorkflow(iface)
-        self.umishiru_workflow = UmiShiruWorkflow(iface)
+        self.coastline_workflow = CoastlineWorkflow(iface)
 
     def add_action(
         self,
@@ -205,23 +202,11 @@ class GreenInfraPlugin:
 
         # 海岸線データの可視化
         if self.dockwidget.checkBox_coast_line.isChecked():
-            coastline_algorithm = CoastlineAlgorithm(self.iface)
-            self.umishiru_workflow.execute(
-                algorithm=coastline_algorithm,
+            self.coastline_workflow.execute(
                 api_key=umi_shiru_api_key,
                 municipality_code=self.dockwidget.comboBox_municipality.currentData(),
                 municipality_name=self.dockwidget.comboBox_municipality.currentText(),
             )
-
-        # 漁港区域データの可視化
-        # if self.dockwidget.checkBox_fishing_port_area.isChecked():
-        #     fishing_port_algorithm = FishingPortAlgorithm(self.iface)
-        #     self.umishiru_workflow.execute(
-        #         algorithm=fishing_port_algorithm,
-        #         api_key=umi_shiru_api_key,
-        #         municipality_code=self.dockwidget.comboBox_municipality.currentData(),
-        #         municipality_name=self.dockwidget.comboBox_municipality.currentText(),
-        #     )
 
         # Phase 4: 人口メッシュデータの可視化
         if self.dockwidget.checkBox_population_mesh.isChecked():

@@ -122,7 +122,7 @@ class LocationNormalizationPlanAlgorithm:
         polygon_symbol = QgsFillSymbol.createSimple(
             {
                 "color": "255,210,225,180",
-                "outline_color": "200,120,150,255",
+                "outline_color": "255,147,155,180",
                 "outline_width": "0.26",
             }
         )

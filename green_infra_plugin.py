@@ -20,6 +20,7 @@ from .workflows.coastline_workflow import CoastlineWorkflow
 from .workflows.fishing_port_workflow import FishingPortWorkflow
 from .workflows.land_use_layer_workflow import LayerWorkflow
 from .workflows.population_mesh_workflow import PopulationMeshWorkflow
+from .workflows.port_area_workflow import PortAreaWorkflow
 
 PLUGIN_NAME = "Green Infra Plugin"
 
@@ -47,6 +48,7 @@ class GreenInfraPlugin:
         self.population_mesh_workflow = PopulationMeshWorkflow(iface)
         self.coastline_workflow = CoastlineWorkflow(iface)
         self.fishing_port_workflow = FishingPortWorkflow(iface)
+        self.port_area_workflow = PortAreaWorkflow(iface)
 
     def add_action(
         self,
@@ -212,6 +214,13 @@ class GreenInfraPlugin:
         # 漁港区域データの可視化
         if self.dockwidget.checkBox_fishing_port_area.isChecked():
             self.fishing_port_workflow.execute(
+                api_key=umi_shiru_api_key,
+                municipality_code=self.dockwidget.comboBox_municipality.currentData(),
+                municipality_name=self.dockwidget.comboBox_municipality.currentText(),
+            )
+        # 港湾区域データの可視化
+        if self.dockwidget.checkBox_port_area.isChecked():
+            self.port_area_workflow.execute(
                 api_key=umi_shiru_api_key,
                 municipality_code=self.dockwidget.comboBox_municipality.currentData(),
                 municipality_name=self.dockwidget.comboBox_municipality.currentText(),

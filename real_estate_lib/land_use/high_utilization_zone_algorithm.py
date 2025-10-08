@@ -31,8 +31,14 @@ class HighUtilizationZoneAlgorithm:
         self.iface = iface
 
     def _check_api_connection(self, api_key: str) -> tuple[bool, Optional[int]]:
-        """APIキーの有効性を確認するための事前接続チェック"""
-        # 接続テスト一部タイルをリクエスト
+        """
+        APIキーの有効性を確認するための事前接続チェック
+        Args:
+            api_key (str): APIキー
+        Returns:
+            tuple[bool, Optional[int]]: 接続成功フラグとHTTPステータスコード
+        """
+        # 接続テストのため一部タイルをリクエスト
         test_url = (
             HEIGHTENED_USE_DISTRICT_API_ENDPOINT
             + "?response_format=geojson&z=13&x=7272&y=3225"
@@ -101,12 +107,6 @@ class HighUtilizationZoneAlgorithm:
         layer_name = "高度利用地区"
         high_utilization_zone_layer = QgsVectorTileLayer(
             get_real_estate_url, layer_name
-        )
-
-        QgsMessageLog.logMessage(
-            f"'{layer_name}' レイヤーの取得に成功しました。",
-            PLUGIN_NAME,
-            level=Qgis.Info,
         )
 
         # ズームレベル９以下では表示しない

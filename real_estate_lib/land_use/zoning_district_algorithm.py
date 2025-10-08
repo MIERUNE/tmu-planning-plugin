@@ -7,8 +7,11 @@ from typing import Optional
 
 from qgis.core import (
     Qgis,
+    QgsFillSymbol,
     QgsMessageLog,
     QgsNetworkAccessManager,
+    QgsVectorTileBasicRenderer,
+    QgsVectorTileBasicRendererStyle,
     QgsVectorTileLayer,
 )
 from qgis.PyQt.QtCore import QEventLoop, QUrl
@@ -101,5 +104,28 @@ class ZoningDistrictAlgorithm:
         # ズームレベル９以下では表示しない
         zoning_district_layer.setScaleBasedVisibility(True)
         zoning_district_layer.setMinimumScale(ZOOM9_SCALE_THRESHOLD)
+
+        # スタイルの設定
+        renderer = QgsVectorTileBasicRenderer()
+        polygon_style = QgsVectorTileBasicRendererStyle()
+        polygon_style.setStyleName("Polygons")
+        polygon_style.setLayerName("hits")
+        polygon_style.setEnabled(True)
+
+        polygon_style.setGeometryType(Qgis.GeometryType.Polygon)
+
+        # シンボルを作成
+        polygon_symbol = QgsFillSymbol.createSimple(
+            {
+                "color": "255,255,147,180",
+                "outline_color": "221,207,144,255",
+                "outline_width": "0.26",
+            }
+        )
+        polygon_style.setSymbol(polygon_symbol)
+        renderer.setStyles([polygon_style])
+        zoning_district_layer.setRenderer(renderer)
+
+        zoning_district_layer.triggerRepaint()
 
         return zoning_district_layer

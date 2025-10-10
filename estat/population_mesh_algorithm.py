@@ -20,6 +20,7 @@ from qgis.core import (
     QgsVectorLayer,
 )
 from qgis.PyQt.QtCore import QVariant
+from .get_dataset_id import GetDatasetId
 
 from .connect import (
     MESH_SHAPE_DOWNLOAD_URL,
@@ -86,6 +87,53 @@ class PopulationMeshAlgorithm:
         """
 
         try:
+            # === デバッグ用: データセットID取得テスト ===
+            QgsMessageLog.logMessage(
+                "=== データセットID取得のテスト開始 ===",
+                PLUGIN_NAME,
+                level=Qgis.Info,
+            )
+            
+            dataset_fetcher = GetDatasetId(self.iface)
+            
+            # テスト用の自治体コード（札幌市の例）
+            test_municipality_code = "01100"
+            
+            QgsMessageLog.logMessage(
+                f"自治体コード {test_municipality_code} のデータセットIDを取得中...",
+                PLUGIN_NAME,
+                level=Qgis.Info,
+            )
+            
+            dataset_id_dict = dataset_fetcher.fetch_dataset_ids_for_municipality(
+                test_municipality_code, api_key
+            )
+            
+            if dataset_id_dict:
+                QgsMessageLog.logMessage(
+                    f"✅ データセットID取得成功: {dataset_id_dict}",
+                    PLUGIN_NAME,
+                    level=Qgis.Success,
+                )
+                for mesh_code, dataset_id in dataset_id_dict.items():
+                    QgsMessageLog.logMessage(
+                        f"  メッシュコード {mesh_code} -> データセットID: {dataset_id}",
+                        PLUGIN_NAME,
+                        level=Qgis.Info,
+                    )
+            else:
+                QgsMessageLog.logMessage(
+                    "❌ データセットIDの取得に失敗しました",
+                    PLUGIN_NAME,
+                    level=Qgis.Warning,
+                )
+            
+            QgsMessageLog.logMessage(
+                "=== データセットID取得のテスト終了 ===",
+                PLUGIN_NAME,
+                level=Qgis.Info,
+            )
+            # === デバッグ用テスト終了 ===
             # メッシュ形状データのダウンロードとシェープファイルのパス取得
             shp_path = self._get_mesh_data()
             if not shp_path:

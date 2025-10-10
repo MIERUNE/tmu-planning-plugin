@@ -7,8 +7,11 @@ from typing import Optional
 
 from qgis.core import (
     Qgis,
+    QgsFillSymbol,
     QgsMessageLog,
     QgsNetworkAccessManager,
+    QgsVectorTileBasicRenderer,
+    QgsVectorTileBasicRendererStyle,
     QgsVectorTileLayer,
 )
 from qgis.PyQt.QtCore import QEventLoop, QUrl
@@ -105,5 +108,28 @@ class LocationNormalizationPlanAlgorithm:
         # ズームレベル９以下では表示しない
         location_normalization_plan_layer.setScaleBasedVisibility(True)
         location_normalization_plan_layer.setMinimumScale(ZOOM9_SCALE_THRESHOLD)
+
+        # スタイルの設定
+        renderer = QgsVectorTileBasicRenderer()
+        polygon_style = QgsVectorTileBasicRendererStyle()
+        polygon_style.setStyleName("Polygons")
+        polygon_style.setLayerName("hits")
+        polygon_style.setEnabled(True)
+
+        polygon_style.setGeometryType(Qgis.GeometryType.Polygon)
+
+        # シンボルを作成
+        polygon_symbol = QgsFillSymbol.createSimple(
+            {
+                "color": "255,210,225,180",
+                "outline_color": "255,147,155,180",
+                "outline_width": "0.26",
+            }
+        )
+        polygon_style.setSymbol(polygon_symbol)
+        renderer.setStyles([polygon_style])
+        location_normalization_plan_layer.setRenderer(renderer)
+
+        location_normalization_plan_layer.triggerRepaint()
 
         return location_normalization_plan_layer

@@ -2,8 +2,11 @@
 人口メッシュ（1km）データの取得機能モジュール
 """
 
-import io
 import os
+import shutil
+import tempfile
+import time
+import traceback
 import urllib.parse
 import zipfile
 from typing import Optional
@@ -50,48 +53,92 @@ class PopulationMeshAlgorithm:
         encode_params = urllib.parse.urlencode(mesh_request_params)
         mesh_request_url = f"{MESH_SHAPE_DOWNLOAD_URL}?{encode_params}"
 
+        temp_dir = None
+
         try:
             mesh_data = requests.get(mesh_request_url, timeout=60)
-            # エラーチェック
             mesh_data.raise_for_status()
-            # ▼▼▼【デバッグコード追加】ダウンロード内容をデスクトップに保存 ▼▼▼
-            desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
-            debug_file_path = os.path.join(desktop_path, f"debug_mesh_{mesh_code}.zip")
-            with open(debug_file_path, "wb") as f:
-                f.write(mesh_data.content)
-            QgsMessageLog.logMessage(
-                f"ダウンロード内容を {debug_file_path} に保存しました。確認してください。",
-                PLUGIN_NAME,
-                level=Qgis.Warning,
-            )
-            # ▲▲▲【デバッグコードここまで】▲▲▲
-            zip_data = io.BytesIO(mesh_data.content)
 
-            # メモリ上でZIPを展開し、シェープファイルを読み込む
-            with zipfile.ZipFile(zip_data, "r") as zf:
-                for filename in zf.namelist():
+            # 一時ディレクトリを作成（手動削除に変更）
+            temp_dir = tempfile.mkdtemp()
+
+            # ZIPファイルを一時ファイルに保存
+            zip_file_path = os.path.join(temp_dir, f"mesh_{mesh_code}.zip")
+            with open(zip_file_path, "wb") as zip_file:
+                zip_file.write(mesh_data.content)
+
+            # ZIPファイルを展開
+            extract_dir = os.path.join(temp_dir, "extracted")
+            os.makedirs(extract_dir, exist_ok=True)
+
+            with zipfile.ZipFile(zip_file_path, "r") as zf:
+                zf.extractall(extract_dir)
+
+            # シェープファイルを探して読み込む
+            result_geometry = None
+
+            for root, _, files in os.walk(extract_dir):
+                for filename in files:
                     if filename.endswith(".shp"):
-                        # シェープファイルをVSIL (Virtual File System) を使ってメモリから直接読む
-                        vsi_path = f"/vsimem/zip_{mesh_code}/{filename}"
-                        zf.extract(filename, f"/vsimem/zip_{mesh_code}/")
-                        temp_layer = QgsVectorLayer(vsi_path, "temp", "ogr")
+                        shp_path = os.path.join(root, filename)
+                        temp_layer = QgsVectorLayer(shp_path, "temp", "ogr")
+
                         if temp_layer.isValid() and temp_layer.featureCount() > 0:
-                            # 最初のフィーチャーのジオメトリをコピーして返す
-                            feature: QgsFeature = next(temp_layer.getFeatures())
-                            return QgsGeometry(feature.geometry())
+                            # 最初のフィーチャーのジオメトリをコピー
+                            feature = next(temp_layer.getFeatures())
+                            result_geometry = QgsGeometry(feature.geometry())
+
+                            temp_layer = None
+                            break
+
+                if result_geometry:
+                    break
+
+            # ジオメトリが取得できたかチェック
+            if result_geometry is None:
+                QgsMessageLog.logMessage(
+                    f"メッシュコード {mesh_code} のジオメトリが見つかりませんでした",
+                    PLUGIN_NAME,
+                    level=Qgis.Warning,
+                )
+                return None
 
             QgsMessageLog.logMessage(
-                f"メッシュコード {mesh_code} のジオメトリ取得に失敗",
+                f"メッシュコード {mesh_code} のジオメトリ取得成功",
                 PLUGIN_NAME,
-                level=Qgis.Warning,
+                level=Qgis.Info,
             )
-            return None
+            return result_geometry
 
         except requests.RequestException as e:
+            error_traceback = traceback.format_exc()
             QgsMessageLog.logMessage(
-                f"メッシュデータDLエラー: {e}", PLUGIN_NAME, level=Qgis.Critical
+                f"メッシュデータDLエラー (コード: {mesh_code}): {str(e)}\n詳細:\n{error_traceback}",
+                PLUGIN_NAME,
+                level=Qgis.Critical,
             )
             return None
+
+        except Exception as e:
+            error_traceback = traceback.format_exc()
+            QgsMessageLog.logMessage(
+                f"ジオメトリ取得エラー (コード: {mesh_code}): {str(e)}\n詳細:\n{error_traceback}",
+                PLUGIN_NAME,
+                level=Qgis.Critical,
+            )
+            return None
+
+        finally:
+            if temp_dir and os.path.exists(temp_dir):
+                try:
+                    time.sleep(0.1)  # ファイルハンドル解放待機
+                    shutil.rmtree(temp_dir, ignore_errors=True)
+                except Exception as cleanup_error:
+                    QgsMessageLog.logMessage(
+                        f"一時ファイル削除警告 (コード: {mesh_code}): {cleanup_error}",
+                        PLUGIN_NAME,
+                        level=Qgis.Warning,
+                    )
 
     def create_single_population_layer(
         self, api_key: str, mesh_code: str, stats_data_id: str
@@ -181,48 +228,57 @@ class PopulationMeshAlgorithm:
         Returns:
             QgsVectorLayer: 結合に成功した場合はレイヤーオブジェクト、失敗した場合はNone
         """
-        if not layers_to_merge:
+        try:
+            if not layers_to_merge:
+                QgsMessageLog.logMessage(
+                    "結合するレイヤーが指定されていません。",
+                    PLUGIN_NAME,
+                    level=Qgis.Warning,
+                )
+                return None
+
+            # 最初のレイヤーをベースにして結合
+            source_layer = layers_to_merge[0]
+            target_crs = source_layer.crs()
+            target_fields = source_layer.fields()
+
+            # 結果を格納する「メモリレイヤー」を作成
+            merged_layer = QgsVectorLayer(
+                f"Polygon?crs={target_crs.toWkt()}", merged_layer_name, "memory"
+            )
+            provider = merged_layer.dataProvider()
+            provider.addAttributes(target_fields)
+            merged_layer.updateFields()
+
+            # すべてのレイヤーから地物をコピー
+            features_to_add = []
+            for layer in layers_to_merge:
+                for feature in layer.getFeatures():
+                    features_to_add.append(feature)
+            provider.addFeatures(features_to_add)
+            merged_layer.updateExtents()
+
+            # 可視化（段階分けレンダリング）
+            target_field = "population"
+            renderer = QgsGraduatedSymbolRenderer(target_field)
+            renderer.setClassAttribute(target_field)
+            color_ramp = QgsStyle.defaultStyle().colorRamp("Viridis")
+            if color_ramp:
+                renderer.setSourceColorRamp(color_ramp)
+            renderer.updateClasses(merged_layer, QgsGraduatedSymbolRenderer.Jenks, 5)
+            merged_layer.setRenderer(renderer)
+
             QgsMessageLog.logMessage(
-                "結合するレイヤーが指定されていません。",
+                f"レイヤー「{merged_layer}」の作成が完了しました。",
                 PLUGIN_NAME,
-                level=Qgis.Warning,
+                level=Qgis.Success,
+            )
+            return merged_layer
+        except Exception as e:
+            error_traceback = traceback.format_exc()
+            QgsMessageLog.logMessage(
+                f"レイヤー結合中の予期せぬエラー: {str(e)}\n詳細:\n{error_traceback}",
+                PLUGIN_NAME,
+                level=Qgis.Critical,
             )
             return None
-
-        # 最初のレイヤーをベースにして結合
-        source_layer = layers_to_merge[0]
-        target_crs = source_layer.crs()
-        target_fields = source_layer.fields()
-
-        # 結果を格納する「メモリレイヤー」を作成
-        merged_layer = QgsVectorLayer(
-            f"Polygon?crs={target_crs.toWkt()}", merged_layer_name, "memory"
-        )
-        provider = merged_layer.dataProvider()
-        provider.addAttributes(target_fields)
-        merged_layer.updateFields()
-
-        # すべてのレイヤーから地物をコピー
-        features_to_add = []
-        for layer in layers_to_merge:
-            for feature in layer.getFeatures():
-                features_to_add.append(feature)
-        provider.addFeatures(features_to_add)
-        merged_layer.updateExtents()
-
-        # 可視化（段階分けレンダリング）
-        target_field = "population"
-        renderer = QgsGraduatedSymbolRenderer(target_field)
-        renderer.setClassAttribute(target_field)
-        color_ramp = QgsStyle.defaultStyle().colorRamp("Viridis")
-        if color_ramp:
-            renderer.setSourceColorRamp(color_ramp)
-        renderer.updateClasses(merged_layer, QgsGraduatedSymbolRenderer.Jenks, 5)
-        merged_layer.setRenderer(renderer)
-
-        QgsMessageLog.logMessage(
-            f"レイヤー「{merged_layer}」の作成が完了しました。",
-            PLUGIN_NAME,
-            level=Qgis.Success,
-        )
-        return merged_layer

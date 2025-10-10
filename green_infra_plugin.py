@@ -6,6 +6,9 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
 from .real_estate_lib.land_use.district_plan_algorithm import DistrictPlanAlgorithm
+from .real_estate_lib.land_use.high_utilization_zone_algorithm import (
+    HighUtilizationZoneAlgorithm,
+)
 from .real_estate_lib.land_use.location_normalization_plan_algorithm import (
     LocationNormalizationPlanAlgorithm,
 )
@@ -21,6 +24,7 @@ from .workflows.coastline_workflow import CoastlineWorkflow
 from .workflows.fishing_port_workflow import FishingPortWorkflow
 from .workflows.land_use_layer_workflow import LayerWorkflow
 from .workflows.population_mesh_workflow import PopulationMeshWorkflow
+from .workflows.port_area_workflow import PortAreaWorkflow
 
 PLUGIN_NAME = "Green Infra Plugin"
 
@@ -46,9 +50,12 @@ class GreenInfraPlugin:
         )
         self.nature_reserve_algorithm = NatureReserveAlgorithm(iface)
         self.did_area_algorithm = DidAreaAlgorithm(iface)
+        self.high_utilization_zone_algorithm = HighUtilizationZoneAlgorithm(iface)
+        self.coastline_workflow = CoastlineWorkflow(iface)
         self.population_mesh_workflow = PopulationMeshWorkflow(iface)
         self.coastline_workflow = CoastlineWorkflow(iface)
         self.fishing_port_workflow = FishingPortWorkflow(iface)
+        self.port_area_workflow = PortAreaWorkflow(iface)
 
     def add_action(
         self,
@@ -187,7 +194,7 @@ class GreenInfraPlugin:
         # 自然公園地域の可視化
         if self.dockwidget.checkBox_nature_reserve.isChecked():
             if real_estate_api_key:
-                # 都道府県コードが1桁の場合0を削除
+                # 都道府県コードが１桁の場合0を削除
                 prefecture_code = self.dockwidget.comboBox_prefecture.currentData()
                 api_prefecture_code = str(int(prefecture_code))
 
@@ -212,6 +219,15 @@ class GreenInfraPlugin:
                 )
             else:
                 message = "不動産情報ライブラリAPIキーが未設定のため、人口集中地区(DID)の取得をスキップします。"
+        # 高度利用地区の可視化
+        if self.dockwidget.checkBox_high_level_use_districts.isChecked():
+            if real_estate_api_key:
+                self.layer_workflow.execute(
+                    self.high_utilization_zone_algorithm,
+                    api_key=real_estate_api_key,
+                )
+            else:
+                message = "不動産情報ライブラリAPIキーが未設定のため、高度利用地区の取得をスキップします。"
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
                 self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
 
@@ -228,6 +244,13 @@ class GreenInfraPlugin:
         # 漁港区域データの可視化
         if self.dockwidget.checkBox_fishing_port_area.isChecked():
             self.fishing_port_workflow.execute(
+                api_key=umi_shiru_api_key,
+                municipality_code=self.dockwidget.comboBox_municipality.currentData(),
+                municipality_name=self.dockwidget.comboBox_municipality.currentText(),
+            )
+        # 港湾区域データの可視化
+        if self.dockwidget.checkBox_port_area.isChecked():
+            self.port_area_workflow.execute(
                 api_key=umi_shiru_api_key,
                 municipality_code=self.dockwidget.comboBox_municipality.currentData(),
                 municipality_name=self.dockwidget.comboBox_municipality.currentText(),

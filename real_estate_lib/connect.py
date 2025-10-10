@@ -34,6 +34,11 @@ NATURE_RESERVE_AREA_API_ENDPOINT = (
 # 人口集中地区（DID）データAPI
 DID_AREA_API_ENDPOINT = "https://www.reinfolib.mlit.go.jp/ex-api/external/XKT031"
 
+# 高度利用地区データAPI
+HEIGHTENED_USE_DISTRICT_API_ENDPOINT = (
+    "https://www.reinfolib.mlit.go.jp/ex-api/external/XKT024"
+)
+
 # ログメッセージ用プラグイン名
 PLUGIN_NAME = "Green Infra Plugin"
 

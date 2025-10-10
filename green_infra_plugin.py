@@ -6,6 +6,9 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
 from .real_estate_lib.land_use.district_plan_algorithm import DistrictPlanAlgorithm
+from .real_estate_lib.land_use.high_utilization_zone_algorithm import (
+    HighUtilizationZoneAlgorithm,
+)
 from .real_estate_lib.land_use.location_normalization_plan_algorithm import (
     LocationNormalizationPlanAlgorithm,
 )
@@ -45,6 +48,8 @@ class GreenInfraPlugin:
             iface
         )
         self.nature_reserve_algorithm = NatureReserveAlgorithm(iface)
+        self.high_utilization_zone_algorithm = HighUtilizationZoneAlgorithm(iface)
+        self.coastline_workflow = CoastlineWorkflow(iface)
         self.population_mesh_workflow = PopulationMeshWorkflow(iface)
         self.coastline_workflow = CoastlineWorkflow(iface)
         self.fishing_port_workflow = FishingPortWorkflow(iface)
@@ -187,7 +192,7 @@ class GreenInfraPlugin:
         # 自然公園地域の可視化
         if self.dockwidget.checkBox_nature_reserve.isChecked():
             if real_estate_api_key:
-                # 都道府県コードが1桁の場合0を削除
+                # 都道府県コードが１桁の場合0を削除
                 prefecture_code = self.dockwidget.comboBox_prefecture.currentData()
                 api_prefecture_code = str(int(prefecture_code))
 
@@ -198,6 +203,18 @@ class GreenInfraPlugin:
                 )
             else:
                 message = "不動産情報ライブラリAPIキーが未設定のため、自然公園地域の取得をスキップします。"
+                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+
+        # 高度利用地区の可視化
+        if self.dockwidget.checkBox_high_level_use_districts.isChecked():
+            if real_estate_api_key:
+                self.layer_workflow.execute(
+                    self.high_utilization_zone_algorithm,
+                    api_key=real_estate_api_key,
+                )
+            else:
+                message = "不動産情報ライブラリAPIキーが未設定のため、高度利用地区の取得をスキップします。"
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
                 self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
 

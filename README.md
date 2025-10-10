@@ -24,22 +24,22 @@
 
 **実装**: `real_estate_lib/`
 
-| 機能                    | エンドポイント | アルゴリズム                                 |
-| ----------------------- | -------------- | -------------------------------------------- |
-| 都市計画区域 / 区域区分 | `XKT001`     | `urban_planning_algorithm.py`              |
-| 用途地域                | `XKT002`     | `zoning_district_algorithm.py`             |
-| 地区計画                | `XKT023`     | `district_plan_algorithm.py`               |
-| 立地適正化計画区域      | `XKT003`     | `location_normalization_plan_algorithm.py` |
-| 自然公園地域            | `XKT019`     | `nature_reserve_algorithm.py`              |
-| 高度利用地区            | `XKT024`     | `high_utilization_zone_algorithm.py`       |
-| 行政区域                | `XIT002`     | `area/area_algorithm.py`                   |
+| 機能                    | エンドポイント | アルゴリズム                               |
+| ----------------------- | -------------- | ------------------------------------------ |
+| 都市計画区域 / 区域区分 | `XKT001`       | `urban_planning_algorithm.py`              |
+| 用途地域                | `XKT002`       | `zoning_district_algorithm.py`             |
+| 地区計画                | `XKT023`       | `district_plan_algorithm.py`               |
+| 立地適正化計画区域      | `XKT003`       | `location_normalization_plan_algorithm.py` |
+| 自然公園地域            | `XKT019`       | `nature_reserve_algorithm.py`              |
+| 高度利用地区            | `XKT024`       | `high_utilization_zone_algorithm.py`       |
+| 行政区域                | `XIT002`       | `area/area_algorithm.py`                   |
 
 ### 海しる API
 
 **実装**: `umi_shiru/`
 
-| 機能                   | エンドポイント                               | アルゴリズム                               |
-| ---------------------- | -------------------------------------------- | ------------------------------------------ |
+| 機能                   | エンドポイント                             | アルゴリズム                             |
+| ---------------------- | ------------------------------------------ | ---------------------------------------- |
 | 海岸線（ESI 区分付き） | `/coastline-type-ESI/v2/MapServer/1/query` | `coastline/coastline_algorithm.py`       |
 | 漁港区域               | `/fishing-port-area/v2/MapServer/3/query`  | `fishing_port/fishing_port_algorithm.py` |
 | 港湾区域               | `/port-area/v2/MapServer/3/query`          | `port_area/port_area_algorithm.py`       |

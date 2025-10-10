@@ -14,34 +14,25 @@ class PopulationMeshWorkflow:
         self.iface = iface
         self.algorithm = PopulationMeshAlgorithm(iface)
 
-    def execute(self) -> bool:
+    def execute(self, api_key: str) -> bool:
         """
         指定されたアルゴリズムを実行し、レイヤーをQGISに追加する
         Returns:
             bool: 成功した場合はTrue、失敗した場合はFalse
         """
-        try:
-            added_layer = self.algorithm.create_population_mesh_layer()
+        added_layer = self.algorithm.create_population_mesh_layer(api_key)
 
-            if added_layer is None:
-                QgsMessageLog.logMessage(
-                    "人口メッシュレイヤーの取得に失敗しました。",
-                    PLUGIN_NAME,
-                    level=Qgis.Warning,
-                )
-                return False
-
+        if added_layer is None:
             QgsMessageLog.logMessage(
-                f"'{added_layer.name()}' 人口メッシュレイヤーを追加しました。",
+                "人口メッシュレイヤーの取得に失敗しました。",
                 PLUGIN_NAME,
-                level=Qgis.Success,
-            )
-            return True
-
-        except Exception as e:
-            QgsMessageLog.logMessage(
-                f"人口メッシュレイヤーの可視化中にエラーが発生: {str(e)}",
-                PLUGIN_NAME,
-                level=Qgis.Critical,
+                level=Qgis.Warning,
             )
             return False
+
+        QgsMessageLog.logMessage(
+            f"'{added_layer.name()}' 人口メッシュレイヤーを追加しました。",
+            PLUGIN_NAME,
+            level=Qgis.Success,
+        )
+        return True

@@ -77,7 +77,7 @@ class PopulationMeshAlgorithm:
         # 最初のシェープファイルのフルパスを文字列として返す
         return str(shapefiles[0])
 
-    def create_population_mesh_layer(self):
+    def create_population_mesh_layer(self, api_key: str) -> Optional[QgsVectorLayer]:
         """人口メッシュデータの取得とQGISへのレイヤー追加
         Args:
             api_key (str): e-Stat APIキー

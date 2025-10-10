@@ -32,7 +32,8 @@
 | 立地適正化計画区域      | `XKT003`       | `location_normalization_plan_algorithm.py` |
 | 自然公園地域            | `XKT019`       | `nature_reserve_algorithm.py`              |
 | 高度利用地区            | `XKT024`       | `high_utilization_zone_algorithm.py`       |
-| 行政区域                | `XIT002`       | `area/area_algorithm.py`                   |
+| 人口集中地区         | `XKT031`      | `did_algorithm.py`                             |
+| 市区町村一覧         | `XIT002`       | `area/area_algorithm.py`                  |
 
 ### 海しる API
 
@@ -49,7 +50,6 @@
 **実装**: `estat/population_mesh_algorithm.py`
 
 - 人口メッシュ（500m / 1km メッシュ単位）
-- 人口集中地域（DID: Densely Inhabited District）
 
 ---
 
@@ -126,7 +126,7 @@ source .venv/bin/activate
 型チェックやコード品質管理ツールをインストールします。
 
 ```
-uv pip install pyqt5-stubs ruff
+uv sync
 ```
 
 ### ステップ 4: VSCode の設定
@@ -204,6 +204,7 @@ tmu-planning-plugin/
 - 自然公園地域: `XKT019`
 - 高度利用地区: `XKT024`
 - 地区計画: `XKT023`
+- 人口集中地区: `XKT031`
 
 #### 海しる API
 
@@ -214,7 +215,6 @@ tmu-planning-plugin/
 #### e-Stat API
 
 - 人口メッシュ
-- 人口集中地域（DID）
 
 ### API キーの取得方法
 

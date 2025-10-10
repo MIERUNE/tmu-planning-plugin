@@ -240,7 +240,61 @@ tmu-planning-plugin/
 
 ## 8. 開発ガイドライン
 
-- **インポート** : `from .module import Class`形式の相対インポートを推奨します。
-- **型ヒント** : 可能な限り型アノテーションを追加してください。
-- **ドキュメント** : 公開メソッドには docstring を記述してください。
-- **コード品質** : `ruff`を使用した Lint とフォーマットを適用してください。
+#### インポート
+
+相対インポートを使用してください。
+
+```python
+# ✅ 推奨
+from .utils import DataLoader
+from ..umi_shiru.client import UmiShiruApiClient
+
+# ❌ 非推奨
+from green_infra_plugin.utils import DataLoader
+```
+
+#### 型ヒントとドキュメント
+
+可能な限り型アノテーションと docstring（Google スタイル）を記述してください。
+
+```python
+from typing import Optional
+
+def fetch_data(url: str, timeout: int = 10) -> dict:
+    """指定したURLからデータを取得します。
+
+    Args:
+        url (str): データ取得先のURL
+        timeout (int, optional): タイムアウト秒数。デフォルトは10
+
+    Returns:
+        dict: 取得したデータ
+
+    Raises:
+        ValueError: URLが無効な場合
+    """
+    ...
+
+def get_municipality_code(name: str) -> Optional[str]:
+    """市区町村名からコードを取得します。
+
+    Args:
+        name (str): 市区町村名
+
+    Returns:
+        Optional[str]: 市区町村コード（見つからない場合はNone）
+    """
+    ...
+```
+
+#### コード品質
+
+`ruff` を使用してコードの品質を保ってください。
+
+```bash
+# リント実行
+ruff check .
+
+# 自動フォーマット
+ruff format .
+```

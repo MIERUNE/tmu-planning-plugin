@@ -30,12 +30,6 @@ class DidAreaAlgorithm:
     def __init__(self, iface):
         self.iface = iface
 
-    # def _get_prefecture_name(self, prefecture_code: str) -> Optional[str]:
-    #     """都道府県コードから都道府県名を取得"""
-    #     prefecture_dict = dict(PREFECTURE_LIST)
-
-    #     return prefecture_dict.get(prefecture_code, None)
-
     def _check_api_connection(self, api_key: str) -> tuple[bool, Optional[int]]:
         """APIキーの有効性を確認するための事前接続チェック"""
         # 接続テストのため一部タイルをリクエスト
@@ -91,23 +85,21 @@ class DidAreaAlgorithm:
             )
             return None
 
+        # 札幌市全域の場合のコード
+        all_sapporo_municipality_code = (
+            "01101,01102,01103,01104,01105,01106,01107,01108,01109,01110"
+        )
+
         # パラメーターをエンコード
-        if municipality_code == "01100":  # 札幌市全域
-            params = {
-                "response_format": "pbf",
-                "z": "{z}",
-                "x": "{x}",
-                "y": "{y}",
-                "administrativeAreaCode": "01101,01102,01103,01104,01105,01106,01107,01108,01109,01110",
-            }
-        else:
-            params = {
-                "response_format": "pbf",
-                "z": "{z}",
-                "x": "{x}",
-                "y": "{y}",
-                "administrativeAreaCode": municipality_code,
-            }
+        params = {
+            "response_format": "pbf",
+            "z": "{z}",
+            "x": "{x}",
+            "y": "{y}",
+            "administrativeAreaCode": all_sapporo_municipality_code
+            if municipality_code == "01100"
+            else municipality_code,
+        }
 
         encoded_params = urllib.parse.urlencode(params, safe="{}")
 
@@ -123,8 +115,6 @@ class DidAreaAlgorithm:
             f"&zmin=9"
             f"&http-header:Ocp-Apim-Subscription-Key={api_key}"
         )
-
-        # prefecture_name = self._get_prefecture_name(prefecture_code)
 
         # 都道府県名が取得できた場合はレイヤー名に付加する
         if municipality_name:

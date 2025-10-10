@@ -30,6 +30,7 @@ ZOOM_SCALE_THRESHOLDS = {
     7: 4600000,
     8: 2300000,
     9: 1160000,
+    14: 36250,
     16: 9000,
     18: 2300,
 }
@@ -142,6 +143,6 @@ LAYER_FEATURE_SETTINGS = {
         "layer_name": "建物ポリゴン",
         "zoom_min": 0,
         "zoom_max": 16,
-        "display_zoom_min": 16,
+        "display_zoom_min": 14,
     },
 }

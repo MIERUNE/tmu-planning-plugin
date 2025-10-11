@@ -134,6 +134,9 @@ class GreenInfraPlugin:
             self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
             return
 
+        # レイヤツリーの選択状態を解除
+        self.iface.layerTreeView().setCurrentNode(None)
+
         real_estate_api_key = ApikeyDialog.get_real_estate_api_key()
 
         # Phase 1: ベースマップレイヤーの可視化

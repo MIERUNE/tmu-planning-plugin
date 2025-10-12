@@ -1,6 +1,7 @@
 """
 e-Stat APIの接続情報
 """
+
 # 人口メッシュ（1km）API
 POPULATION_MESH_API_ENDPOINT = "https://api.e-stat.go.jp/rest/3.0/app/json/getStatsData"
 

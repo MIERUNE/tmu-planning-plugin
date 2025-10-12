@@ -22,6 +22,7 @@ from ..connect import (
     PLUGIN_NAME,
     ZOOM9_SCALE_THRESHOLD,
 )
+from .settings import DESIGNATED_CITIES_CODES
 
 
 class DidAreaAlgorithm:
@@ -58,19 +59,52 @@ class DidAreaAlgorithm:
 
         reply.deleteLater()
         return True, http_status
+    
+    def _get_administrative_area_code(self, municipality_code: Optional[str]) -> Optional[str]:
+        """
+        市区町村コードから適切な行政区域コードを取得する
+        政令指定都市の場合は全区のコードをカンマ区切りで返す
+        
+        Args:
+            municipality_code: 市区町村コード
+            
+        Returns:
+            行政区域コード（政令指定都市の場合は全区をカンマ区切り）
+        """
+        if not municipality_code:
+            return None
+            
+        # 政令指定都市かチェック
+        if municipality_code in DESIGNATED_CITIES_CODES:
+            # 政令指定都市の場合、全区のコードをカンマ区切りで結合
+            ward_codes = DESIGNATED_CITIES_CODES[municipality_code]
+            QgsMessageLog.logMessage(
+                f"政令指定都市({municipality_code})のため、全区のコードを使用します: {ward_codes}",
+                PLUGIN_NAME,
+                level=Qgis.Info,
+            )
+            return ",".join(ward_codes)
+        
+        # 通常の市区町村の場合はそのまま返す
+        QgsMessageLog.logMessage(
+            f"通常の市区町村コードを使用します: {municipality_code}",
+            PLUGIN_NAME,
+            level=Qgis.Info,
+        )
+        return municipality_code
 
     def create_layer(
         self,
         api_key: str,
-        municipality_code: Optional[str] = None,
-        municipality_name: Optional[str] = None,
+        municipality_code: str,
+        municipality_name: str,
     ) -> Optional[QgsVectorTileLayer]:
         """
         人口集中地区(DID)データをAPIから取得する
         Args:
             api_key (str): APIキー
-            municipality_code (Optional[str], optional): 市区町村コード。
-            municipality_name (Optional[str], optional): 市区町村名。
+            municipality_code (str): 市区町村コード。
+            municipality_name (str): 市区町村名。
         Returns:
             QgsVectorTileLayer : 追加に成功した場合はレイヤーオブジェクト
         """
@@ -84,11 +118,9 @@ class DidAreaAlgorithm:
                 level=Qgis.Critical,
             )
             return None
-
-        # 札幌市全域の場合のコード
-        all_sapporo_municipality_code = (
-            "01101,01102,01103,01104,01105,01106,01107,01108,01109,01110"
-        )
+        
+        # 行政区域コードを取得（政令指定都市の場合は全区のコードを取得）
+        administrative_area_code = self._get_administrative_area_code(municipality_code)
 
         # パラメーターをエンコード
         params = {
@@ -96,9 +128,7 @@ class DidAreaAlgorithm:
             "z": "{z}",
             "x": "{x}",
             "y": "{y}",
-            "administrativeAreaCode": all_sapporo_municipality_code
-            if municipality_code == "01100"
-            else municipality_code,
+            "administrativeAreaCode": administrative_area_code
         }
 
         encoded_params = urllib.parse.urlencode(params, safe="{}")

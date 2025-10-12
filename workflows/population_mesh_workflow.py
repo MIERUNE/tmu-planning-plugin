@@ -16,17 +16,88 @@ class PopulationMeshWorkflow:
         self.algorithm = PopulationMeshAlgorithm(iface)
         self.dataset_id_getter = GetDatasetId(iface)
 
+    def _fetch_dataset_ids(self, municipality_code: str, api_key: str) -> dict:
+        """データセットIDを取得"""
+        dataset_id_dict = self.dataset_id_getter.fetch_dataset_ids_for_municipality(
+            municipality_code, api_key
+        )
+
+        if not dataset_id_dict:
+            QgsMessageLog.logMessage(
+                f"自治体コード '{municipality_code}' のデータセットIDが取得できませんでした。",
+                PLUGIN_NAME,
+                level=Qgis.Warning,
+            )
+            return {}
+
+        QgsMessageLog.logMessage(
+            f"取得したデータセット数: {len(dataset_id_dict)}",
+            PLUGIN_NAME,
+            level=Qgis.Info,
+        )
+
+        return dataset_id_dict
+
+    def _create_population_layers(self, api_key: str, dataset_id_dict: dict) -> list:
+        """
+        各メッシュコードに対してレイヤーを作成
+
+        Args:
+            api_key: e-Stat APIキー
+            dataset_id_dict: {メッシュコード: データセットID} の辞書
+
+        Returns:
+            list: 成功したレイヤーの情報リスト
+        """
+        added_layers = []
+
+        # 複数メッシュに対してfor文で処理
+        for mesh_code, stats_data_id in dataset_id_dict.items():
+            QgsMessageLog.logMessage(
+                f"メッシュコード '{mesh_code}' の処理を開始...",
+                PLUGIN_NAME,
+                level=Qgis.Info,
+            )
+
+            # アルゴリズムに個別メッシュの処理を委譲
+            population_mesh_layer = self.algorithm.create_population_mesh_layer(
+                api_key, mesh_code, stats_data_id
+            )
+
+            if population_mesh_layer is not None:
+                added_layers.append(
+                    {
+                        "layer": population_mesh_layer,
+                        "mesh_code": mesh_code,
+                        "stats_data_id": stats_data_id,
+                    }
+                )
+                QgsMessageLog.logMessage(
+                    f"メッシュコード '{mesh_code}' のレイヤー '{population_mesh_layer.name()}' を追加",
+                    PLUGIN_NAME,
+                    level=Qgis.Success,
+                )
+            else:
+                QgsMessageLog.logMessage(
+                    f"メッシュコード '{mesh_code}' のレイヤー追加に失敗",
+                    PLUGIN_NAME,
+                    level=Qgis.Warning,
+                )
+
+        return added_layers
+
     def execute(self, api_key: str, municipality_code: str) -> bool:
         """
         指定されたアルゴリズムを実行し、レイヤーをQGISに追加する
+        Args:
+            api_key (str): e-Stat APIキー
+            municipality_code (str): 自治体コード（例: "01100" 札幌市）
         Returns:
             bool: 成功した場合はTrue、失敗した場合はFalse
         """
 
-        # 自治体コードから複数のメッシュコードとデータセットIDを取得
-        dataset_id_dict = self.dataset_id_getter.fetch_dataset_ids_for_municipality(
-            municipality_code, api_key
-        )
+        # 1. 自治体コードからデータセットIDを取得
+        dataset_id_dict = self._fetch_dataset_ids(municipality_code, api_key)
 
         if not dataset_id_dict:
             QgsMessageLog.logMessage(
@@ -42,52 +113,13 @@ class PopulationMeshWorkflow:
             level=Qgis.Info,
         )
 
-        # 各メッシュコードに対してレイヤーを作成
-        added_layers = []
-        failed_mesh_codes = []
-
-        for mesh_code, stats_data_id in dataset_id_dict.items():
-            QgsMessageLog.logMessage(
-                f"メッシュコード '{mesh_code}' の処理を開始します...",
-                PLUGIN_NAME,
-                level=Qgis.Info,
-            )
-
-            added_layer = self.algorithm.create_population_mesh_layer(
-                api_key, mesh_code, stats_data_id
-            )
-
-            if added_layer is not None:
-                added_layers.append(added_layer)
-                QgsMessageLog.logMessage(
-                    f"メッシュコード '{mesh_code}' のレイヤー '{added_layer.name()}' を追加しました。",
-                    PLUGIN_NAME,
-                    level=Qgis.Success,
-                )
-            else:
-                failed_mesh_codes.append(mesh_code)
-                QgsMessageLog.logMessage(
-                    f"メッシュコード '{mesh_code}' のレイヤー追加に失敗しました。",
-                    PLUGIN_NAME,
-                    level=Qgis.Warning,
-                )
-
-        # 処理結果のログ出力
-        success_count = len(added_layers)
-        total_count = len(dataset_id_dict)
-
-        QgsMessageLog.logMessage(
-            f"ワークフロー完了: {success_count}/{total_count} レイヤーを追加しました。",
-            PLUGIN_NAME,
-            level=Qgis.Success if success_count > 0 else Qgis.Warning,
+        # 2. 各メッシュコードの人口メッシュレイヤーを作成
+        added_population_layers = self._create_population_layers(
+            api_key, dataset_id_dict
         )
 
-        if failed_mesh_codes:
-            QgsMessageLog.logMessage(
-                f"失敗したメッシュコード: {', '.join(failed_mesh_codes)}",
-                PLUGIN_NAME,
-                level=Qgis.Warning,
-            )
+        # TODO:
+        # 3. レイヤーをマージ（別PRで対応予定）
 
         # 少なくとも1つのレイヤーが追加されていればTrue
-        return success_count > 0
+        return len(added_population_layers) > 0

@@ -182,7 +182,6 @@ class PopulationMeshAlgorithm:
         population_mesh_layer = result["OUTPUT"]
         population_mesh_layer.setName(layer_name)
 
-
         # 結合結果の確認
         # デバッグ用に結合結果の件数をログに出力
         joined_count = result.get("JOINED_COUNT", 0)

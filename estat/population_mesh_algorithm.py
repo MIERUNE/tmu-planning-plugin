@@ -105,7 +105,7 @@ class PopulationMeshAlgorithm:
 
         # QGISにレイヤーとして追加
         # TODO : レイヤー名指定した自治体名+人口メッシュにする
-        layer_name = "人口メッシュ_1km"
+        layer_name = f"人口メッシュ_1km_{mesh_code}"
 
         population_mesh_layer = QgsVectorLayer(str(shp_path), layer_name, "ogr")
         if not population_mesh_layer.isValid():
@@ -115,13 +115,6 @@ class PopulationMeshAlgorithm:
                 level=Qgis.Critical,
             )
             return None
-
-        # QgsProject.instance().addMapLayer(population_mesh_layer)
-        # QgsMessageLog.logMessage(
-        #     f"レイヤー「{layer_name}」を追加しました。",
-        #     PLUGIN_NAME,
-        #     level=Qgis.Info,
-        # )
 
         # 人口データの取得と整形
         # パラメーター
@@ -150,11 +143,6 @@ class PopulationMeshAlgorithm:
             if "$" in item and str(item["$"]).isnumeric()
         }
 
-        # データの結合
-        # join_field_name = "population"
-        # key_field_name = (
-        #     "KEY_CODE"  # e-Statのシェープファイルのメッシュコードのフィールド名
-        # )
         # 一時レイヤーを作成
         temp_layer = QgsVectorLayer("None", "temp_population", "memory")
         provider = temp_layer.dataProvider()
@@ -194,17 +182,6 @@ class PopulationMeshAlgorithm:
         population_mesh_layer = result["OUTPUT"]
         population_mesh_layer.setName(layer_name)
 
-        # # プロジェクトに追加
-        # QgsProject.instance().addMapLayer(population_mesh_layer)
-
-        # if not population_mesh_layer.commitChanges():
-        #     QgsMessageLog.logMessage(
-        #         "人口メッシュレイヤーのコミットに失敗しました。ロールバックを実行します。",
-        #         PLUGIN_NAME,
-        #         level=Qgis.Critical,
-        #     )
-        #     population_mesh_layer.rollBack()
-        #     return None
 
         # 結合結果の確認
         # デバッグ用に結合結果の件数をログに出力

@@ -9,9 +9,11 @@ import zipfile
 from pathlib import Path
 from typing import Optional
 
+import processing
 import requests
 from qgis.core import (
     Qgis,
+    QgsFeature,
     QgsField,
     QgsGraduatedSymbolRenderer,
     QgsMessageLog,
@@ -30,6 +32,7 @@ from .connect import (
 
 class PopulationMeshAlgorithm:
     """人口メッシュデータ取得クラス"""
+
     def __init__(self, iface):
         self.iface = iface
         self.temp_dir = tempfile.TemporaryDirectory()
@@ -46,7 +49,7 @@ class PopulationMeshAlgorithm:
         }
         encode_params = urllib.parse.urlencode(mesh_request_params)
         mesh_request_url = f"{MESH_SHAPE_DOWNLOAD_URL}?{encode_params}"
-        QgsMessageLog.logMessage(  
+        QgsMessageLog.logMessage(
             f"メッシュ形状データのダウンロードURL: {mesh_request_url}",
             PLUGIN_NAME,
             level=Qgis.Info,
@@ -58,13 +61,17 @@ class PopulationMeshAlgorithm:
         mesh_data.raise_for_status()
         zip_data = io.BytesIO(mesh_data.content)
 
+        # メッシュコードごとに専用のサブディレクトリを作成
+        temp_dir_path = Path(self.temp_dir.name)
+        mesh_dir = temp_dir_path / f"mesh_{mesh_code}"
+        mesh_dir.mkdir(exist_ok=True)
+
         # ダウンロードしたZIPファイルを一時ディレクトリに展開
         with zipfile.ZipFile(zip_data, "r") as zip_ref:
-            zip_ref.extractall(self.temp_dir.name)
+            zip_ref.extractall(mesh_dir)
 
         # 展開したファイルの中からシェープファイル（.shp）を探す
-        temp_dir_path = Path(self.temp_dir.name)
-        shapefiles = list(temp_dir_path.glob("*.shp"))
+        shapefiles = list(mesh_dir.glob("*.shp"))
 
         if not shapefiles:
             QgsMessageLog.logMessage(
@@ -75,9 +82,16 @@ class PopulationMeshAlgorithm:
             return None
 
         # 最初のシェープファイルのフルパスを文字列として返す
+        QgsMessageLog.logMessage(
+            f"シェープファイルのパス: {shapefiles[0]}",
+            PLUGIN_NAME,
+            level=Qgis.Info,
+        )
         return str(shapefiles[0])
 
-    def create_population_mesh_layer(self, api_key: str,  mesh_code: str, stats_data_id: str) -> Optional[QgsVectorLayer]:
+    def create_population_mesh_layer(
+        self, api_key: str, mesh_code: str, stats_data_id: str
+    ) -> Optional[QgsVectorLayer]:
         """人口メッシュデータの取得とQGISへのレイヤー追加
         Args:
             api_key (str): e-Stat APIキー
@@ -102,14 +116,14 @@ class PopulationMeshAlgorithm:
             )
             return None
 
-        QgsProject.instance().addMapLayer(population_mesh_layer)
-        QgsMessageLog.logMessage(
-            f"レイヤー「{layer_name}」を追加しました。",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
+        # QgsProject.instance().addMapLayer(population_mesh_layer)
+        # QgsMessageLog.logMessage(
+        #     f"レイヤー「{layer_name}」を追加しました。",
+        #     PLUGIN_NAME,
+        #     level=Qgis.Info,
+        # )
 
-        # 人口データの取得と整形)
+        # 人口データの取得と整形
         # パラメーター
         population_mesh_url_params = {
             "appId": api_key,
@@ -137,42 +151,77 @@ class PopulationMeshAlgorithm:
         }
 
         # データの結合
-        join_field_name = "population"
-        key_field_name = (
-            "KEY_CODE"  # e-Statのシェープファイルのメッシュコードのフィールド名
+        # join_field_name = "population"
+        # key_field_name = (
+        #     "KEY_CODE"  # e-Statのシェープファイルのメッシュコードのフィールド名
+        # )
+        # 一時レイヤーを作成
+        temp_layer = QgsVectorLayer("None", "temp_population", "memory")
+        provider = temp_layer.dataProvider()
+        provider.addAttributes(
+            [
+                QgsField("mesh_code", QVariant.String),
+                QgsField("population", QVariant.Int),
+            ]
+        )
+        temp_layer.updateFields()
+
+        # データを追加
+        features = []
+        for mesh_code_key, pop_value in population_dict.items():
+            feature = QgsFeature()
+            feature.setAttributes([mesh_code_key, pop_value])
+            features.append(feature)
+
+        provider.addFeatures(features)
+
+        # プロセシングツールで結合
+        result = processing.run(
+            "native:joinattributestable",
+            {
+                "INPUT": population_mesh_layer,
+                "FIELD": "KEY_CODE",
+                "INPUT_2": temp_layer,
+                "FIELD_2": "mesh_code",
+                "FIELDS_TO_COPY": ["population"],
+                "METHOD": 1,
+                "DISCARD_NONMATCHING": False,
+                "PREFIX": "",
+                "OUTPUT": "TEMPORARY_OUTPUT",
+            },
         )
 
-        # レイヤーの編集を開始
-        population_mesh_layer.startEditing()
+        population_mesh_layer = result["OUTPUT"]
+        population_mesh_layer.setName(layer_name)
 
-        if population_mesh_layer.fields().indexFromName(join_field_name) == -1:
-            population_mesh_layer.dataProvider().addAttributes(
-                [QgsField(join_field_name, QVariant.Int)]
-            )
-            population_mesh_layer.updateFields()
+        # # プロジェクトに追加
+        # QgsProject.instance().addMapLayer(population_mesh_layer)
 
-        join_field_idx = population_mesh_layer.fields().indexFromName(join_field_name)
-        updated_count = 0
-        for feature in population_mesh_layer.getFeatures():
-            mesh_code = feature[key_field_name]
-            if mesh_code in population_dict:
-                population_value = population_dict[mesh_code]
-                population_mesh_layer.changeAttributeValue(
-                    feature.id(), join_field_idx, population_value
-                )
-                updated_count += 1
+        # if not population_mesh_layer.commitChanges():
+        #     QgsMessageLog.logMessage(
+        #         "人口メッシュレイヤーのコミットに失敗しました。ロールバックを実行します。",
+        #         PLUGIN_NAME,
+        #         level=Qgis.Critical,
+        #     )
+        #     population_mesh_layer.rollBack()
+        #     return None
 
-        if not population_mesh_layer.commitChanges():
-            QgsMessageLog.logMessage(
-                "人口メッシュレイヤーのコミットに失敗しました。ロールバックを実行します。",
-                PLUGIN_NAME,
-                level=Qgis.Critical,
-            )
-            population_mesh_layer.rollBack()
-            return None
+        # 結合結果の確認
+        # デバッグ用に結合結果の件数をログに出力
+        joined_count = result.get("JOINED_COUNT", 0)
+        unjoinable_count = result.get("UNJOINABLE_COUNT", 0)
+
+        QgsMessageLog.logMessage(
+            f"結合完了: {joined_count}件成功, {unjoinable_count}件不一致",
+            PLUGIN_NAME,
+            level=Qgis.Info,
+        )
+
+        # プロジェクトに追加
+        QgsProject.instance().addMapLayer(population_mesh_layer)
 
         # 可視化（段階分けレンダリング）
-        target_field = join_field_name
+        target_field = "population"
 
         # 5段階に分類して色分け
         class_count = 5

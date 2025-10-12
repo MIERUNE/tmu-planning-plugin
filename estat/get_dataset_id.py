@@ -1,4 +1,3 @@
-import json
 from typing import Optional
 
 import requests
@@ -89,69 +88,81 @@ class GetDatasetId:
             "searchWord": search_word,
         }
 
-        try:
-            QgsMessageLog.logMessage(
-                f"APIリクエストを開始します (メッシュコード: {mesh_code})",
-                PLUGIN_NAME,
-                level=Qgis.Info,
-            )
-            response = requests.get(
-                GET_STATS_LIST_API_ENDPOINT, params=params, timeout=60
-            )
-            response.raise_for_status()
-            json_data = response.json()
+        QgsMessageLog.logMessage(
+            f"APIリクエストを開始します (メッシュコード: {mesh_code})",
+            PLUGIN_NAME,
+            level=Qgis.Info,
+        )
+        response = requests.get(GET_STATS_LIST_API_ENDPOINT, params=params, timeout=60)
+        response.raise_for_status()
+        json_data = response.json()
 
-            # @id 抽出処理
-            table_info = (
-                json_data.get("GET_STATS_LIST", {})
-                .get("DATALIST_INF", {})
-                .get("TABLE_INF")
-            )
+        # e-Stat APIのエラーチェック（RESULT内のSTATUSを確認）
+        result = json_data.get("GET_STATS_LIST", {}).get("RESULT", {})
+        status = result.get("STATUS")
+        error_msg = result.get("ERROR_MSG")
 
-            dataset_id = None
-            # table_infoが存在するかチェック
-            if table_info:
-                if isinstance(table_info, list) and len(table_info) > 0:
-                    # リストの場合、最初の要素から@idを取得
-                    dataset_id = table_info[0].get("@id")
-                elif isinstance(table_info, dict):
-                    # 辞書の場合、直接@idを取得
-                    dataset_id = table_info.get("@id")
-
-            if dataset_id:
+        # STATUS が "0" 以外の場合はエラー
+        if status and status != "0":
+            if status == "100":
+                # 認証エラー（APIキー不正）
+                user_message = f"APIキーが無効です: {error_msg}"
                 QgsMessageLog.logMessage(
-                    f"dataSetId '{dataset_id}' の取得に成功しました。",
+                    user_message,
                     PLUGIN_NAME,
-                    level=Qgis.Success,
+                    level=Qgis.Critical,
                 )
-                return dataset_id
+                self.iface.messageBar().pushMessage(
+                    "API認証エラー",
+                    "APIキーが無効です。正しいe-Stat APIキーを設定してください。",
+                    level=Qgis.Critical,
+                )
             else:
+                # その他のAPIエラー
                 QgsMessageLog.logMessage(
-                    f"メッシュコード '{mesh_code}' のdataSetIdが見つかりませんでした。",
+                    f"APIエラー (STATUS: {status}): {error_msg}",
                     PLUGIN_NAME,
-                    level=Qgis.Warning,
+                    level=Qgis.Critical,
                 )
-                return None
+                self.iface.messageBar().pushMessage(
+                    "APIエラー",
+                    f"{error_msg}",
+                    level=Qgis.Critical,
+                    duration=5,
+                )
+            return None
 
-        except requests.exceptions.RequestException as e:
+        # @id 抽出処理
+        table_info = (
+            json_data.get("GET_STATS_LIST", {}).get("DATALIST_INF", {}).get("TABLE_INF")
+        )
+
+        dataset_id = None
+        # table_infoが存在するかチェック
+        if table_info:
+            if isinstance(table_info, dict):
+                # 辞書の場合、直接@idを取得
+                dataset_id = table_info.get("@id")
+        else:
             QgsMessageLog.logMessage(
-                f"APIリクエストでエラーが発生しました (メッシュコード: {mesh_code}): {e}",
+                f"メッシュコード '{mesh_code}' に対応するデータセットが見つかりませんでした。",
                 PLUGIN_NAME,
-                level=Qgis.Critical,
+                level=Qgis.Warning,
             )
             return None
-        except json.JSONDecodeError:
+
+        if dataset_id:
             QgsMessageLog.logMessage(
-                f"レスポンスのJSONパースに失敗しました (メッシュコード: {mesh_code})。レスポンス内容: \n{response.text}",
+                f"dataSetId '{dataset_id}' の取得に成功しました。",
                 PLUGIN_NAME,
-                level=Qgis.Critical,
+                level=Qgis.Success,
             )
-            return None
-        except Exception as e:
+            return dataset_id
+        else:
             QgsMessageLog.logMessage(
-                f"予期せぬエラーが発生しました (メッシュコード: {mesh_code}): {e}",
+                f"メッシュコード '{mesh_code}' のdataSetIdが見つかりませんでした。",
                 PLUGIN_NAME,
-                level=Qgis.Critical,
+                level=Qgis.Warning,
             )
             return None
 

@@ -246,12 +246,17 @@ class GreenInfraPlugin:
         # Phase 4: 人口メッシュデータの可視化
         if self.dockwidget.checkBox_population_mesh.isChecked():
             estat_api_key = ApikeyDialog.get_estat_api_key()
-            QgsMessageLog.logMessage(f"e-Stat APIキー: {estat_api_key}", PLUGIN_NAME, level=Qgis.Info)
-            self.population_mesh_workflow.execute(
-                api_key=estat_api_key,
-                municipality_code=self.dockwidget.comboBox_municipality.currentData()
-            )
-            
+
+            if estat_api_key:
+                # Workflowを実行
+                self.population_mesh_workflow.execute(
+                    api_key=estat_api_key,
+                    municipality_code=self.dockwidget.comboBox_municipality.currentData(),
+                )
+            else:
+                message = "e-Stat APIキーが未設定のため、人口メッシュデータの取得をスキップします。"
+                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
 
     def on_prefecture_changed(self):
         """都道府県選択変更時の処理"""

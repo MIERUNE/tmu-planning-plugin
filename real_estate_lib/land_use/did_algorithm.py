@@ -59,21 +59,23 @@ class DidAreaAlgorithm:
 
         reply.deleteLater()
         return True, http_status
-    
-    def _get_administrative_area_code(self, municipality_code: Optional[str]) -> Optional[str]:
+
+    def _get_administrative_area_code(
+        self, municipality_code: Optional[str]
+    ) -> Optional[str]:
         """
         市区町村コードから適切な行政区域コードを取得する
         政令指定都市の場合は全区のコードをカンマ区切りで返す
-        
+
         Args:
             municipality_code: 市区町村コード
-            
+
         Returns:
             行政区域コード（政令指定都市の場合は全区をカンマ区切り）
         """
         if not municipality_code:
             return None
-            
+
         # 政令指定都市かチェック
         if municipality_code in DESIGNATED_CITIES_CODES:
             # 政令指定都市の場合、全区のコードをカンマ区切りで結合
@@ -84,7 +86,7 @@ class DidAreaAlgorithm:
                 level=Qgis.Info,
             )
             return ",".join(ward_codes)
-        
+
         # 通常の市区町村の場合はそのまま返す
         QgsMessageLog.logMessage(
             f"通常の市区町村コードを使用します: {municipality_code}",
@@ -118,7 +120,7 @@ class DidAreaAlgorithm:
                 level=Qgis.Critical,
             )
             return None
-        
+
         # 行政区域コードを取得（政令指定都市の場合は全区のコードを取得）
         administrative_area_code = self._get_administrative_area_code(municipality_code)
 
@@ -128,7 +130,7 @@ class DidAreaAlgorithm:
             "z": "{z}",
             "x": "{x}",
             "y": "{y}",
-            "administrativeAreaCode": administrative_area_code
+            "administrativeAreaCode": administrative_area_code,
         }
 
         encoded_params = urllib.parse.urlencode(params, safe="{}")

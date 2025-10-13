@@ -115,7 +115,7 @@ class MergePopulationMeshLayers:
         # 可視化を適用
         self._apply_population_style(merged_layer)
 
-        # 元の個別レイヤーを削除（オプション）
+        # 元の個別レイヤーを削除
         if remove_originals:
             for layer_obj in layer_objects:
                 QgsProject.instance().removeMapLayer(layer_obj)

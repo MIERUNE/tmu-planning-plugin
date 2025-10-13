@@ -95,8 +95,10 @@ class PopulationMeshAlgorithm:
         """人口メッシュデータの取得とQGISへのレイヤー追加
         Args:
             api_key (str): e-Stat APIキー
+            mesh_code (str): 取得対象のメッシュコード（例: "6441"）
+            stats_data_id (str): データセットID
         Returns:
-
+            Optional[QgsVectorLayer]: 追加された人口メッシュレイヤー。失敗した場合はNone。
         """
         # メッシュ形状データのダウンロードとシェープファイルのパス取得
         shp_path = self._get_mesh_data(mesh_code)

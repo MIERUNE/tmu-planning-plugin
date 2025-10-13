@@ -102,12 +102,6 @@ class PopulationMeshWorkflow:
         if not dataset_id_dict:
             return False
 
-        QgsMessageLog.logMessage(
-            f"取得したデータセット数: {len(dataset_id_dict)}",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
-
         # 2. 各メッシュコードの人口メッシュレイヤーを作成
         added_population_layers = self._create_population_layers(
             api_key, dataset_id_dict

@@ -1,7 +1,6 @@
 """
 人口メッシュ（1km）データの取得機能モジュール
 """
-
 import io
 import tempfile
 import urllib.parse
@@ -46,11 +45,6 @@ class PopulationMeshAlgorithm:
         }
         encode_params = urllib.parse.urlencode(mesh_request_params)
         mesh_request_url = f"{MESH_SHAPE_DOWNLOAD_URL}?{encode_params}"
-        QgsMessageLog.logMessage(
-            f"メッシュ形状データのダウンロードURL: {mesh_request_url}",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
 
         # メッシュ形状データのダウンロード
         mesh_data = requests.get(mesh_request_url, timeout=60)
@@ -79,11 +73,6 @@ class PopulationMeshAlgorithm:
             return None
 
         # 最初のシェープファイルのフルパスを文字列として返す
-        QgsMessageLog.logMessage(
-            f"シェープファイルのパス: {shapefiles[0]}",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
         return str(shapefiles[0])
 
     def create_population_mesh_layer(
@@ -178,16 +167,5 @@ class PopulationMeshAlgorithm:
 
         population_mesh_layer = result["OUTPUT"]
         population_mesh_layer.setName(layer_name)
-
-        # 結合結果の確認
-        # デバッグ用に結合結果の件数をログに出力
-        joined_count = result.get("JOINED_COUNT", 0)
-        unjoinable_count = result.get("UNJOINABLE_COUNT", 0)
-
-        QgsMessageLog.logMessage(
-            f"結合完了: {joined_count}件成功, {unjoinable_count}件不一致",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
 
         return population_mesh_layer

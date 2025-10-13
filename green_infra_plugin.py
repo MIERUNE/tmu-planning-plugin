@@ -249,7 +249,8 @@ class GreenInfraPlugin:
 
             if estat_api_key:
                 # Workflowを実行
-                self.population_mesh_workflow.execute(
+                self.population_mesh_workflow.run_as_task(
+                    iface=self.iface,
                     api_key=estat_api_key,
                     municipality_code=self.dockwidget.comboBox_municipality.currentData(),
                     municipality_name=self.dockwidget.comboBox_municipality.currentText(),

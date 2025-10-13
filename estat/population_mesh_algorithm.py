@@ -15,10 +15,7 @@ from qgis.core import (
     Qgis,
     QgsFeature,
     QgsField,
-    QgsGraduatedSymbolRenderer,
     QgsMessageLog,
-    QgsProject,
-    QgsStyle,
     QgsVectorLayer,
 )
 from qgis.PyQt.QtCore import QVariant
@@ -105,8 +102,6 @@ class PopulationMeshAlgorithm:
         if not shp_path:
             return None
 
-        # QGISにレイヤーとして追加
-        # TODO : レイヤー名指定した自治体名+人口メッシュにする
         layer_name = f"人口メッシュ_1km_{mesh_code}"
 
         population_mesh_layer = QgsVectorLayer(str(shp_path), layer_name, "ogr")
@@ -194,27 +189,5 @@ class PopulationMeshAlgorithm:
             PLUGIN_NAME,
             level=Qgis.Info,
         )
-
-        # プロジェクトに追加
-        QgsProject.instance().addMapLayer(population_mesh_layer)
-
-        # 可視化（段階分けレンダリング）
-        target_field = "population"
-
-        # 5段階に分類して色分け
-        class_count = 5
-
-        renderer = QgsGraduatedSymbolRenderer(target_field)
-        renderer.setClassAttribute(target_field)
-
-        color_ramp = QgsStyle.defaultStyle().colorRamp("Viridis")
-        renderer.setSourceColorRamp(color_ramp)
-
-        renderer.updateClasses(
-            population_mesh_layer, QgsGraduatedSymbolRenderer.Jenks, class_count
-        )
-
-        population_mesh_layer.setRenderer(renderer)
-        population_mesh_layer.triggerRepaint()  # 地図を再描画
 
         return population_mesh_layer

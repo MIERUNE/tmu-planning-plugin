@@ -45,12 +45,6 @@ class MergePopulationMeshLayers:
         layer.setRenderer(renderer)
         layer.triggerRepaint()  # 地図を再描画
 
-        QgsMessageLog.logMessage(
-            f"レイヤー '{layer.name()}' に可視化を適用しました。",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
-
     def merge_population_mesh_layers(
         self,
         added_population_layers: list[dict],
@@ -84,12 +78,6 @@ class MergePopulationMeshLayers:
         # レイヤーオブジェクトのリストを取得
         layer_objects = [item["layer"] for item in added_population_layers]
 
-        QgsMessageLog.logMessage(
-            f"{len(layer_objects)}個のレイヤーを統合中...",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
-
         # プロセシングツールで統合
         result = processing.run(
             "native:mergevectorlayers",
@@ -106,12 +94,6 @@ class MergePopulationMeshLayers:
         # 統合レイヤーをプロジェクトに追加
         QgsProject.instance().addMapLayer(merged_layer)
 
-        QgsMessageLog.logMessage(
-            f"統合レイヤー '{merged_layer.name()}' を作成しました。",
-            PLUGIN_NAME,
-            level=Qgis.Success,
-        )
-
         # 可視化を適用
         self._apply_population_style(merged_layer)
 
@@ -119,10 +101,5 @@ class MergePopulationMeshLayers:
         if remove_originals:
             for layer_obj in layer_objects:
                 QgsProject.instance().removeMapLayer(layer_obj)
-            QgsMessageLog.logMessage(
-                f"{len(layer_objects)}個の個別レイヤーを削除しました。",
-                PLUGIN_NAME,
-                level=Qgis.Info,
-            )
 
         return merged_layer

@@ -38,12 +38,6 @@ class PopulationMeshTask(QgsTask):
         Returns:
             bool: 成功した場合True、失敗した場合False
         """
-        QgsMessageLog.logMessage(
-            f"人口メッシュデータ取得タスクを開始: {self.municipality_name}",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
-
         # ワークフローを実行
         self.success = self.workflow.execute(
             self.api_key, self.municipality_code, self.municipality_name
@@ -67,14 +61,8 @@ class PopulationMeshTask(QgsTask):
         """
         if result:
             # 成功時
-            self.iface.messageBar().pushMessage(
-                "成功",
-                f"{self.municipality_name}の人口メッシュデータを取得しました。",
-                level=Qgis.Success,
-                duration=5,
-            )
             QgsMessageLog.logMessage(
-                f"タスク完了: {self.municipality_name}",
+                f"処理完了: {self.municipality_name}の人口メッシュデータを取得しました。",
                 PLUGIN_NAME,
                 level=Qgis.Success,
             )
@@ -126,12 +114,6 @@ class PopulationMeshWorkflow:
             )
             return {}
 
-        QgsMessageLog.logMessage(
-            f"取得したデータセット数: {len(dataset_id_dict)}",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
-
         return dataset_id_dict
 
     def _create_population_layers(self, api_key: str, dataset_id_dict: dict) -> list:
@@ -149,12 +131,6 @@ class PopulationMeshWorkflow:
 
         # 複数メッシュに対してfor文で処理
         for mesh_code, stats_data_id in dataset_id_dict.items():
-            QgsMessageLog.logMessage(
-                f"メッシュコード '{mesh_code}' の処理を開始...",
-                PLUGIN_NAME,
-                level=Qgis.Info,
-            )
-
             # アルゴリズムに個別メッシュの処理を委譲
             population_mesh_layer = self.algorithm.create_population_mesh_layer(
                 api_key, mesh_code, stats_data_id
@@ -167,11 +143,6 @@ class PopulationMeshWorkflow:
                         "mesh_code": mesh_code,
                         "stats_data_id": stats_data_id,
                     }
-                )
-                QgsMessageLog.logMessage(
-                    f"メッシュコード '{mesh_code}' のレイヤー '{population_mesh_layer.name()}' を追加",
-                    PLUGIN_NAME,
-                    level=Qgis.Success,
                 )
             else:
                 QgsMessageLog.logMessage(
@@ -205,18 +176,12 @@ class PopulationMeshWorkflow:
             api_key, dataset_id_dict
         )
 
-        # TODO:
         # 3. レイヤーをマージ（別PRで対応予定）
         merged_layer = self.merge_algorithm.merge_population_mesh_layers(
             added_population_layers, municipality_name, remove_originals=True
         )
 
         if merged_layer is not None:
-            QgsMessageLog.logMessage(
-                f"人口メッシュレイヤー '{merged_layer.name()}' を正常に作成しました。",
-                PLUGIN_NAME,
-                level=Qgis.Success,
-            )
             return True
         else:
             return False
@@ -243,7 +208,7 @@ class PopulationMeshWorkflow:
         # タスクマネージャーに追加して実行
         QgsApplication.taskManager().addTask(task)
 
-        # タスク開始通知
+        # タスク開始通知(これを消したらQgsTaskが動かなくなる)
         iface.messageBar().pushMessage(
             "処理開始",
             f"{municipality_name}の人口メッシュデータ取得を開始しました。",

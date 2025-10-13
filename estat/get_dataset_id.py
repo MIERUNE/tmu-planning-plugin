@@ -22,11 +22,6 @@ class GetDatasetId:
         Args:
             municipality_code (str): 自治体コード
         """
-        QgsMessageLog.logMessage(
-            f"[_get_mesh_codes] メッシュコードの取得開始 (municipality_code: {municipality_code})",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
         # e-Statに行政区域ポリゴンが存在しない自治体コードの場合
         if municipality_code == "01100":
             mesh_codes = ["6441", "6541"]
@@ -35,20 +30,8 @@ class GetDatasetId:
         else:
             # e-Statから行政区域ポリゴンレイヤーを取得
             client = AdministrativeAreaClient(PLUGIN_NAME)
-            # === ログ追加 B ===
-            QgsMessageLog.logMessage(
-                "[_get_mesh_codes] 行政区域ポリゴンの取得開始...",
-                PLUGIN_NAME,
-                level=Qgis.Info,
-            )
+
             municipality_layer = client.fetch_municipality_polygon(municipality_code)
-            QgsMessageLog.logMessage(municipality_code, PLUGIN_NAME, level=Qgis.Info)
-            # === ログ追加 C ===
-            QgsMessageLog.logMessage(
-                "[_get_mesh_codes] 行政区域ポリゴンの取得完了",
-                PLUGIN_NAME,
-                level=Qgis.Info,
-            )
 
             # 取得したレイヤーが有効か確認
             if municipality_layer is not None and municipality_layer.isValid():
@@ -58,11 +41,6 @@ class GetDatasetId:
 
                 if bbox:
                     mesh_codes = get_mesh_codes_from_bbox(bbox)
-                    QgsMessageLog.logMessage(
-                        f"取得したメッシュコード: {mesh_codes}",
-                        PLUGIN_NAME,
-                        level=Qgis.Success,
-                    )
                     return mesh_codes
                 else:
                     QgsMessageLog.logMessage(
@@ -87,12 +65,6 @@ class GetDatasetId:
             "searchKind": "2",
             "searchWord": search_word,
         }
-
-        QgsMessageLog.logMessage(
-            f"APIリクエストを開始します (メッシュコード: {mesh_code})",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
         response = requests.get(GET_STATS_LIST_API_ENDPOINT, params=params, timeout=60)
         response.raise_for_status()
         json_data = response.json()
@@ -152,11 +124,6 @@ class GetDatasetId:
             return None
 
         if dataset_id:
-            QgsMessageLog.logMessage(
-                f"dataSetId '{dataset_id}' の取得に成功しました。",
-                PLUGIN_NAME,
-                level=Qgis.Success,
-            )
             return dataset_id
         else:
             QgsMessageLog.logMessage(
@@ -178,9 +145,6 @@ class GetDatasetId:
            -> dict[str, str]: 取得したデータセットIDの辞書
         """
         mesh_codes = self._get_mesh_codes(municipality_code)
-        QgsMessageLog.logMessage(
-            f"取得したメッシュコードリスト: {mesh_codes}", PLUGIN_NAME, level=Qgis.Info
-        )
 
         if not mesh_codes:
             QgsMessageLog.logMessage(
@@ -196,9 +160,4 @@ class GetDatasetId:
             if dataset_id:
                 dataset_id_dict[mesh_code] = dataset_id
 
-        QgsMessageLog.logMessage(
-            f"最終的に取得したデータセットIDリスト: {dataset_id_dict}",
-            PLUGIN_NAME,
-            level=Qgis.Success,
-        )
         return dataset_id_dict

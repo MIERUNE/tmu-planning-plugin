@@ -17,6 +17,8 @@ from qgis.core import (
 )
 from qgis.PyQt.QtGui import QColor
 
+from .basemap_settings import ZOOM_SCALE_THRESHOLDS
+
 
 class BaseMapAlgorithm:
     """ベースマップ管理クラス"""
@@ -87,14 +89,16 @@ class BaseMapAlgorithm:
         layer_name: str,
         tile_zoom_min: int,
         tile_zoom_max: int,
+        display_zoom_min: int,
         group: Optional[QgsLayerTreeGroup] = None,
     ) -> Optional[QgsVectorTileLayer]:
         """地理院ベクトルタイルレイヤーを追加
         Args:
             gsi_tile_url (str): 地理院タイルのURL
             layer_name (str): レイヤー名
-            tile_zoom_min (int): 最小ズームレベル
-            tile_zoom_max (int): 最大ズームレベル
+            tile_zoom_min (int): 最小ズームレベル（タイル取得用）
+            tile_zoom_max (int): 最大ズームレベル（タイル取得用）
+            display_zoom_min (int): 表示を開始するズームレベル
             group (Optional[QgsLayerTreeGroup]): 追加先のグループ
         Returns:
             Optional[QgsVectorTileLayer]: 作成されたレイヤー
@@ -111,6 +115,9 @@ class BaseMapAlgorithm:
                     new_layer.error().message() if new_layer.error() else "不明なエラー"
                 )
                 raise Exception(f"レイヤー作成失敗: {error_msg}")
+
+            # ズームレベル制御を適用
+            self._apply_zoom_level_control(new_layer, display_zoom_min)
 
             QgsProject.instance().addMapLayer(new_layer, False)
             if group:
@@ -329,5 +336,20 @@ class BaseMapAlgorithm:
         """ポイント用のシンボルを作成"""
         symbol = QgsSymbol.defaultSymbol(Qgis.GeometryType.Point)
         symbol.setColor(color)
-        symbol.setSize(4.0)
         return symbol
+
+    def _apply_zoom_level_control(
+        self, layer: QgsVectorTileLayer, min_zoom: int
+    ) -> None:
+        """
+        レイヤーにズームレベル制御を適用
+        Args:
+            layer (QgsVectorTileLayer): 対象レイヤー
+            min_zoom (int): 表示を開始するズームレベル
+        """
+        # スケールベースの可視性を有効化
+        layer.setScaleBasedVisibility(True)
+
+        # 最小スケール（これよりズームアウトしたら非表示）を設定
+        if min_zoom in ZOOM_SCALE_THRESHOLDS:
+            layer.setMinimumScale(ZOOM_SCALE_THRESHOLDS[min_zoom])

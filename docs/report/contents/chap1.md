@@ -7,6 +7,7 @@ class: chapter
 ## プラグインの起動
 
 メニューまたはツールバーより土地利用計画支援プラグインを起動します。
+
 ![プラグインの起動](images/screenshot/setup_plugin.png)
 
 ## API キーの設定
@@ -24,8 +25,9 @@ class: chapter
 「都道府県」と「市区町村」をプルダウンから選択してください。<br>
 市区町村は都道府県を選択するとプルダウンから選択ができるようになります。
 
-![対象地域設定](images/screenshot/select_municipality_2.png)
-![自治体の選択](images/screenshot/select_municipality.png)
+![対象地域設定](images/screenshot/select_municipality_2.png){width=70%}
+
+![自治体の選択](images/screenshot/select_municipality.png){width=70%}
 
 ## ベースマップの設定
 
@@ -33,6 +35,7 @@ class: chapter
 
 可視化したい項目にチェックを入れてください。<br>
 初期設定では全てにチェックが入っているので、不要なデータはもう一度クリックしてチェックを外してください。
+
 ![ベースマップの設定](images/screenshot/setting_basemap.png)
 
 各項目で可視化されるデータは以下の通りです。

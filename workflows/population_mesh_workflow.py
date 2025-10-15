@@ -111,18 +111,8 @@ class PopulationMeshWorkflow:
             api_key, dataset_id_dict
         )
 
-        # TODO:
-        # 3. レイヤーをマージ（別PRで対応予定）
+        # 3. レイヤーをマージ
         merged_layer = self.merge_algorithm.merge_population_mesh_layers(
             added_population_layers, municipality_name, remove_originals=True
         )
-
-        if merged_layer is not None:
-            QgsMessageLog.logMessage(
-                f"人口メッシュレイヤー '{merged_layer.name()}' を正常に作成しました。",
-                PLUGIN_NAME,
-                level=Qgis.Success,
-            )
-            return True
-        else:
-            return False
+        return merged_layer is not None

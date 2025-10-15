@@ -118,7 +118,7 @@ class MergePopulationMeshLayers:
         # 元の個別レイヤーを削除
         if remove_originals:
             for layer_obj in layer_objects:
-                QgsProject.instance().removeMapLayer(layer_obj)
+                QgsProject.instance().removeMapLayer(layer_obj.id())
             QgsMessageLog.logMessage(
                 f"{len(layer_objects)}個の個別レイヤーを削除しました。",
                 PLUGIN_NAME,

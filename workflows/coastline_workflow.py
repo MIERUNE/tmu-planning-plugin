@@ -5,13 +5,13 @@ from qgis.core import Qgis, QgsMessageLog, QgsProject
 
 from ..umi_shiru.client import (
     BBOX_BUFFER_DEGREES,
-    CITY_DEFAULT_BOUNDS,
     CITY_DIVISION_CONFIG,
     PLUGIN_NAME,
 )
 from ..umi_shiru.coastline.coastline_algorithm import CoastlineAlgorithm
 from ..utils.estat.bbox import calculate_municipality_bbox
 from ..utils.estat.client import AdministrativeAreaClient
+from ..utils.settings import CITY_DEFAULT_BOUNDS
 from .base_workflow import BaseWorkflow
 
 

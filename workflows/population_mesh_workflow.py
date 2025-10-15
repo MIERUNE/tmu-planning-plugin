@@ -4,6 +4,7 @@ from qgis.core import (
 )
 
 from ..estat.connect import PLUGIN_NAME
+from ..estat.get_dataset_id import GetDatasetId
 from ..estat.population_mesh_algorithm import PopulationMeshAlgorithm
 
 
@@ -13,35 +14,101 @@ class PopulationMeshWorkflow:
     def __init__(self, iface):
         self.iface = iface
         self.algorithm = PopulationMeshAlgorithm(iface)
+        self.dataset_id_getter = GetDatasetId(iface)
 
-    def execute(self) -> bool:
+    def _fetch_dataset_ids(self, municipality_code: str, api_key: str) -> dict:
+        """データセットIDを取得"""
+        dataset_id_dict = self.dataset_id_getter.fetch_dataset_ids_for_municipality(
+            municipality_code, api_key
+        )
+
+        if not dataset_id_dict:
+            QgsMessageLog.logMessage(
+                f"自治体コード '{municipality_code}' のデータセットIDが取得できませんでした。",
+                PLUGIN_NAME,
+                level=Qgis.Warning,
+            )
+            return {}
+
+        QgsMessageLog.logMessage(
+            f"取得したデータセット数: {len(dataset_id_dict)}",
+            PLUGIN_NAME,
+            level=Qgis.Info,
+        )
+
+        return dataset_id_dict
+
+    def _create_population_layers(self, api_key: str, dataset_id_dict: dict) -> list:
         """
-        指定されたアルゴリズムを実行し、レイヤーをQGISに追加する
+        各メッシュコードに対してレイヤーを作成
+
+        Args:
+            api_key: e-Stat APIキー
+            dataset_id_dict: {メッシュコード: データセットID} の辞書
+
         Returns:
-            bool: 成功した場合はTrue、失敗した場合はFalse
+            list: 成功したレイヤーの情報リスト
         """
-        try:
-            added_layer = self.algorithm.create_population_mesh_layer()
+        added_layers = []
 
-            if added_layer is None:
+        # 複数メッシュに対してfor文で処理
+        for mesh_code, stats_data_id in dataset_id_dict.items():
+            QgsMessageLog.logMessage(
+                f"メッシュコード '{mesh_code}' の処理を開始...",
+                PLUGIN_NAME,
+                level=Qgis.Info,
+            )
+
+            # アルゴリズムに個別メッシュの処理を委譲
+            population_mesh_layer = self.algorithm.create_population_mesh_layer(
+                api_key, mesh_code, stats_data_id
+            )
+
+            if population_mesh_layer is not None:
+                added_layers.append(
+                    {
+                        "layer": population_mesh_layer,
+                        "mesh_code": mesh_code,
+                        "stats_data_id": stats_data_id,
+                    }
+                )
                 QgsMessageLog.logMessage(
-                    "人口メッシュレイヤーの取得に失敗しました。",
+                    f"メッシュコード '{mesh_code}' のレイヤー '{population_mesh_layer.name()}' を追加",
+                    PLUGIN_NAME,
+                    level=Qgis.Success,
+                )
+            else:
+                QgsMessageLog.logMessage(
+                    f"メッシュコード '{mesh_code}' のレイヤー追加に失敗",
                     PLUGIN_NAME,
                     level=Qgis.Warning,
                 )
-                return False
 
-            QgsMessageLog.logMessage(
-                f"'{added_layer.name()}' 人口メッシュレイヤーを追加しました。",
-                PLUGIN_NAME,
-                level=Qgis.Success,
-            )
-            return True
+        return added_layers
 
-        except Exception as e:
-            QgsMessageLog.logMessage(
-                f"人口メッシュレイヤーの可視化中にエラーが発生: {str(e)}",
-                PLUGIN_NAME,
-                level=Qgis.Critical,
-            )
+    def execute(self, api_key: str, municipality_code: str) -> bool:
+        """
+        指定されたアルゴリズムを実行し、レイヤーをQGISに追加する
+        Args:
+            api_key (str): e-Stat APIキー
+            municipality_code (str): 自治体コード（例: "01100" 札幌市）
+        Returns:
+            bool: 成功した場合はTrue、失敗した場合はFalse
+        """
+
+        # 1. 自治体コードからデータセットIDを取得
+        dataset_id_dict = self._fetch_dataset_ids(municipality_code, api_key)
+
+        if not dataset_id_dict:
             return False
+
+        # 2. 各メッシュコードの人口メッシュレイヤーを作成
+        added_population_layers = self._create_population_layers(
+            api_key, dataset_id_dict
+        )
+
+        # TODO:
+        # 3. レイヤーをマージ（別PRで対応予定）
+
+        # 少なくとも1つのレイヤーが追加されていればTrue
+        return len(added_population_layers) > 0

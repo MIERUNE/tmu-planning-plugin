@@ -39,3 +39,23 @@ section > :is(h1):first-child + * {
     background-size: contain;
   }
 }
+
+h1 + ul,
+h2 + ul,
+h3 + ul,
+h4 + ul,
+h1 + ol,
+h2 + ol,
+h3 + ol,
+h4 + ol {
+  margin-top: 0;
+}
+
+ul, ol {
+  margin-top: 0 !important;
+  margin-bottom: 0.5em !important;
+}
+
+li {
+  margin-top: 0.2em;
+}

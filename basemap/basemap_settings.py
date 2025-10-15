@@ -23,6 +23,19 @@ DEFAULT_COLOR = {
 }
 
 # ====================
+# ズームレベルとスケールの閾値
+# ====================
+ZOOM_SCALE_THRESHOLDS = {
+    4: 37000000,
+    7: 4600000,
+    8: 2300000,
+    9: 1160000,
+    14: 36250,
+    16: 9000,
+    18: 2300,
+}
+
+# ====================
 # 地物設定定数
 # ====================
 LAYER_FEATURE_SETTINGS = {
@@ -44,6 +57,7 @@ LAYER_FEATURE_SETTINGS = {
         "layer_name": "国土",
         "zoom_min": 8,
         "zoom_max": 16,
+        "display_zoom_min": 8,
     },
     "water": {
         "features": [
@@ -57,6 +71,7 @@ LAYER_FEATURE_SETTINGS = {
         "layer_name": "水域",
         "zoom_min": 9,
         "zoom_max": 16,
+        "display_zoom_min": 9,
     },
     "highway": {
         "features": [
@@ -76,6 +91,7 @@ LAYER_FEATURE_SETTINGS = {
         "layer_name": "高速道路",
         "zoom_min": 4,
         "zoom_max": 7,
+        "display_zoom_min": 7,
     },
     "major_road": {
         "features": [
@@ -89,6 +105,7 @@ LAYER_FEATURE_SETTINGS = {
         "layer_name": "主要道路",
         "zoom_min": 4,
         "zoom_max": 7,
+        "display_zoom_min": 9,
     },
     "building": {
         "features": [
@@ -126,5 +143,6 @@ LAYER_FEATURE_SETTINGS = {
         "layer_name": "建物ポリゴン",
         "zoom_min": 0,
         "zoom_max": 16,
+        "display_zoom_min": 14,
     },
 }

@@ -47,6 +47,7 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
             self.checkBox_location_normalization_plan
         )
         self.checkBox_nature_reserve: QCheckBox = self.checkBox_nature_reserve
+        self.checkBox_did: QCheckBox = self.checkBox_did
         self.checkBox_high_level_use_districts: QCheckBox = (
             self.checkBox_high_level_use_districts
         )

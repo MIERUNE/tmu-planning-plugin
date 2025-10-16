@@ -127,6 +127,7 @@ class BasemapWorkflow(BaseWorkflow):
                     layer_name=layer_name,
                     tile_zoom_min=settings["zoom_min"],
                     tile_zoom_max=settings["zoom_max"],
+                    display_zoom_min=settings["display_zoom_min"],
                     group=group,
                 )
                 if not layer:

@@ -1,8 +1,12 @@
+from typing import Optional
+
 from qgis.core import (
     Qgis,
     QgsApplication,
     QgsMessageLog,
+    QgsProject,
     QgsTask,
+    QgsVectorLayer,
 )
 
 from ..estat.connect import PLUGIN_NAME
@@ -29,29 +33,41 @@ class PopulationMeshTask(QgsTask):
         self.municipality_code = municipality_code
         self.municipality_name = municipality_name
         self.workflow = PopulationMeshWorkflow(iface)
+        self.merged_layer = None
         self.exception = None
         self.success = False
 
     def run(self):
         """
-        バックグラウンドで実行される処理
+        バックグラウンドで実行される処理（レイヤー追加以外）
         Returns:
             bool: 成功した場合True、失敗した場合False
         """
-        # ワークフローを実行
-        self.success = self.workflow.execute(
-            self.api_key, self.municipality_code, self.municipality_name
-        )
+        try:
+            # ワークフローを実行（レイヤー追加なし）
+            self.merged_layer = self.workflow.execute_without_adding_to_project(
+                self.api_key, self.municipality_code, self.municipality_name
+            )
 
-        if self.isCanceled():
+            if self.isCanceled():
+                QgsMessageLog.logMessage(
+                    "タスクがキャンセルされました。",
+                    PLUGIN_NAME,
+                    level=Qgis.Warning,
+                )
+                return False
+
+            self.success = self.merged_layer is not None
+            return self.success
+
+        except Exception as e:
+            self.exception = e
             QgsMessageLog.logMessage(
-                "タスクがキャンセルされました。",
+                f"タスク実行中にエラー: {str(e)}",
                 PLUGIN_NAME,
-                level=Qgis.Warning,
+                level=Qgis.Critical,
             )
             return False
-
-        return self.success
 
     def finished(self, result: bool):
         """
@@ -59,16 +75,28 @@ class PopulationMeshTask(QgsTask):
         Args:
             result: run()の戻り値
         """
-        if result:
-            # 成功時
+        if result and self.merged_layer is not None:
+            # 成功時：メインスレッドでレイヤーを追加
+            QgsProject.instance().addMapLayer(self.merged_layer)
+            self.iface.mapCanvas().refresh()
+
             QgsMessageLog.logMessage(
                 f"処理完了: {self.municipality_name}の人口メッシュデータを取得しました。",
                 PLUGIN_NAME,
                 level=Qgis.Success,
             )
+            self.iface.messageBar().pushMessage(
+                "成功",
+                f"{self.municipality_name}の人口メッシュレイヤーが追加されました。",
+                level=Qgis.Success,
+                duration=5,
+            )
         else:
             # 失敗時
             error_msg = "人口メッシュデータの取得に失敗しました。"
+            if self.exception:
+                error_msg += f" エラー: {str(self.exception)}"
+
             self.iface.messageBar().pushMessage(
                 "エラー",
                 error_msg,
@@ -76,7 +104,7 @@ class PopulationMeshTask(QgsTask):
                 duration=10,
             )
             QgsMessageLog.logMessage(
-                f"タスク失敗: {self.municipality_name}",
+                f"タスク失敗: {self.municipality_name} - {error_msg}",
                 PLUGIN_NAME,
                 level=Qgis.Critical,
             )
@@ -152,6 +180,36 @@ class PopulationMeshWorkflow:
                 )
 
         return added_layers
+
+    def execute_without_adding_to_project(
+        self, api_key: str, municipality_code: str, municipality_name: str
+    ) -> Optional[QgsVectorLayer]:
+        """
+        レイヤーをプロジェクトに追加せずに作成のみ行う（QgsTask用）
+        Args:
+            api_key (str): e-Stat APIキー
+            municipality_code (str): 自治体コード（例: "01100" 札幌市）
+            municipality_name (str): 自治体名
+        Returns:
+            Optional[QgsVectorLayer]: 作成されたレイヤー
+        """
+        # 1. 自治体コードからデータセットIDを取得
+        dataset_id_dict = self._fetch_dataset_ids(municipality_code, api_key)
+
+        if not dataset_id_dict:
+            return None
+
+        # 2. 各メッシュコードの人口メッシュレイヤーを作成
+        added_population_layers = self._create_population_layers(
+            api_key, dataset_id_dict
+        )
+
+        # 3. レイヤーをマージ（プロジェクトに追加しない）
+        merged_layer = self.merge_algorithm.merge_population_mesh_layers_without_adding(
+            added_population_layers, municipality_name, remove_originals=False
+        )
+
+        return merged_layer
 
     def execute(
         self, api_key: str, municipality_code: str, municipality_name: str

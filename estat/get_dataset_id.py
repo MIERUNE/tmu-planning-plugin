@@ -6,6 +6,7 @@ from qgis.core import Qgis, QgsMessageLog
 from ..utils.estat.bbox import calculate_municipality_bbox
 from ..utils.estat.client import AdministrativeAreaClient
 from ..utils.estat.mesh import get_mesh_codes_from_bbox
+from ..utils.settings import CITY_DEFAULT_BOUNDS
 from .connect import (
     GET_STATS_LIST_API_ENDPOINT,
     PLUGIN_NAME,
@@ -22,10 +23,14 @@ class GetDatasetId:
         Args:
             municipality_code (str): 自治体コード
         """
-        # e-Statに行政区域ポリゴンが存在しない自治体コードの場合
-        if municipality_code == "01100":
-            mesh_codes = ["6441", "6541"]
-            return mesh_codes
+        QgsMessageLog.logMessage(
+            f"[_get_mesh_codes] メッシュコードの取得開始 (municipality_code: {municipality_code})",
+            PLUGIN_NAME,
+            level=Qgis.Info,
+        )
+        # 政令指定都市を選択した場合
+        if municipality_code in CITY_DEFAULT_BOUNDS:
+            bbox = CITY_DEFAULT_BOUNDS[municipality_code]
 
         else:
             # e-Statから行政区域ポリゴンレイヤーを取得
@@ -38,15 +43,22 @@ class GetDatasetId:
                 # BBOXを計算
                 bbox = None
                 bbox = calculate_municipality_bbox(municipality_layer)
+            else:
+                bbox = None
 
-                if bbox:
-                    mesh_codes = get_mesh_codes_from_bbox(bbox)
-                    return mesh_codes
-                else:
-                    QgsMessageLog.logMessage(
-                        "BBOXの計算に失敗しました。", PLUGIN_NAME, level=Qgis.Warning
-                    )
-                    return []
+        if bbox:
+            mesh_codes = get_mesh_codes_from_bbox(bbox)
+            QgsMessageLog.logMessage(
+                f"取得したメッシュコード: {mesh_codes}",
+                PLUGIN_NAME,
+                level=Qgis.Success,
+            )
+            return mesh_codes
+        else:
+            QgsMessageLog.logMessage(
+                "BBOXの計算に失敗しました。", PLUGIN_NAME, level=Qgis.Warning
+            )
+            return []
 
     def _get_dataset_id(self, mesh_code: str, api_key: str) -> Optional[str]:
         """

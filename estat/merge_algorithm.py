@@ -45,6 +45,67 @@ class MergePopulationMeshLayers:
         layer.setRenderer(renderer)
         layer.triggerRepaint()  # 地図を再描画
 
+    def merge_population_mesh_layers_without_adding(
+        self,
+        added_population_layers: list[dict],
+        municipality_name: str,
+        remove_originals: bool = False,
+    ) -> Optional[QgsVectorLayer]:
+        """
+        人口メッシュレイヤーをマージするがプロジェクトには追加しない（QgsTask用）
+
+        Args:
+            added_population_layers: レイヤー情報のリスト
+            municipality_name: 自治体名
+            remove_originals: 元のレイヤーを削除するか（通常はFalse）
+
+        Returns:
+            QgsVectorLayer: マージされた人口メッシュレイヤー（プロジェクトに未追加）
+        """
+        if not added_population_layers:
+            QgsMessageLog.logMessage(
+                "統合するレイヤーがありません。",
+                PLUGIN_NAME,
+                level=Qgis.Warning,
+            )
+            return None
+
+        # 1つのレイヤーの場合はマージしない
+        if len(added_population_layers) == 1:
+            single_layer = added_population_layers[0]["layer"]
+            single_layer.setName(f"人口メッシュ_{municipality_name}")
+
+            # 可視化を適用
+            self._apply_population_style(single_layer)
+            return single_layer
+
+        # レイヤーオブジェクトのリストを取得
+        layer_objects = [item["layer"] for item in added_population_layers]
+
+        # プロセシングツールで統合
+        result = processing.run(
+            "native:mergevectorlayers",
+            {
+                "LAYERS": layer_objects,
+                "CRS": layer_objects[0].crs(),
+                "OUTPUT": "TEMPORARY_OUTPUT",
+            },
+        )
+
+        merged_layer = result["OUTPUT"]
+        merged_layer.setName(f"人口メッシュ_{municipality_name}")
+
+        # 可視化を適用
+        self._apply_population_style(merged_layer)
+
+        # 元の個別レイヤーを削除（通常はバックグラウンドタスクでは削除しない）
+        if remove_originals:
+            for layer_obj in layer_objects:
+                if QgsProject.instance().mapLayer(layer_obj.id()):
+                    QgsProject.instance().removeMapLayer(layer_obj.id())
+
+        return merged_layer
+
     def merge_population_mesh_layers(
         self,
         added_population_layers: list[dict],
@@ -100,6 +161,13 @@ class MergePopulationMeshLayers:
         # 元の個別レイヤーを削除
         if remove_originals:
             for layer_obj in layer_objects:
-                QgsProject.instance().removeMapLayer(layer_obj)
+                QgsProject.instance().removeMapLayer(layer_obj.id())
+            QgsMessageLog.logMessage(
+                f"{len(layer_objects)}個の個別レイヤーを削除しました。",
+                PLUGIN_NAME,
+                level=Qgis.Info,
+            )
 
         return merged_layer
+
+   

@@ -25,17 +25,6 @@ UMI_SHIRU_API_CONFIG = {
     },
 }
 
-# 主要都市のデフォルト境界範囲
-CITY_DEFAULT_BOUNDS = {
-    "01100": {  # 札幌市
-        "min_lon": 141.0,
-        "min_lat": 42.8,
-        "max_lon": 141.6,
-        "max_lat": 43.4,
-    },
-    # 他の都市も必要に応じて追加可能
-}
-
 # 分割取得が必要な市区町村の設定
 CITY_DIVISION_CONFIG = {
     "34202": {  # 呉市（広島県）

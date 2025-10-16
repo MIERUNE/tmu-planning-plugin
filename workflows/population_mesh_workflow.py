@@ -5,6 +5,7 @@ from qgis.core import (
 
 from ..estat.connect import PLUGIN_NAME
 from ..estat.get_dataset_id import GetDatasetId
+from ..estat.merge_algorithm import MergePopulationMeshLayers
 from ..estat.population_mesh_algorithm import PopulationMeshAlgorithm
 
 
@@ -14,6 +15,7 @@ class PopulationMeshWorkflow:
     def __init__(self, iface):
         self.iface = iface
         self.algorithm = PopulationMeshAlgorithm(iface)
+        self.merge_algorithm = MergePopulationMeshLayers(iface)
         self.dataset_id_getter = GetDatasetId(iface)
 
     def _fetch_dataset_ids(self, municipality_code: str, api_key: str) -> dict:
@@ -86,7 +88,9 @@ class PopulationMeshWorkflow:
 
         return added_layers
 
-    def execute(self, api_key: str, municipality_code: str) -> bool:
+    def execute(
+        self, api_key: str, municipality_code: str, municipality_name: str
+    ) -> bool:
         """
         指定されたアルゴリズムを実行し、レイヤーをQGISに追加する
         Args:
@@ -107,8 +111,8 @@ class PopulationMeshWorkflow:
             api_key, dataset_id_dict
         )
 
-        # TODO:
-        # 3. レイヤーをマージ（別PRで対応予定）
-
-        # 少なくとも1つのレイヤーが追加されていればTrue
-        return len(added_population_layers) > 0
+        # 3. レイヤーをマージ
+        merged_layer = self.merge_algorithm.merge_population_mesh_layers(
+            added_population_layers, municipality_name, remove_originals=True
+        )
+        return merged_layer is not None

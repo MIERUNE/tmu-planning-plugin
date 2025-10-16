@@ -271,6 +271,7 @@ class GreenInfraPlugin:
                 self.population_mesh_workflow.execute(
                     api_key=estat_api_key,
                     municipality_code=self.dockwidget.comboBox_municipality.currentData(),
+                    municipality_name=self.dockwidget.comboBox_municipality.currentText(),
                 )
             else:
                 message = "e-Stat APIキーが未設定のため、人口メッシュデータの取得をスキップします。"

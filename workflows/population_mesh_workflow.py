@@ -77,9 +77,13 @@ class PopulationMeshTask(QgsTask):
             return False
 
     def finished(self, result):
-        """人口メッシュ取得処理をバックグラウンドで実行するためのタスク"""
+        """
+        タスクが完了したときに呼ばれるメソッド。
+        このメソッドはメインスレッドで実行されるため、GUI操作が安全に行える。
+        """
         if result:
             if self.final_layer is not None:
+                # メインスレッドでのGUI操作は安全
                 QgsProject.instance().addMapLayer(self.final_layer)
                 QgsMessageLog.logMessage(
                     f"レイヤー「{self.layer_name}」の作成が完了しました。",
@@ -139,3 +143,12 @@ class PopulationMeshWorkflow:
             PLUGIN_NAME,
             level=Qgis.Info,
         )
+
+        # メッセージバーへの表示（メインスレッドでのGUI操作）
+        if self.iface:
+            self.iface.messageBar().pushMessage(
+                "処理開始",
+                f"{layer_name}の人口メッシュデータ取得を開始しました。",
+                level=Qgis.Info,
+                duration=3,
+            )

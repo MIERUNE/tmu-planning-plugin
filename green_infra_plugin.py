@@ -304,6 +304,12 @@ class GreenInfraPlugin:
 
     def zoom_to_municipality(self, municipality_code):
         """指定された市区町村コードにズーム"""
+        # municipality_code が None または空値の場合は早期リターン
+        if not municipality_code:
+            message = "市区町村コードが指定されていません。"
+            QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+            self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+            return
         # 範囲とCRSを取得
         if municipality_code in CITY_DEFAULT_BOUNDS:
             # 政令指定都市の場合はCITY_DEFAULT_BOUNDSからBBOXを取得

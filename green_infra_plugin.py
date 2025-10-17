@@ -1,6 +1,13 @@
 import os
 
-from qgis.core import Qgis, QgsMessageLog
+from qgis.core import (
+    Qgis,
+    QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform,
+    QgsMessageLog,
+    QgsProject,
+    QgsRectangle,
+)
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
@@ -18,6 +25,8 @@ from .real_estate_lib.land_use.urban_planning_algorithm import UrbanPlanningAlgo
 from .real_estate_lib.land_use.zoning_district_algorithm import ZoningDistrictAlgorithm
 from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
+from .utils.estat.client import AdministrativeAreaClient
+from .utils.settings import CITY_DEFAULT_BOUNDS
 from .workflows.area_workflow import AreaWorkflow
 from .workflows.basemap_workflow import BasemapWorkflow
 from .workflows.coastline_workflow import CoastlineWorkflow
@@ -278,6 +287,9 @@ class GreenInfraPlugin:
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
                 self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
 
+        # Phase 5: 全てのレイヤー読み込み完了後、自治体領域にズームイン
+        self.zoom_to_municipality(self.dockwidget.comboBox_municipality.currentData())
+
     def on_prefecture_changed(self):
         """都道府県選択変更時の処理"""
         if not self.dockwidget:
@@ -289,3 +301,45 @@ class GreenInfraPlugin:
         self.area_workflow.load_municipality_dropdown(
             self.dockwidget, api_key, selected_code
         )
+
+    def zoom_to_municipality(self, municipality_code):
+        """指定された市区町村コードにズーム"""
+        # municipality_code が None または空値の場合は早期リターン
+        if not municipality_code:
+            message = "市区町村コードが指定されていません。"
+            QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+            self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+            return
+        # 範囲とCRSを取得
+        if municipality_code in CITY_DEFAULT_BOUNDS:
+            # 政令指定都市の場合はCITY_DEFAULT_BOUNDSからBBOXを取得
+            bounds = CITY_DEFAULT_BOUNDS[municipality_code]
+            extent = QgsRectangle(
+                bounds["min_lon"],
+                bounds["min_lat"],
+                bounds["max_lon"],
+                bounds["max_lat"],
+            )
+            source_crs = QgsCoordinateReferenceSystem("EPSG:4326")
+        else:
+            # 政令指定都市以外はポリゴンから範囲を取得
+            polygon_layer = AdministrativeAreaClient().fetch_municipality_polygon(
+                municipality_code
+            )
+            if polygon_layer is None or not polygon_layer.isValid():
+                message = "自治体の行政区域データの取得に失敗しました。"
+                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+                return
+            extent = polygon_layer.extent()
+            source_crs = polygon_layer.crs()
+
+        # マップキャンバスのCRSに変換してズーム
+        dest_crs = self.iface.mapCanvas().mapSettings().destinationCrs()
+        transform = QgsCoordinateTransform(source_crs, dest_crs, QgsProject.instance())
+        transformed_extent = transform.transformBoundingBox(extent)
+
+        self.iface.mapCanvas().setExtent(transformed_extent)
+        self.iface.mapCanvas().refresh()
+
+        return

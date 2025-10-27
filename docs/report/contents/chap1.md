@@ -12,7 +12,7 @@ class: chapter
 
 ![プラグインのインストール](images/screenshot/install_plugin_1.png)
 
-検索バーに「Green Infra Plugin」と入力し、検索結果から「Green Infra Plugin」を選択します。<br>
+検索バーに「GreenInfraPlannerJP」と入力し、検索結果から「GreenInfraPlannerJP」を選択します。<br>
 「インストール」ボタンをクリックし、インストールが完了すると、ツールバーにプラグインのアイコンが表示されます。
 
 ![プラグインの検索](images/screenshot/install_plugin_2.png)

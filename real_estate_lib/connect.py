@@ -40,7 +40,7 @@ HEIGHTENED_USE_DISTRICT_API_ENDPOINT = (
 )
 
 # ログメッセージ用プラグイン名
-PLUGIN_NAME = "Green Infra Plugin"
+PLUGIN_NAME = "GreenInfraPlannerJP"
 
 # レスポンス文字エンコーディング
 RESPONSE_ENCODING = "utf-8-sig"

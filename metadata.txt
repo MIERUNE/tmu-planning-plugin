@@ -1,8 +1,8 @@
 [general]
-name=Green Infra Plugin
+name=GreenInfraPlannerJP
 qgisMinimumVersion=3.0
-description=グリーンインフラ計画を容易に策定できるQGISプラグイン
-about=国土交通データプラットフォーム、各省庁が公開しているオープンデータをWebAPIと連携し可視化できます。
+description=国交省DPF、各省庁が公開している土地利用をはじめとする各種データをWebAPIで連携させ、可視化することができます。<br>ローカル環境のデータを重ねることで、グリーンインフラを考慮した土地利用計画の作成等に活用できます。
+about=内閣府総合科学技術・イノベーション会議 戦略的イノベーション創造 プログラム（SIP）<br>第３期「 スマートインフラマネジメントシステムの構築 」JPJ012187（研究推進法人:土木研究所）
 # Version will be updated with release tag on Github workflow
 version={{PLUGIN_VERSION}}
 
@@ -11,7 +11,7 @@ supportsQt6=True
 #Plugin main icon
 icon=imgs/icon.svg
 
-author=MIERUNE Inc.
+author=東京都立大学、MIERUNE Inc.
 email=info@mierune.co.jp
 homepage=
 tracker=

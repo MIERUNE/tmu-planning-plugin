@@ -35,7 +35,7 @@ from .workflows.land_use_layer_workflow import LayerWorkflow
 from .workflows.population_mesh_workflow import PopulationMeshWorkflow
 from .workflows.port_area_workflow import PortAreaWorkflow
 
-PLUGIN_NAME = "Green Infra Plugin"
+PLUGIN_NAME = "GreenInfraPlannerJP"
 
 
 class GreenInfraPlugin:
@@ -97,7 +97,7 @@ class GreenInfraPlugin:
         # メニュー設定
         self.add_action(
             icon_path=os.path.join(self.plugin_dir, "imgs", "icon.svg"),
-            text="土地利用計画支援",
+            text="GreenInfraPlannerJP",
             callback=self.show_dock_widget,
             parent=self.win,
         )

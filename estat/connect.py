@@ -12,7 +12,7 @@ MESH_SHAPE_DOWNLOAD_URL = "https://www.e-stat.go.jp/gis/statmap-search/data"
 GET_STATS_LIST_API_ENDPOINT = "https://api.e-stat.go.jp/rest/3.0/app/json/getStatsList"
 
 # ログメッセージ用プラグイン名
-PLUGIN_NAME = "Green Infra Plugin"
+PLUGIN_NAME = "GreenInfraPlannerJP"
 
 # レスポンス文字エンコーディング
 RESPONSE_ENCODING = "utf-8-sig"

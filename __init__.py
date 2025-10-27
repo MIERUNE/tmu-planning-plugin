@@ -2,6 +2,6 @@
 
 
 def classFactory(iface):
-    from .green_infra_plugin import GreenInfraPlugin
+    from .green_infra_planner_jp import GreenInfraPlugin
 
     return GreenInfraPlugin(iface)

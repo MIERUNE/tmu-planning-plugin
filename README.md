@@ -142,7 +142,7 @@ uv sync
 
 ```
 tmu-planning-plugin/
-├── green_infra_plugin.py           # プラグインのメインクラス（エントリーポイント）
+├── green_infra_planner_jp.py       # プラグインのメインクラス（エントリーポイント）
 ├── metadata.txt                    # プラグインのメタデータ（名前、バージョンなど）
 ├── pyproject.toml                  # プロジェクト設定・依存関係管理（uv用）
 │
@@ -250,7 +250,7 @@ from .utils import DataLoader
 from ..umi_shiru.client import UmiShiruApiClient
 
 # ❌ 非推奨
-from green_infra_plugin.utils import DataLoader
+from green_infra_planner_jp.utils import DataLoader
 ```
 
 #### 型ヒントとドキュメント

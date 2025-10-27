@@ -5,7 +5,7 @@ import rehypeMermaid from "rehype-mermaid";
 
 /** @type {import('@vivliostyle/cli').VivliostyleConfigSchema} */
 export default {
-  title: "QGIS土地利用計画支援プラグイン 操作マニュアル",
+  title: "GreenInfraPlannerJP 操作マニュアル",
   author: "MIERUNE Inc.",
   size: "A4",
   language: "ja",

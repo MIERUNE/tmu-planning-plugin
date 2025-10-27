@@ -19,7 +19,7 @@ class AdministrativeAreaClient:
     e-Stat APIを使用した行政区域データの取得クライアント
     """
 
-    def __init__(self, plugin_name: str = "Green Infra Plugin"):
+    def __init__(self, plugin_name: str = "GreenInfraPlannerJP"):
         """
         Args:
             plugin_name (str): ログ出力用のプラグイン名

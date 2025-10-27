@@ -1,4 +1,4 @@
-# Green Infra Plugin
+# GreenInfraPlannerJP
 
 ## 1. 概要
 

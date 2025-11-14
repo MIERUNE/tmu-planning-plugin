@@ -40,7 +40,7 @@ ZIP ファイルの選択ができたら「インストール」ボタンをク�
 ※API キーは、外部のデータサービスを利用するための「認証コード」です。
 このプラグインでは、地図データや地理情報を取得するために必要となりますので、各サイトからご自身で発行手続きをしてください。
 
-![鍵アイコン説明](images/screenshot/setting_api_key_2.png)
+![鍵アイコン説明](images/screenshot/settinds_api_key_2.png)
 
 ![APIキー設定の説明](images/screenshot/setting_api_key.png)
 
@@ -60,7 +60,7 @@ ZIP ファイルの選択ができたら「インストール」ボタンをク�
 可視化したい項目にチェックを入れてください。<br>
 初期設定では全てにチェックが入っているので、不要なデータはもう一度クリックしてチェックを外してください。
 
-![ベースマップの設定](images/screenshot/setting_basemap.png)
+![ベースマップの設定](images/screenshot/settings_basemaps.png)
 
 各項目で可視化されるデータは以下の通りです。
 

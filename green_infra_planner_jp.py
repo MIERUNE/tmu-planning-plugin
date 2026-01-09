@@ -8,7 +8,8 @@ from qgis.core import (
     QgsProject,
     QgsRectangle,
 )
-from qgis.PyQt.QtCore import Qt
+from qgis.gui import QgsMessageBarItem
+from qgis.PyQt.QtCore import QCoreApplication, Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
@@ -150,6 +151,17 @@ class GreenInfraPlugin:
 
         real_estate_api_key = ApikeyDialog.get_real_estate_api_key()
 
+        # 読み込み中のメッセージを表示
+        waiting_item = QgsMessageBarItem(
+            "読み込み中",
+            "処理中です...",
+            Qgis.Info,
+            0,  # duration=0で自動で消えない
+        )
+
+        self.iface.messageBar().pushItem(waiting_item)
+        QCoreApplication.processEvents()
+
         # Phase 1: ベースマップレイヤーの可視化
         self.basemap_workflow.execute(self.dockwidget.get_selected_basemaps())
 
@@ -289,6 +301,8 @@ class GreenInfraPlugin:
 
         # Phase 5: 全てのレイヤー読み込み完了後、自治体領域にズームイン
         self.zoom_to_municipality(self.dockwidget.comboBox_municipality.currentData())
+
+        self.iface.messageBar().popWidget(waiting_item)
 
     def on_prefecture_changed(self):
         """都道府県選択変更時の処理"""

@@ -1,3 +1,6 @@
+# ログメッセージ用プラグイン名
+PLUGIN_NAME = "GreenInfraPlannerJP"
+
 # 政令指定都市のデフォルト境界範囲
 CITY_DEFAULT_BOUNDS = {
     # 北海道

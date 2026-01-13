@@ -38,9 +38,6 @@ CITY_DIVISION_CONFIG = {
 # データ取得時のバッファサイズ
 BBOX_BUFFER_DEGREES = 0.01  # 約1km相当
 
-# ログメッセージ用プラグイン名
-PLUGIN_NAME = "GreenInfraPlannerJP"
-
 
 class UmiShiruApiClient:
     """

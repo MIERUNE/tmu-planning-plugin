@@ -34,7 +34,9 @@ class FloodHazardAreaAlgorithm:
         )
         layer_name = "洪水浸水想定区域"
 
-        flood_hazard_area_layer = QgsRasterLayer(get_flood_hazard_area_url, layer_name, "wms")
+        flood_hazard_area_layer = QgsRasterLayer(
+            get_flood_hazard_area_url, layer_name, "wms"
+        )
 
         # ズームレベル９以下では表示しない
         flood_hazard_area_layer.setScaleBasedVisibility(True)

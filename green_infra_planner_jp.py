@@ -12,6 +12,7 @@ from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
+from .hazard_map_portal.flood_hazard_area_algorithm import FloodHazardAreaAlgorithm
 from .real_estate_lib.land_use.did_algorithm import DidAreaAlgorithm
 from .real_estate_lib.land_use.district_plan_algorithm import DistrictPlanAlgorithm
 from .real_estate_lib.land_use.high_utilization_zone_algorithm import (
@@ -23,7 +24,6 @@ from .real_estate_lib.land_use.location_normalization_plan_algorithm import (
 from .real_estate_lib.land_use.nature_reserve_algorithm import NatureReserveAlgorithm
 from .real_estate_lib.land_use.urban_planning_algorithm import UrbanPlanningAlgorithm
 from .real_estate_lib.land_use.zoning_district_algorithm import ZoningDistrictAlgorithm
-from .hazard_map_portal.flood_hazard_area_algorithm import FloodHazardAreaAlgorithm
 from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .utils.estat.client import AdministrativeAreaClient
@@ -32,10 +32,10 @@ from .workflows.area_workflow import AreaWorkflow
 from .workflows.basemap_workflow import BasemapWorkflow
 from .workflows.coastline_workflow import CoastlineWorkflow
 from .workflows.fishing_port_workflow import FishingPortWorkflow
+from .workflows.hazard_map_workflow import HazardMapWorkflow
 from .workflows.land_use_layer_workflow import LayerWorkflow
 from .workflows.population_mesh_workflow import PopulationMeshWorkflow
 from .workflows.port_area_workflow import PortAreaWorkflow
-from .workflows.hazard_map_workflow import HazardMapWorkflow
 
 PLUGIN_NAME = "GreenInfraPlannerJP"
 

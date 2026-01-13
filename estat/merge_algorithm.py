@@ -10,7 +10,7 @@ from qgis.core import (
     QgsVectorLayer,
 )
 
-from .connect import PLUGIN_NAME
+from ..utils.settings import PLUGIN_NAME
 
 
 class MergePopulationMeshLayers:

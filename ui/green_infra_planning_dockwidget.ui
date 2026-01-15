@@ -520,8 +520,8 @@ QToolButton:hover {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>503</width>
-             <height>215</height>
+             <width>190</width>
+             <height>199</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_urban_content">
@@ -665,8 +665,8 @@ QToolButton:hover {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>503</width>
-             <height>215</height>
+             <width>101</width>
+             <height>136</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_env_content">
@@ -757,6 +757,116 @@ QToolButton:hover {
             </item>
             <item>
              <spacer name="verticalSpacer_env">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_hazard">
+       <attribute name="title">
+        <string>災害リスク</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_hazard">
+        <item>
+         <widget class="QScrollArea" name="scrollArea_hazardv">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents_hazard">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>503</width>
+             <height>215</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_hazard_content">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_hazard">
+              <item>
+               <widget class="QLabel" name="label_hazard">
+                <property name="font">
+                 <font>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>ハザードマップポータルサイト</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="toolButton_hazard">
+                <property name="maximumSize">
+                 <size>
+                  <width>20</width>
+                  <height>20</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;【APIの提供元】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;国土交通省 ハザードマップポータルサイト &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;【APIサイト】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;https://disaportal.gsi.go.jp/ &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;【出典・クレジット】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;出典：「ハザードマップポータルサイト」（https://disaportal.gsi.go.jp/）&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;このサービスは、ハザードマップポータルサイトのデータを加工して作成しています。&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="styleSheet">
+                 <string>QToolButton {
+                    border: none;
+                    background-color: transparent;
+                    color: #2196F3;
+                    font-weight: bold;
+                }
+                QToolButton:hover {
+                    color: #1976D2;
+                }</string>
+                </property>
+                <property name="text">
+                 <string>ⓘ</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_hazard">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_hazard">
+              <property name="text">
+               <string>洪水浸水想定区域（想定最大規模）</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="Line" name="line_hazard">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_hazard">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
               </property>

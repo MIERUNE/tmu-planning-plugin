@@ -13,6 +13,7 @@ from qgis.PyQt.QtCore import QCoreApplication, Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
+from .hazard_map_portal.flood_hazard_area_algorithm import FloodHazardAreaAlgorithm
 from .real_estate_lib.land_use.did_algorithm import DidAreaAlgorithm
 from .real_estate_lib.land_use.district_plan_algorithm import DistrictPlanAlgorithm
 from .real_estate_lib.land_use.high_utilization_zone_algorithm import (
@@ -32,6 +33,7 @@ from .workflows.area_workflow import AreaWorkflow
 from .workflows.basemap_workflow import BasemapWorkflow
 from .workflows.coastline_workflow import CoastlineWorkflow
 from .workflows.fishing_port_workflow import FishingPortWorkflow
+from .workflows.hazard_map_workflow import HazardMapWorkflow
 from .workflows.land_use_layer_workflow import LayerWorkflow
 from .workflows.population_mesh_workflow import PopulationMeshWorkflow
 from .workflows.port_area_workflow import PortAreaWorkflow
@@ -61,11 +63,13 @@ class GreenInfraPlugin:
         self.nature_reserve_algorithm = NatureReserveAlgorithm(iface)
         self.did_area_algorithm = DidAreaAlgorithm(iface)
         self.high_utilization_zone_algorithm = HighUtilizationZoneAlgorithm(iface)
+        self.hazard_map_algorithm = FloodHazardAreaAlgorithm(iface)
         self.coastline_workflow = CoastlineWorkflow(iface)
         self.population_mesh_workflow = PopulationMeshWorkflow(iface)
         self.coastline_workflow = CoastlineWorkflow(iface)
         self.fishing_port_workflow = FishingPortWorkflow(iface)
         self.port_area_workflow = PortAreaWorkflow(iface)
+        self.hazard_map_workflow = HazardMapWorkflow(iface)
 
     def add_action(
         self,
@@ -298,6 +302,11 @@ class GreenInfraPlugin:
                 message = "e-Stat APIキーが未設定のため、人口メッシュデータの取得をスキップします。"
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
                 self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+
+        if self.dockwidget.checkBox_hazard.isChecked():
+            self.hazard_map_workflow.execute(
+                self.hazard_map_algorithm,
+            )
 
         # Phase 5: 全てのレイヤー読み込み完了後、自治体領域にズームイン
         self.zoom_to_municipality(self.dockwidget.comboBox_municipality.currentData())

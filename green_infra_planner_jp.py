@@ -304,7 +304,9 @@ class GreenInfraPlugin:
                 else:
                     message = "e-Stat APIキーが未設定のため、人口メッシュ（3次メッシュ）データの取得をスキップします。"
                     QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-                    self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+                    self.iface.messageBar().pushMessage(
+                        "警告", message, level=Qgis.Warning
+                    )
 
             # 4次メッシュ（500m）の処理
             if self.dockwidget.radioButton_population_mesh_4th.isChecked():
@@ -319,7 +321,9 @@ class GreenInfraPlugin:
                 else:
                     message = "e-Stat APIキーが未設定のため、人口メッシュ（4次メッシュ）データの取得をスキップします。"
                     QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-                    self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+                    self.iface.messageBar().pushMessage(
+                        "警告", message, level=Qgis.Warning
+                    )
 
         if self.dockwidget.checkBox_hazard.isChecked():
             self.hazard_map_workflow.execute(

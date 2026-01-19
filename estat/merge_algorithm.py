@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Literal
 
 import processing
 from qgis.core import (
@@ -10,7 +10,7 @@ from qgis.core import (
     QgsVectorLayer,
 )
 
-from .connect import PLUGIN_NAME
+from .connect import PLUGIN_NAME, MESH_TYPE_CONFIG
 
 
 class MergePopulationMeshLayers:
@@ -55,6 +55,7 @@ class MergePopulationMeshLayers:
         self,
         added_population_layers: list[dict],
         municipality_name: str,
+        mesh_type: Literal["3rd", "4th"],
         remove_originals: bool = True,
     ) -> Optional[QgsVectorLayer]:
         """
@@ -73,7 +74,7 @@ class MergePopulationMeshLayers:
         # 1つのレイヤーの場合はマージしない
         if len(added_population_layers) == 1:
             single_layer = added_population_layers[0]["layer"]
-            single_layer.setName(f"人口メッシュ_{municipality_name}")
+            single_layer.setName(f"{MESH_TYPE_CONFIG[mesh_type]['output_layer_name']}_{municipality_name}")
 
             QgsProject.instance().addMapLayer(single_layer)
 
@@ -101,7 +102,7 @@ class MergePopulationMeshLayers:
         )
 
         merged_layer = result["OUTPUT"]
-        merged_layer.setName(f"人口メッシュ_{municipality_name}")
+        merged_layer.setName(f"{MESH_TYPE_CONFIG[mesh_type]['output_layer_name']}_{municipality_name}")
 
         # 統合レイヤーをプロジェクトに追加
         QgsProject.instance().addMapLayer(merged_layer)

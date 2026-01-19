@@ -83,11 +83,6 @@ class GetDatasetId:
         Returns:
             Optional[str]: 取得したデータセットID。失敗した場合はNone。
         """
-        # MESH_SEARCH_KEYWORDS = {
-        #     "3rd": "世界測地系(1KMメッシュ)",
-        #     "4th": "世界測地系(500Mメッシュ)",
-        # }
-
         search_word = (
             f"M{mesh_code} AND {MESH_TYPE_CONFIG[mesh_type]['search_keyword']}"
         )

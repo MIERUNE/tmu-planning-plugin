@@ -53,6 +53,7 @@ class PopulationMeshWorkflow:
         Args:
             api_key: e-Stat APIキー
             dataset_id_dict: {メッシュコード: データセットID} の辞書
+            mesh_type: メッシュタイプ
 
         Returns:
             list: 成功したレイヤーの情報リスト
@@ -106,6 +107,8 @@ class PopulationMeshWorkflow:
         Args:
             api_key (str): e-Stat APIキー
             municipality_code (str): 自治体コード（例: "01100" 札幌市）
+            municipality_name (str): 自治体名（例: "札幌市"）
+            mesh_type (Literal["3rd", "4th"]): メッシュタイプ
         Returns:
             bool: 成功した場合はTrue、失敗した場合はFalse
         """

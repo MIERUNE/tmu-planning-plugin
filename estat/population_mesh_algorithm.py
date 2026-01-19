@@ -113,7 +113,7 @@ class PopulationMeshAlgorithm:
             return None
 
         # レイヤー名の作成（例：人口メッシュ_1km_6441）
-        layer_name = MESH_TYPE_CONFIG[mesh_type]["output_layer_name"] + f"_{mesh_code}" 
+        layer_name = MESH_TYPE_CONFIG[mesh_type]["output_layer_name"] + f"_{mesh_code}"
 
         population_mesh_layer = QgsVectorLayer(str(shp_path), layer_name, "ogr")
         if not population_mesh_layer.isValid():

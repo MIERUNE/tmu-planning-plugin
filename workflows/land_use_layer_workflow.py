@@ -4,7 +4,7 @@ from qgis.core import (
     QgsProject,
 )
 
-from ..real_estate_lib.connect import PLUGIN_NAME
+from ..utils.settings import PLUGIN_NAME
 
 
 class LayerWorkflow:

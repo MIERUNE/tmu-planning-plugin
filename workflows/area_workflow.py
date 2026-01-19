@@ -11,9 +11,9 @@ from ..real_estate_lib.area.area_settings import (
 )
 from ..real_estate_lib.connect import (
     AREA_LIST_API_ENDPOINT,
-    PLUGIN_NAME,
     RESPONSE_ENCODING,
 )
+from ..utils.settings import PLUGIN_NAME
 from ..real_estate_lib.area.area_algorithm import AreaAlgorithm
 
 

@@ -17,9 +17,9 @@ from qgis.core import (
 from qgis.PyQt.QtCore import QEventLoop, QUrl
 from qgis.PyQt.QtNetwork import QNetworkRequest
 
+from ...utils.settings import PLUGIN_NAME
 from ..connect import (
     LOCATION_NORMALIZATION_PLAN_API_ENDPOINT,
-    PLUGIN_NAME,
     ZOOM9_SCALE_THRESHOLD,
 )
 

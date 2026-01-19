@@ -292,7 +292,6 @@ class GreenInfraPlugin:
             estat_api_key = ApikeyDialog.get_estat_api_key()
             # 3次メッシュ（1km）の処理
             if self.dockwidget.radioButton_population_mesh_3rd.isChecked():
-                estat_api_key = ApikeyDialog.get_estat_api_key()
                 if estat_api_key:
                     self.population_mesh_workflow.execute(
                         api_key=estat_api_key,
@@ -310,7 +309,6 @@ class GreenInfraPlugin:
 
             # 4次メッシュ（500m）の処理
             if self.dockwidget.radioButton_population_mesh_4th.isChecked():
-                estat_api_key = ApikeyDialog.get_estat_api_key()
                 if estat_api_key:
                     self.population_mesh_workflow.execute(
                         api_key=estat_api_key,

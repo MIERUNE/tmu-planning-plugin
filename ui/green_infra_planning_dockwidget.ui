@@ -416,6 +416,13 @@ QToolButton:hover {
              </widget>
             </item>
             <item>
+             <widget class="QCheckBox" name="checkBox_population_mesh_4th">
+              <property name="text">
+               <string>人口メッシュ（4次メッシュ）</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="Line" name="line_population">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>

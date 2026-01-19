@@ -1,18 +1,19 @@
 """
 e-Stat APIの接続情報
 """
+
 # メッシュタイプ別の設定
 MESH_TYPE_CONFIG = {
     "3rd": {
         "search_keyword": "世界測地系(1KMメッシュ)",
         "mesh_request_params_dlservey_id": "S",
-        "output_layer_name": "人口メッシュ1km"
+        "output_layer_name": "人口メッシュ1km",
     },
     "4th": {
         "search_keyword": "世界測地系(500Mメッシュ)",
         "mesh_request_params_dlservey_id": "H",
-        "output_layer_name": "人口メッシュ500m"
-    }
+        "output_layer_name": "人口メッシュ500m",
+    },
 }
 
 # 人口メッシュAPI

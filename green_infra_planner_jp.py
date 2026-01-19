@@ -288,36 +288,38 @@ class GreenInfraPlugin:
             )
 
         # Phase 4: 人口メッシュデータの可視化
-        # 3次メッシュ（1km）の処理
-        if self.dockwidget.checkBox_population_mesh_3rd.isChecked():
+        if self.dockwidget.checkBox_population_mesh.isChecked():
             estat_api_key = ApikeyDialog.get_estat_api_key()
-            if estat_api_key:
-                self.population_mesh_workflow.execute(
-                    api_key=estat_api_key,
-                    municipality_code=self.dockwidget.comboBox_municipality.currentData(),
-                    municipality_name=self.dockwidget.comboBox_municipality.currentText(),
-                    mesh_type="3rd",  # 3次メッシュ
-                )
+            # 3次メッシュ（1km）の処理
+            if self.dockwidget.radioButton_population_mesh_3rd.isChecked():
+                estat_api_key = ApikeyDialog.get_estat_api_key()
+                if estat_api_key:
+                    self.population_mesh_workflow.execute(
+                        api_key=estat_api_key,
+                        municipality_code=self.dockwidget.comboBox_municipality.currentData(),
+                        municipality_name=self.dockwidget.comboBox_municipality.currentText(),
+                        mesh_type="3rd",  # 3次メッシュ
+                    )
 
-            else:
-                message = "e-Stat APIキーが未設定のため、人口メッシュ（3次メッシュ）データの取得をスキップします。"
-                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+                else:
+                    message = "e-Stat APIキーが未設定のため、人口メッシュ（3次メッシュ）データの取得をスキップします。"
+                    QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                    self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
 
-        # 4次メッシュ（500m）の処理
-        if self.dockwidget.checkBox_population_mesh_4th.isChecked():
-            estat_api_key = ApikeyDialog.get_estat_api_key()
-            if estat_api_key:
-                self.population_mesh_workflow.execute(
-                    api_key=estat_api_key,
-                    municipality_code=self.dockwidget.comboBox_municipality.currentData(),
-                    municipality_name=self.dockwidget.comboBox_municipality.currentText(),
-                    mesh_type="4th",  # 4次メッシュ
-                )
-            else:
-                message = "e-Stat APIキーが未設定のため、人口メッシュ（4次メッシュ）データの取得をスキップします。"
-                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+            # 4次メッシュ（500m）の処理
+            if self.dockwidget.radioButton_population_mesh_4th.isChecked():
+                estat_api_key = ApikeyDialog.get_estat_api_key()
+                if estat_api_key:
+                    self.population_mesh_workflow.execute(
+                        api_key=estat_api_key,
+                        municipality_code=self.dockwidget.comboBox_municipality.currentData(),
+                        municipality_name=self.dockwidget.comboBox_municipality.currentText(),
+                        mesh_type="4th",  # 4次メッシュ
+                    )
+                else:
+                    message = "e-Stat APIキーが未設定のため、人口メッシュ（4次メッシュ）データの取得をスキップします。"
+                    QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                    self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
 
         if self.dockwidget.checkBox_hazard.isChecked():
             self.hazard_map_workflow.execute(

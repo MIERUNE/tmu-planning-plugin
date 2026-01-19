@@ -7,6 +7,7 @@ from qgis.PyQt.QtWidgets import (
     QComboBox,
     QDockWidget,
     QPushButton,
+    QRadioButton,
     QToolButton,
 )
 
@@ -51,9 +52,16 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
         self.checkBox_high_level_use_districts: QCheckBox = (
             self.checkBox_high_level_use_districts
         )
-        self.checkBox_population_mesh_3rd: QCheckBox = self.checkBox_population_mesh_3rd
-        self.checkBox_population_mesh_4th: QCheckBox = self.checkBox_population_mesh_4th
+        self.checkBox_population_mesh: QCheckBox = self.checkBox_population_mesh
+        self.radioButton_population_mesh_3rd: QRadioButton = (
+            self.radioButton_population_mesh_3rd
+        )
+        self.radioButton_population_mesh_4th: QRadioButton = (
+            self.radioButton_population_mesh_4th
+        )
         self.checkBox_hazard: QCheckBox = self.checkBox_hazard
+
+        self._set_population_mesh_controls()
 
         self.apikey_keep: QPushButton = self.findChild(QPushButton, "apikey_keep")
 
@@ -121,3 +129,29 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
 
         # 未選択状態に設定
         self.comboBox_municipality.setCurrentIndex(0)
+
+    def _set_population_mesh_controls(self):
+        """人口メッシュ関連のコントロールを初期化"""
+        # 初期状態: チェックボックスが未チェックなのでラジオボタンを無効化
+        self._toggle_mesh_radio_buttons(self.checkBox_population_mesh.isChecked())
+
+        # チェックボックスの状態変化をラジオボタンに連動
+        self.checkBox_population_mesh.toggled.connect(self._toggle_mesh_radio_buttons)
+
+    def _toggle_mesh_radio_buttons(self, checked):
+        """
+        人口メッシュチェックボックスの状態に応じてラジオボタンをグレーアウト制御
+
+        Args:
+            checked (bool): チェックボックスがチェックされているか
+        """
+        self.radioButton_population_mesh_3rd.setEnabled(checked)
+        self.radioButton_population_mesh_4th.setEnabled(checked)
+
+        # チェックを入れた時、何も選択されていなければデフォルトで3次メッシュを選択
+        if checked:
+            if (
+                not self.radioButton_population_mesh_3rd.isChecked()
+                and not self.radioButton_population_mesh_4th.isChecked()
+            ):
+                self.radioButton_population_mesh_3rd.setChecked(True)

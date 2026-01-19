@@ -18,8 +18,9 @@ from qgis.core import (
     QgsWkbTypes,
 )
 
-from ..client import PLUGIN_NAME, UmiShiruApiClient
+from ...utils.settings import PLUGIN_NAME
 from .layer_settings import UmiShiruLayerSettings
+from ..client import UmiShiruApiClient
 
 
 class UmiShiruBaseAlgorithm(ABC):

@@ -5,6 +5,7 @@
 from PyQt5.QtCore import QEventLoop, QUrl, QUrlQuery
 from PyQt5.QtNetwork import QNetworkRequest
 from qgis.core import Qgis, QgsMessageLog, QgsNetworkAccessManager
+from ..utils.settings import PLUGIN_NAME
 
 # 海しるAPI ベースURL
 UMI_SHIRU_BASE_URL = "https://api.msil.go.jp"
@@ -37,9 +38,6 @@ CITY_DIVISION_CONFIG = {
 
 # データ取得時のバッファサイズ
 BBOX_BUFFER_DEGREES = 0.01  # 約1km相当
-
-# ログメッセージ用プラグイン名
-PLUGIN_NAME = "GreenInfraPlannerJP"
 
 
 class UmiShiruApiClient:

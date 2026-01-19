@@ -39,9 +39,6 @@ HEIGHTENED_USE_DISTRICT_API_ENDPOINT = (
     "https://www.reinfolib.mlit.go.jp/ex-api/external/XKT024"
 )
 
-# ログメッセージ用プラグイン名
-PLUGIN_NAME = "GreenInfraPlannerJP"
-
 # レスポンス文字エンコーディング
 RESPONSE_ENCODING = "utf-8-sig"
 

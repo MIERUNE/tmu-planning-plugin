@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Literal, Optional
 
 import requests
 from qgis.core import Qgis, QgsMessageLog
@@ -9,6 +9,7 @@ from ..utils.estat.mesh import get_mesh_codes_from_bbox
 from ..utils.settings import CITY_DEFAULT_BOUNDS, PLUGIN_NAME
 from .connect import (
     GET_STATS_LIST_API_ENDPOINT,
+    MESH_TYPE_CONFIG,
 )
 
 
@@ -71,7 +72,9 @@ class GetDatasetId:
             )
             return []
 
-    def _get_dataset_id(self, mesh_code: str, api_key: str) -> Optional[str]:
+    def _get_dataset_id(
+        self, mesh_code: str, api_key: str, mesh_type: Literal["3rd", "4th"]
+    ) -> Optional[str]:
         """
         指定されたメッシュコードを使い、e-Stat APIからデータセットIDを取得。
         Args:
@@ -79,7 +82,10 @@ class GetDatasetId:
         Returns:
             Optional[str]: 取得したデータセットID。失敗した場合はNone。
         """
-        search_word = f"M{mesh_code} AND 世界測地系(1KMメッシュ)"
+        search_word = (
+            f"M{mesh_code} AND {MESH_TYPE_CONFIG[mesh_type]['search_keyword']}"
+        )
+
         params = {
             "appId": api_key,
             "lang": "J",
@@ -90,7 +96,7 @@ class GetDatasetId:
         }
 
         QgsMessageLog.logMessage(
-            f"APIリクエストを開始します (メッシュコード: {mesh_code})",
+            f"APIリクエストを開始します (メッシュコード: {mesh_code}, メッシュタイプ: {mesh_type})",
             PLUGIN_NAME,
             level=Qgis.Info,
         )
@@ -168,7 +174,7 @@ class GetDatasetId:
             return None
 
     def fetch_dataset_ids_for_municipality(
-        self, municipality_code: str, api_key: str
+        self, municipality_code: str, api_key: str, mesh_type: Literal["3rd", "4th"]
     ) -> dict[str, str]:
         """
         自治体コードを元にメッシュコードを取得し、各メッシュコードに対応する
@@ -193,7 +199,7 @@ class GetDatasetId:
 
         dataset_id_dict = {}
         for mesh_code in mesh_codes:
-            dataset_id = self._get_dataset_id(mesh_code, api_key)
+            dataset_id = self._get_dataset_id(mesh_code, api_key, mesh_type)
             if dataset_id:
                 dataset_id_dict[mesh_code] = dataset_id
 

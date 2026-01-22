@@ -7,7 +7,7 @@ import tempfile
 import urllib.parse
 import zipfile
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 
 import processing
 import requests
@@ -23,6 +23,7 @@ from qgis.PyQt.QtCore import QVariant
 from ..utils.settings import PLUGIN_NAME
 from .connect import (
     MESH_SHAPE_DOWNLOAD_URL,
+    MESH_TYPE_CONFIG,
     POPULATION_MESH_API_ENDPOINT,
 )
 
@@ -34,11 +35,15 @@ class PopulationMeshAlgorithm:
         self.iface = iface
         self.temp_dir = tempfile.TemporaryDirectory()
 
-    def _get_mesh_data(self, mesh_code: str) -> Optional[str]:
+    def _get_mesh_data(
+        self, mesh_code: str, mesh_type: Literal["3rd", "4th"]
+    ) -> Optional[str]:
         """メッシュ形状データをダウンロードして取得"""
+        dlservey_id = MESH_TYPE_CONFIG[mesh_type]["mesh_request_params_dlservey_id"]
+
         # パラメーター
         mesh_request_params = {
-            "dlserveyId": "S",
+            "dlserveyId": dlservey_id,
             "code": mesh_code,
             "coordSys": "1",
             "format": "shape",
@@ -87,22 +92,28 @@ class PopulationMeshAlgorithm:
         return str(shapefiles[0])
 
     def create_population_mesh_layer(
-        self, api_key: str, mesh_code: str, stats_data_id: str
+        self,
+        api_key: str,
+        mesh_code: str,
+        stats_data_id: str,
+        mesh_type: Literal["3rd", "4th"],
     ) -> Optional[QgsVectorLayer]:
         """人口メッシュデータの取得とQGISへのレイヤー追加
         Args:
             api_key (str): e-Stat APIキー
             mesh_code (str): 取得対象のメッシュコード（例: "6441"）
             stats_data_id (str): データセットID
+            mesh_type (Literal["3rd", "4th"]): メッシュタイプ
         Returns:
             Optional[QgsVectorLayer]: 追加された人口メッシュレイヤー。失敗した場合はNone。
         """
         # メッシュ形状データのダウンロードとシェープファイルのパス取得
-        shp_path = self._get_mesh_data(mesh_code)
+        shp_path = self._get_mesh_data(mesh_code, mesh_type)
         if not shp_path:
             return None
 
-        layer_name = f"人口メッシュ_1km_{mesh_code}"
+        # レイヤー名の作成（例：人口メッシュ_1km_6441）
+        layer_name = MESH_TYPE_CONFIG[mesh_type]["output_layer_name"] + f"_{mesh_code}"
 
         population_mesh_layer = QgsVectorLayer(str(shp_path), layer_name, "ogr")
         if not population_mesh_layer.isValid():

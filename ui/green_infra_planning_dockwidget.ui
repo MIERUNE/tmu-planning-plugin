@@ -411,9 +411,33 @@ QToolButton:hover {
             <item>
              <widget class="QCheckBox" name="checkBox_population_mesh">
               <property name="text">
-               <string>人口メッシュ（3次メッシュ）</string>
+                <string>人口メッシュを表示</string>
               </property>
              </widget>
+            </item>
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_mesh_options">
+              <property name="leftMargin">
+                <number>20</number>
+              </property>
+              <item>
+               <widget class="QRadioButton" name="radioButton_population_mesh_3rd">
+                <property name="text">
+                 <string>人口メッシュ（3次メッシュ）</string>
+                </property>
+                <property name="checked">
+                  <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QRadioButton" name="radioButton_population_mesh_4th">
+                <property name="text">
+                 <string>人口メッシュ（4次メッシュ）</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
             <item>
              <widget class="Line" name="line_population">
@@ -789,8 +813,8 @@ QToolButton:hover {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>503</width>
-             <height>215</height>
+             <width>250</width>
+             <height>94</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_hazard_content">

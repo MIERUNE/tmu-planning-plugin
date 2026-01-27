@@ -18,8 +18,8 @@ from qgis.core import (
     QgsWkbTypes,
 )
 
-from ...utils.settings import PLUGIN_NAME
-from .layer_settings import UmiShiruLayerSettings
+from ....utils.settings import PLUGIN_NAME
+from ..settings.layer_settings import UmiShiruLayerSettings
 from ..client import UmiShiruApiClient
 
 

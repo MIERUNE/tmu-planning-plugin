@@ -4,7 +4,7 @@
 
 from typing import Any, Dict
 
-from ..common.layer_settings import UmiShiruLayerSettings
+from .layer_settings import UmiShiruLayerSettings
 
 
 class CoastlineLayerSettings(UmiShiruLayerSettings):

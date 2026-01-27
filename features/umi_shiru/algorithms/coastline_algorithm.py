@@ -2,8 +2,8 @@
 海岸線データの取得と処理を行うアルゴリズムクラス
 """
 
-from ..common.base_algorithm import UmiShiruBaseAlgorithm
-from .coastline_settings import CoastlineLayerSettings
+from .base_algorithm import UmiShiruBaseAlgorithm
+from ..settings.coastline_settings import CoastlineLayerSettings
 
 
 class CoastlineAlgorithm(UmiShiruBaseAlgorithm):

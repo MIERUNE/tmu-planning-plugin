@@ -2,8 +2,8 @@
 港湾区域データの取得と処理を行うアルゴリズムクラス
 """
 
-from ..common.base_algorithm import UmiShiruBaseAlgorithm
-from .port_area_settings import PortAreaLayerSettings
+from .base_algorithm import UmiShiruBaseAlgorithm
+from ..settings.port_area_settings import PortAreaLayerSettings
 
 
 class PortAreaAlgorithm(UmiShiruBaseAlgorithm):

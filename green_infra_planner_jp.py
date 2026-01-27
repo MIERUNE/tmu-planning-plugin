@@ -40,11 +40,11 @@ from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .utils.estat.client import AdministrativeAreaClient
 from .utils.settings import CITY_DEFAULT_BOUNDS
 from .features.basemap.basemap_workflow import BasemapWorkflow
-from .workflows.coastline_workflow import CoastlineWorkflow
-from .workflows.fishing_port_workflow import FishingPortWorkflow
+from .features.umi_shiru.workflows.coastline_workflow import CoastlineWorkflow
+from .features.umi_shiru.workflows.fishing_port_workflow import FishingPortWorkflow
 from .features.hazard_map_portal.hazard_map_workflow import HazardMapWorkflow
 from .features.estat.population_mesh_workflow import PopulationMeshWorkflow
-from .workflows.port_area_workflow import PortAreaWorkflow
+from .features.umi_shiru.workflows.port_area_workflow import PortAreaWorkflow
 
 PLUGIN_NAME = "GreenInfraPlannerJP"
 

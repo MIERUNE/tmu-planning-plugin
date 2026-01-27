@@ -11,7 +11,7 @@ from ..algorithms.coastline_algorithm import CoastlineAlgorithm
 from ....utils.estat.bbox import calculate_municipality_bbox
 from ....utils.estat.client import AdministrativeAreaClient
 from ....utils.settings import CITY_DEFAULT_BOUNDS, PLUGIN_NAME
-from ....workflows.base_workflow import BaseWorkflow
+from ...base_workflow import BaseWorkflow
 
 
 class CoastlineWorkflow(BaseWorkflow):

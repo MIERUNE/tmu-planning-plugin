@@ -34,7 +34,7 @@ from .features.real_estate_lib.algorithms.zoning_district_algorithm import (
 )
 from .features.real_estate_lib.workflows.area_workflow import AreaWorkflow
 from .features.real_estate_lib.workflows.land_use_layer_workflow import LayerWorkflow
-from .hazard_map_portal.flood_hazard_area_algorithm import FloodHazardAreaAlgorithm
+from .features.hazard_map_portal.flood_hazard_area_algorithm import FloodHazardAreaAlgorithm
 from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .utils.estat.client import AdministrativeAreaClient
@@ -42,7 +42,7 @@ from .utils.settings import CITY_DEFAULT_BOUNDS
 from .workflows.basemap_workflow import BasemapWorkflow
 from .workflows.coastline_workflow import CoastlineWorkflow
 from .workflows.fishing_port_workflow import FishingPortWorkflow
-from .workflows.hazard_map_workflow import HazardMapWorkflow
+from .features.hazard_map_portal.hazard_map_workflow import HazardMapWorkflow
 from .workflows.population_mesh_workflow import PopulationMeshWorkflow
 from .workflows.port_area_workflow import PortAreaWorkflow
 

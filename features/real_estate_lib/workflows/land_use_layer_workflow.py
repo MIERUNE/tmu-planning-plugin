@@ -4,7 +4,7 @@ from qgis.core import (
     QgsProject,
 )
 
-from ..utils.settings import PLUGIN_NAME
+from ....utils.settings import PLUGIN_NAME
 
 
 class LayerWorkflow:

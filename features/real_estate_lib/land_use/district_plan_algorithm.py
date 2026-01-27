@@ -1,5 +1,5 @@
 """
-高度利用地区データの取得機能モジュール
+地区計画区域データの取得機能モジュール
 """
 
 import urllib.parse
@@ -17,30 +17,24 @@ from qgis.core import (
 from qgis.PyQt.QtCore import QEventLoop, QUrl
 from qgis.PyQt.QtNetwork import QNetworkRequest
 
-from ...utils.settings import PLUGIN_NAME
+from ....utils.settings import PLUGIN_NAME
 from ..connect import (
-    HEIGHTENED_USE_DISTRICT_API_ENDPOINT,
+    DISTRICT_PLAN_AREA_API_ENDPOINT,
     ZOOM9_SCALE_THRESHOLD,
 )
 
 
-class HighUtilizationZoneAlgorithm:
-    """高度利用地区データ取得クラス"""
+class DistrictPlanAlgorithm:
+    """地区計画区域データ取得クラス"""
 
     def __init__(self, iface):
         self.iface = iface
 
     def _check_api_connection(self, api_key: str) -> tuple[bool, Optional[int]]:
-        """
-        APIキーの有効性を確認するための事前接続チェック
-        Args:
-            api_key (str): APIキー
-        Returns:
-            tuple[bool, Optional[int]]: 接続成功フラグとHTTPステータスコード
-        """
-        # 接続テストのため一部タイルをリクエスト
+        """APIキーの有効性を確認するための事前接続チェック"""
+        # 接続テストとして一部のタイルをリクエスト
         test_url = (
-            HEIGHTENED_USE_DISTRICT_API_ENDPOINT
+            DISTRICT_PLAN_AREA_API_ENDPOINT
             + "?response_format=geojson&z=13&x=7272&y=3225"
         )
 
@@ -65,12 +59,15 @@ class HighUtilizationZoneAlgorithm:
             reply.deleteLater()
             return False, http_status
 
+        QgsMessageLog.logMessage(
+            "APIキーの有効性を確認しました (HTTP 200)", PLUGIN_NAME, level=Qgis.Info
+        )
         reply.deleteLater()
         return True, http_status
 
     def create_layer(self, api_key: str) -> Optional[QgsVectorTileLayer]:
         """
-        高度利用地区データをAPIから取得する
+        地区計画区域データをAPIから取得する
         Args:
             api_key (str): APIキー
         Returns:
@@ -93,7 +90,7 @@ class HighUtilizationZoneAlgorithm:
 
         # QGIS用にエンコード
         encoded_for_qgis = encoded_params.replace("=", "%3D").replace("&", "%26")
-        encoded_tile_url = f"{HEIGHTENED_USE_DISTRICT_API_ENDPOINT}?{encoded_for_qgis}"
+        encoded_tile_url = f"{DISTRICT_PLAN_AREA_API_ENDPOINT}?{encoded_for_qgis}"
 
         # ベクトルタイルレイヤーのURLを作成
         get_real_estate_url = (
@@ -104,14 +101,12 @@ class HighUtilizationZoneAlgorithm:
             f"&http-header:Ocp-Apim-Subscription-Key={api_key}"
         )
 
-        layer_name = "高度利用地区"
-        high_utilization_zone_layer = QgsVectorTileLayer(
-            get_real_estate_url, layer_name
-        )
+        layer_name = "地区計画区域"
+        district_plan_layer = QgsVectorTileLayer(get_real_estate_url, layer_name)
 
         # ズームレベル９以下では表示しない
-        high_utilization_zone_layer.setScaleBasedVisibility(True)
-        high_utilization_zone_layer.setMinimumScale(ZOOM9_SCALE_THRESHOLD)
+        district_plan_layer.setScaleBasedVisibility(True)
+        district_plan_layer.setMinimumScale(ZOOM9_SCALE_THRESHOLD)
 
         # スタイルの設定
         renderer = QgsVectorTileBasicRenderer()
@@ -125,16 +120,15 @@ class HighUtilizationZoneAlgorithm:
         # シンボルを作成
         polygon_symbol = QgsFillSymbol.createSimple(
             {
-                "color": "176,224,230,220",
-                "outline_color": "80,185,199,255",
+                "color": "207,198,255,180",
+                "outline_color": "130,130,210,255",
                 "outline_width": "0.26",
             }
         )
-
         polygon_style.setSymbol(polygon_symbol)
         renderer.setStyles([polygon_style])
-        high_utilization_zone_layer.setRenderer(renderer)
+        district_plan_layer.setRenderer(renderer)
 
-        high_utilization_zone_layer.triggerRepaint()
+        district_plan_layer.triggerRepaint()
 
-        return high_utilization_zone_layer
+        return district_plan_layer

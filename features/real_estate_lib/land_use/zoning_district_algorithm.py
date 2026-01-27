@@ -21,7 +21,7 @@ from ..connect import (
     ZONING_DISTRICT_AREA_API_ENDPOINT,
     ZOOM9_SCALE_THRESHOLD,
 )
-from ...utils.settings import PLUGIN_NAME
+from ....utils.settings import PLUGIN_NAME
 
 
 class ZoningDistrictAlgorithm:

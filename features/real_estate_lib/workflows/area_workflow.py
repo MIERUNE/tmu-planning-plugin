@@ -5,16 +5,17 @@
 
 from qgis.core import QgsMessageLog, Qgis
 
-from ..real_estate_lib.area.area_settings import (
+from ...real_estate_lib.area.area_settings import (
     PREFECTURE_LIST,
     get_municipalities_by_prefecture,
 )
-from ..real_estate_lib.connect import (
+
+from ...real_estate_lib.connect import (
     AREA_LIST_API_ENDPOINT,
     RESPONSE_ENCODING,
 )
-from ..utils.settings import PLUGIN_NAME
-from ..real_estate_lib.area.area_algorithm import AreaAlgorithm
+from ....utils.settings import PLUGIN_NAME
+from ...real_estate_lib.area.area_algorithm import AreaAlgorithm
 
 
 class AreaWorkflow:

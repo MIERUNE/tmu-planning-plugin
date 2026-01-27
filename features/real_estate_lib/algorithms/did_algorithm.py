@@ -1,5 +1,5 @@
 """
-自然公園地域データの取得機能モジュール
+人口集中地区(DID)データの取得機能モジュール
 """
 
 import urllib.parse
@@ -18,32 +18,23 @@ from qgis.PyQt.QtCore import QEventLoop, QUrl
 from qgis.PyQt.QtNetwork import QNetworkRequest
 
 from ....utils.settings import PLUGIN_NAME
-from ..area.area_settings import PREFECTURE_LIST
 from ..connect import (
-    NATURE_RESERVE_AREA_API_ENDPOINT,
+    DID_AREA_API_ENDPOINT,
     ZOOM9_SCALE_THRESHOLD,
 )
+from ..settings import DESIGNATED_CITIES_CODES
 
 
-class NatureReserveAlgorithm:
-    """自然公園地域データ取得クラス"""
+class DidAreaAlgorithm:
+    """人口集中地区(DID)データ取得クラス"""
 
     def __init__(self, iface):
         self.iface = iface
 
-    def _get_prefecture_name(self, prefecture_code: str) -> Optional[str]:
-        """都道府県コードから都道府県名を取得"""
-        prefecture_dict = dict(PREFECTURE_LIST)
-
-        return prefecture_dict.get(prefecture_code, None)
-
     def _check_api_connection(self, api_key: str) -> tuple[bool, Optional[int]]:
         """APIキーの有効性を確認するための事前接続チェック"""
         # 接続テストのため一部タイルをリクエスト
-        test_url = (
-            NATURE_RESERVE_AREA_API_ENDPOINT
-            + "?response_format=geojson&z=13&x=7272&y=3225"
-        )
+        test_url = DID_AREA_API_ENDPOINT + "?response_format=geojson&z=13&x=7272&y=3225"
 
         request = QNetworkRequest(QUrl(test_url))
         request.setRawHeader(b"Ocp-Apim-Subscription-Key", api_key.encode("utf-8"))
@@ -69,14 +60,53 @@ class NatureReserveAlgorithm:
         reply.deleteLater()
         return True, http_status
 
+    def _get_administrative_area_code(
+        self, municipality_code: Optional[str]
+    ) -> Optional[str]:
+        """
+        市区町村コードから適切な行政区域コードを取得する
+        政令指定都市の場合は全区のコードをカンマ区切りで返す
+
+        Args:
+            municipality_code: 市区町村コード
+
+        Returns:
+            行政区域コード（政令指定都市の場合は全区をカンマ区切り）
+        """
+        if not municipality_code:
+            return None
+
+        # 政令指定都市かチェック
+        if municipality_code in DESIGNATED_CITIES_CODES:
+            # 政令指定都市の場合、全区のコードをカンマ区切りで結合
+            ward_codes = DESIGNATED_CITIES_CODES[municipality_code]
+            QgsMessageLog.logMessage(
+                f"政令指定都市({municipality_code})のため、全区のコードを使用します: {ward_codes}",
+                PLUGIN_NAME,
+                level=Qgis.Info,
+            )
+            return ",".join(ward_codes)
+
+        # 通常の市区町村の場合はそのまま返す
+        QgsMessageLog.logMessage(
+            f"通常の市区町村コードを使用します: {municipality_code}",
+            PLUGIN_NAME,
+            level=Qgis.Info,
+        )
+        return municipality_code
+
     def create_layer(
-        self, api_key: str, prefecture_code: Optional[str] = None
+        self,
+        api_key: str,
+        municipality_code: str,
+        municipality_name: str,
     ) -> Optional[QgsVectorTileLayer]:
         """
-        自然公園地域データをAPIから取得する
+        人口集中地区(DID)データをAPIから取得する
         Args:
             api_key (str): APIキー
-            prefecture_code (Optional[str], optional): 都道府県コード。
+            municipality_code (str): 市区町村コード。
+            municipality_name (str): 市区町村名。
         Returns:
             QgsVectorTileLayer : 追加に成功した場合はレイヤーオブジェクト
         """
@@ -91,19 +121,23 @@ class NatureReserveAlgorithm:
             )
             return None
 
+        # 行政区域コードを取得（政令指定都市の場合は全区のコードを取得）
+        administrative_area_code = self._get_administrative_area_code(municipality_code)
+
         # パラメーターをエンコード
         params = {
             "response_format": "pbf",
             "z": "{z}",
             "x": "{x}",
             "y": "{y}",
-            "prefectureCode": prefecture_code,
+            "administrativeAreaCode": administrative_area_code,
         }
+
         encoded_params = urllib.parse.urlencode(params, safe="{}")
 
         # QGIS用にエンコード
         encoded_for_qgis = encoded_params.replace("=", "%3D").replace("&", "%26")
-        encoded_tile_url = f"{NATURE_RESERVE_AREA_API_ENDPOINT}?{encoded_for_qgis}"
+        encoded_tile_url = f"{DID_AREA_API_ENDPOINT}?{encoded_for_qgis}"
 
         # ベクトルタイルレイヤーのURLを作成
         get_real_estate_url = (
@@ -114,18 +148,16 @@ class NatureReserveAlgorithm:
             f"&http-header:Ocp-Apim-Subscription-Key={api_key}"
         )
 
-        prefecture_name = self._get_prefecture_name(prefecture_code)
-
         # 都道府県名が取得できた場合はレイヤー名に付加する
-        if prefecture_name:
-            layer_name = f"自然公園地域_{prefecture_name}"
+        if municipality_name:
+            layer_name = f"人口集中地区(DID)_{municipality_name}"
         else:
-            layer_name = "自然公園地域"
-        nature_reserve_layer = QgsVectorTileLayer(get_real_estate_url, layer_name)
+            layer_name = "人口集中地区(DID)"
+        did_area_layer = QgsVectorTileLayer(get_real_estate_url, layer_name)
 
         # ズームレベル９以下では表示しない
-        nature_reserve_layer.setScaleBasedVisibility(True)
-        nature_reserve_layer.setMinimumScale(ZOOM9_SCALE_THRESHOLD)
+        did_area_layer.setScaleBasedVisibility(True)
+        did_area_layer.setMinimumScale(ZOOM9_SCALE_THRESHOLD)
 
         # スタイルの設定
         renderer = QgsVectorTileBasicRenderer()
@@ -139,15 +171,16 @@ class NatureReserveAlgorithm:
         # シンボルを作成
         polygon_symbol = QgsFillSymbol.createSimple(
             {
-                "color": "130,220,130,180",
-                "outline_color": "84,139,84,255",
+                "color": "135,54,79,100",
+                "outline_color": "124,44,69,255",
                 "outline_width": "0.26",
             }
         )
+
         polygon_style.setSymbol(polygon_symbol)
         renderer.setStyles([polygon_style])
-        nature_reserve_layer.setRenderer(renderer)
+        did_area_layer.setRenderer(renderer)
 
-        nature_reserve_layer.triggerRepaint()
+        did_area_layer.triggerRepaint()
 
-        return nature_reserve_layer
+        return did_area_layer

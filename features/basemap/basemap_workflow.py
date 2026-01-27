@@ -15,7 +15,7 @@ from ..basemap.basemap_settings import (
     DEFAULT_COLOR,
     LAYER_FEATURE_SETTINGS,
 )
-from .base_workflow import BaseWorkflow
+from ...workflows.base_workflow import BaseWorkflow
 
 
 class BasemapWorkflow(BaseWorkflow):

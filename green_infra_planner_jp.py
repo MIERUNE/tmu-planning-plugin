@@ -39,7 +39,7 @@ from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .utils.estat.client import AdministrativeAreaClient
 from .utils.settings import CITY_DEFAULT_BOUNDS
-from .workflows.basemap_workflow import BasemapWorkflow
+from .features.basemap.basemap_workflow import BasemapWorkflow
 from .workflows.coastline_workflow import CoastlineWorkflow
 from .workflows.fishing_port_workflow import FishingPortWorkflow
 from .features.hazard_map_portal.hazard_map_workflow import HazardMapWorkflow

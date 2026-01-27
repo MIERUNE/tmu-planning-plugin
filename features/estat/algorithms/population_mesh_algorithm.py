@@ -20,8 +20,8 @@ from qgis.core import (
 )
 from qgis.PyQt.QtCore import QVariant
 
-from ..utils.settings import PLUGIN_NAME
-from .connect import (
+from ....utils.settings import PLUGIN_NAME
+from ..connect import (
     MESH_SHAPE_DOWNLOAD_URL,
     MESH_TYPE_CONFIG,
     POPULATION_MESH_API_ENDPOINT,

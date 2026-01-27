@@ -43,7 +43,7 @@ from .features.basemap.basemap_workflow import BasemapWorkflow
 from .workflows.coastline_workflow import CoastlineWorkflow
 from .workflows.fishing_port_workflow import FishingPortWorkflow
 from .features.hazard_map_portal.hazard_map_workflow import HazardMapWorkflow
-from .workflows.population_mesh_workflow import PopulationMeshWorkflow
+from .features.estat.population_mesh_workflow import PopulationMeshWorkflow
 from .workflows.port_area_workflow import PortAreaWorkflow
 
 PLUGIN_NAME = "GreenInfraPlannerJP"

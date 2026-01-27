@@ -5,10 +5,10 @@ from qgis.core import (
     QgsMessageLog,
 )
 
-from ..estat.get_dataset_id import GetDatasetId
-from ..estat.merge_algorithm import MergePopulationMeshLayers
-from ..estat.population_mesh_algorithm import PopulationMeshAlgorithm
-from ..utils.settings import PLUGIN_NAME
+from .algorithms.get_dataset_id import GetDatasetId
+from .algorithms.merge_algorithm import MergePopulationMeshLayers
+from .algorithms.population_mesh_algorithm import PopulationMeshAlgorithm
+from ...utils.settings import PLUGIN_NAME
 
 
 class PopulationMeshWorkflow:

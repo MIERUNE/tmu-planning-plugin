@@ -3,11 +3,11 @@ from typing import Literal, Optional
 import requests
 from qgis.core import Qgis, QgsMessageLog
 
-from ..utils.estat.bbox import calculate_municipality_bbox
-from ..utils.estat.client import AdministrativeAreaClient
-from ..utils.estat.mesh import get_mesh_codes_from_bbox
-from ..utils.settings import CITY_DEFAULT_BOUNDS, PLUGIN_NAME
-from .connect import (
+from ....utils.estat.bbox import calculate_municipality_bbox
+from ....utils.estat.client import AdministrativeAreaClient
+from ....utils.estat.mesh import get_mesh_codes_from_bbox
+from ....utils.settings import CITY_DEFAULT_BOUNDS, PLUGIN_NAME
+from ..connect import (
     GET_STATS_LIST_API_ENDPOINT,
     MESH_TYPE_CONFIG,
 )

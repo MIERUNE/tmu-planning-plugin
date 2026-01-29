@@ -3,15 +3,15 @@ from typing import Optional
 
 from qgis.core import Qgis, QgsMessageLog, QgsProject
 
-from ..umi_shiru.client import (
+from ....utils.estat.bbox import calculate_municipality_bbox
+from ....utils.estat.client import AdministrativeAreaClient
+from ....utils.settings import CITY_DEFAULT_BOUNDS, PLUGIN_NAME
+from ...base_workflow import BaseWorkflow
+from ..algorithms.port_area_algorithm import PortAreaAlgorithm
+from ..client import (
     BBOX_BUFFER_DEGREES,
     CITY_DIVISION_CONFIG,
 )
-from ..umi_shiru.port_area.port_area_algorithm import PortAreaAlgorithm
-from ..utils.estat.bbox import calculate_municipality_bbox
-from ..utils.estat.client import AdministrativeAreaClient
-from ..utils.settings import CITY_DEFAULT_BOUNDS, PLUGIN_NAME
-from .base_workflow import BaseWorkflow
 
 
 class PortAreaWorkflow(BaseWorkflow):

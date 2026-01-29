@@ -2,8 +2,8 @@
 漁港区域データの取得と処理を行うアルゴリズムクラス
 """
 
-from .base_algorithm import UmiShiruBaseAlgorithm
 from ..settings.fishing_port_settings import FishingPortLayerSettings
+from .base_algorithm import UmiShiruBaseAlgorithm
 
 
 class FishingPortAlgorithm(UmiShiruBaseAlgorithm):

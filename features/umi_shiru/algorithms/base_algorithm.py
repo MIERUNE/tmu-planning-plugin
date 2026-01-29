@@ -19,8 +19,8 @@ from qgis.core import (
 )
 
 from ....utils.settings import PLUGIN_NAME
-from ..settings.layer_settings import UmiShiruLayerSettings
 from ..client import UmiShiruApiClient
+from ..settings.layer_settings import UmiShiruLayerSettings
 
 
 class UmiShiruBaseAlgorithm(ABC):

@@ -5,6 +5,7 @@
 from PyQt5.QtCore import QEventLoop, QUrl, QUrlQuery
 from PyQt5.QtNetwork import QNetworkRequest
 from qgis.core import Qgis, QgsMessageLog, QgsNetworkAccessManager
+
 from ...utils.settings import PLUGIN_NAME
 
 # 海しるAPI ベースURL

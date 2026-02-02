@@ -13,30 +13,40 @@ from qgis.PyQt.QtCore import QCoreApplication, Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
-from .hazard_map_portal.flood_hazard_area_algorithm import FloodHazardAreaAlgorithm
-from .real_estate_lib.land_use.did_algorithm import DidAreaAlgorithm
-from .real_estate_lib.land_use.district_plan_algorithm import DistrictPlanAlgorithm
-from .real_estate_lib.land_use.high_utilization_zone_algorithm import (
+from .features.basemap.basemap_workflow import BasemapWorkflow
+from .features.estat.population_mesh_workflow import PopulationMeshWorkflow
+from .features.hazard_map_portal.flood_hazard_area_algorithm import (
+    FloodHazardAreaAlgorithm,
+)
+from .features.hazard_map_portal.hazard_map_workflow import HazardMapWorkflow
+from .features.real_estate_lib.algorithms.did_algorithm import DidAreaAlgorithm
+from .features.real_estate_lib.algorithms.district_plan_algorithm import (
+    DistrictPlanAlgorithm,
+)
+from .features.real_estate_lib.algorithms.high_utilization_zone_algorithm import (
     HighUtilizationZoneAlgorithm,
 )
-from .real_estate_lib.land_use.location_normalization_plan_algorithm import (
+from .features.real_estate_lib.algorithms.location_normalization_plan_algorithm import (
     LocationNormalizationPlanAlgorithm,
 )
-from .real_estate_lib.land_use.nature_reserve_algorithm import NatureReserveAlgorithm
-from .real_estate_lib.land_use.urban_planning_algorithm import UrbanPlanningAlgorithm
-from .real_estate_lib.land_use.zoning_district_algorithm import ZoningDistrictAlgorithm
+from .features.real_estate_lib.algorithms.nature_reserve_algorithm import (
+    NatureReserveAlgorithm,
+)
+from .features.real_estate_lib.algorithms.urban_planning_algorithm import (
+    UrbanPlanningAlgorithm,
+)
+from .features.real_estate_lib.algorithms.zoning_district_algorithm import (
+    ZoningDistrictAlgorithm,
+)
+from .features.real_estate_lib.workflows.area_workflow import AreaWorkflow
+from .features.real_estate_lib.workflows.land_use_layer_workflow import LayerWorkflow
+from .features.umi_shiru.workflows.coastline_workflow import CoastlineWorkflow
+from .features.umi_shiru.workflows.fishing_port_workflow import FishingPortWorkflow
+from .features.umi_shiru.workflows.port_area_workflow import PortAreaWorkflow
 from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .utils.estat.client import AdministrativeAreaClient
 from .utils.settings import CITY_DEFAULT_BOUNDS
-from .workflows.area_workflow import AreaWorkflow
-from .workflows.basemap_workflow import BasemapWorkflow
-from .workflows.coastline_workflow import CoastlineWorkflow
-from .workflows.fishing_port_workflow import FishingPortWorkflow
-from .workflows.hazard_map_workflow import HazardMapWorkflow
-from .workflows.land_use_layer_workflow import LayerWorkflow
-from .workflows.population_mesh_workflow import PopulationMeshWorkflow
-from .workflows.port_area_workflow import PortAreaWorkflow
 
 PLUGIN_NAME = "GreenInfraPlannerJP"
 

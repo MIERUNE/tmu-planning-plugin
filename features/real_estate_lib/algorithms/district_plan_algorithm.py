@@ -1,0 +1,134 @@
+"""
+地区計画区域データの取得機能モジュール
+"""
+
+import urllib.parse
+from typing import Optional
+
+from qgis.core import (
+    Qgis,
+    QgsFillSymbol,
+    QgsMessageLog,
+    QgsNetworkAccessManager,
+    QgsVectorTileBasicRenderer,
+    QgsVectorTileBasicRendererStyle,
+    QgsVectorTileLayer,
+)
+from qgis.PyQt.QtCore import QEventLoop, QUrl
+from qgis.PyQt.QtNetwork import QNetworkRequest
+
+from ....utils.settings import PLUGIN_NAME
+from ..connect import (
+    DISTRICT_PLAN_AREA_API_ENDPOINT,
+    ZOOM9_SCALE_THRESHOLD,
+)
+
+
+class DistrictPlanAlgorithm:
+    """地区計画区域データ取得クラス"""
+
+    def __init__(self, iface):
+        self.iface = iface
+
+    def _check_api_connection(self, api_key: str) -> tuple[bool, Optional[int]]:
+        """APIキーの有効性を確認するための事前接続チェック"""
+        # 接続テストとして一部のタイルをリクエスト
+        test_url = (
+            DISTRICT_PLAN_AREA_API_ENDPOINT
+            + "?response_format=geojson&z=13&x=7272&y=3225"
+        )
+
+        request = QNetworkRequest(QUrl(test_url))
+        request.setRawHeader(b"Ocp-Apim-Subscription-Key", api_key.encode("utf-8"))
+
+        nam = QgsNetworkAccessManager.instance()
+        reply = nam.get(request)
+
+        loop = QEventLoop()
+        reply.finished.connect(loop.quit)
+        loop.exec_()
+
+        http_status = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
+
+        if reply.error():
+            QgsMessageLog.logMessage(
+                f"API接続に失敗しました: {reply.errorString()} (HTTPステータス: {http_status})",
+                PLUGIN_NAME,
+                level=Qgis.Critical,
+            )
+            reply.deleteLater()
+            return False, http_status
+
+        QgsMessageLog.logMessage(
+            "APIキーの有効性を確認しました (HTTP 200)", PLUGIN_NAME, level=Qgis.Info
+        )
+        reply.deleteLater()
+        return True, http_status
+
+    def create_layer(self, api_key: str) -> Optional[QgsVectorTileLayer]:
+        """
+        地区計画区域データをAPIから取得する
+        Args:
+            api_key (str): APIキー
+        Returns:
+            QgsVectorTileLayer : 追加に成功した場合はレイヤーオブジェクト
+        """
+        success, status_code = self._check_api_connection(api_key)
+        # 接続チェック
+        if not success:
+            user_message = "APIサーバーへの接続に失敗しました。"
+            self.iface.messageBar().pushMessage(
+                "API接続エラー",
+                f"{user_message} (HTTP Status: {status_code})",
+                level=Qgis.Critical,
+            )
+            return None
+
+        # パラメーターをエンコード
+        params = {"response_format": "pbf", "z": "{z}", "x": "{x}", "y": "{y}"}
+        encoded_params = urllib.parse.urlencode(params, safe="{}")
+
+        # QGIS用にエンコード
+        encoded_for_qgis = encoded_params.replace("=", "%3D").replace("&", "%26")
+        encoded_tile_url = f"{DISTRICT_PLAN_AREA_API_ENDPOINT}?{encoded_for_qgis}"
+
+        # ベクトルタイルレイヤーのURLを作成
+        get_real_estate_url = (
+            f"type=xyz"
+            f"&url={encoded_tile_url}"
+            f"&zmax=15"
+            f"&zmin=11"
+            f"&http-header:Ocp-Apim-Subscription-Key={api_key}"
+        )
+
+        layer_name = "地区計画区域"
+        district_plan_layer = QgsVectorTileLayer(get_real_estate_url, layer_name)
+
+        # ズームレベル９以下では表示しない
+        district_plan_layer.setScaleBasedVisibility(True)
+        district_plan_layer.setMinimumScale(ZOOM9_SCALE_THRESHOLD)
+
+        # スタイルの設定
+        renderer = QgsVectorTileBasicRenderer()
+        polygon_style = QgsVectorTileBasicRendererStyle()
+        polygon_style.setStyleName("Polygons")
+        polygon_style.setLayerName("hits")
+        polygon_style.setEnabled(True)
+
+        polygon_style.setGeometryType(Qgis.GeometryType.Polygon)
+
+        # シンボルを作成
+        polygon_symbol = QgsFillSymbol.createSimple(
+            {
+                "color": "207,198,255,180",
+                "outline_color": "130,130,210,255",
+                "outline_width": "0.26",
+            }
+        )
+        polygon_style.setSymbol(polygon_symbol)
+        renderer.setStyles([polygon_style])
+        district_plan_layer.setRenderer(renderer)
+
+        district_plan_layer.triggerRepaint()
+
+        return district_plan_layer

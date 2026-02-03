@@ -411,14 +411,14 @@ QToolButton:hover {
             <item>
              <widget class="QCheckBox" name="checkBox_population_mesh">
               <property name="text">
-                <string>人口メッシュを表示</string>
+               <string>人口メッシュを表示</string>
               </property>
              </widget>
             </item>
             <item>
              <layout class="QVBoxLayout" name="verticalLayout_mesh_options">
               <property name="leftMargin">
-                <number>20</number>
+               <number>20</number>
               </property>
               <item>
                <widget class="QRadioButton" name="radioButton_population_mesh_3rd">
@@ -426,7 +426,7 @@ QToolButton:hover {
                  <string>人口メッシュ（3次メッシュ）</string>
                 </property>
                 <property name="checked">
-                  <bool>true</bool>
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>
@@ -544,11 +544,62 @@ QToolButton:hover {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>190</width>
-             <height>199</height>
+             <width>488</width>
+             <height>275</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_urban_content">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_administrative_area">
+              <item>
+               <widget class="QLabel" name="label_administrative_area">
+                <property name="font">
+                 <font>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>行政区域</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="verticalSpacer_administrative">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_class3">
+              <property name="text">
+               <string>class3</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_class5">
+              <property name="text">
+               <string>class5</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="Line" name="line_urban">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_real_estate">
               <item>
@@ -649,13 +700,6 @@ QToolButton:hover {
              </widget>
             </item>
             <item>
-             <widget class="Line" name="line_urban">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-             </widget>
-            </item>
-            <item>
              <spacer name="verticalSpacer_urban">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
@@ -689,8 +733,8 @@ QToolButton:hover {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>101</width>
-             <height>136</height>
+             <width>503</width>
+             <height>215</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_env_content">
@@ -813,8 +857,8 @@ QToolButton:hover {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>250</width>
-             <height>94</height>
+             <width>503</width>
+             <height>215</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_hazard_content">

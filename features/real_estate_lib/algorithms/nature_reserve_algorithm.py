@@ -131,7 +131,6 @@ class NatureReserveAlgorithm:
         renderer = QgsVectorTileBasicRenderer()
         polygon_style = QgsVectorTileBasicRendererStyle()
         polygon_style.setStyleName("Polygons")
-        polygon_style.setLayerName("hits")
         polygon_style.setEnabled(True)
 
         polygon_style.setGeometryType(Qgis.GeometryType.Polygon)

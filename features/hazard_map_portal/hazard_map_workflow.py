@@ -46,6 +46,9 @@ class HazardMapWorkflow:
             )
             return False
 
+        # 透過度を設定
+        added_layer.renderer().setOpacity(0.65)
+
         # プロジェクトに追加
         QgsProject.instance().addMapLayer(added_layer)
 

@@ -4,7 +4,7 @@
 
 LAYER_NAME = "行政区域class3"
 
-CLASS3_STYLES : dict[str, dict[str, str]] = {
+CLASS3_STYLES: dict[str, dict[str, str]] = {
     "1": {
         "color": "255,204,204,180",
         "outline_color": "120,120,120,255",

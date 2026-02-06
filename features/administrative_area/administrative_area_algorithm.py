@@ -15,7 +15,7 @@ from qgis.core import (
 )
 
 from ...utils.settings import PLUGIN_NAME
-from .settings import CLASS3_STYLE, LAYER_NAME
+from .settings import CLASS3_STYLES, LAYER_NAME
 
 
 class AdministrativeAreaAlgorithm:
@@ -42,8 +42,15 @@ class AdministrativeAreaAlgorithm:
             "class.mbtiles",
         )
 
-    def create_administrative_area_layer(self) -> Optional[QgsVectorTileLayer]:
-        """行政区域データのベクタタイルレイヤーを作成"""
+    def create_administrative_area_layer(
+        self, prefecture_name: str
+    ) -> Optional[QgsVectorTileLayer]:
+        """
+        行政区域データのベクタタイルレイヤーを作成
+
+        Args:
+            prefecture_name: フィルタする都道府県名（例: "北海道"）
+        """
 
         mbtiles_path = self._get_mbtiles_path()
 
@@ -76,18 +83,27 @@ class AdministrativeAreaAlgorithm:
 
         # レンダラーの適用
         renderer = QgsVectorTileBasicRenderer()
-        polygon_style = QgsVectorTileBasicRendererStyle()
-        polygon_style.setStyleName("Polygons")
-        polygon_style.setEnabled(True)
+        styles = []
 
-        polygon_style.setGeometryType(Qgis.GeometryType.Polygon)
+        for class3info_value, style_props in CLASS3_STYLES.items():
+            polygon_style = QgsVectorTileBasicRendererStyle()
+            polygon_style.setStyleName(f"class3info_{class3info_value}")
+            polygon_style.setEnabled(True)
 
-        # シンボルを作成
-        polygon_symbol = QgsFillSymbol.createSimple(CLASS3_STYLE)
+            polygon_style.setGeometryType(Qgis.GeometryType.Polygon)
+
+            # 都道府県名でフィルタ
+            polygon_style.setFilterExpression(
+                f"class3info = {class3info_value} AND N03_001 = '{prefecture_name}'"
+            )
+
+            # シンボルを作成
+            polygon_symbol = QgsFillSymbol.createSimple(style_props)
+            polygon_style.setSymbol(polygon_symbol)
+            styles.append(polygon_style)
 
         # レイヤーにスタイルを適用
-        polygon_style.setSymbol(polygon_symbol)
-        renderer.setStyles([polygon_style])
+        renderer.setStyles(styles)
         class3_layer.setRenderer(renderer)
         class3_layer.triggerRepaint()
 

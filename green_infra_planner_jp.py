@@ -13,6 +13,9 @@ from qgis.PyQt.QtCore import QCoreApplication, Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
+from .features.administrative_area.administrative_area_workflow import (
+    AdministrativeAreaWorkflow,
+)
 from .features.basemap.basemap_workflow import BasemapWorkflow
 from .features.estat.population_mesh_workflow import PopulationMeshWorkflow
 from .features.hazard_map_portal.flood_hazard_area_algorithm import (
@@ -20,9 +23,6 @@ from .features.hazard_map_portal.flood_hazard_area_algorithm import (
 )
 from .features.hazard_map_portal.hazard_map_workflow import HazardMapWorkflow
 from .features.real_estate_lib.algorithms.did_algorithm import DidAreaAlgorithm
-from .features.administrative_area.administrative_area_algorithm import (
-    AdministrativeAreaAlgorithm,
-)
 from .features.real_estate_lib.algorithms.district_plan_algorithm import (
     DistrictPlanAlgorithm,
 )
@@ -65,6 +65,7 @@ class GreenInfraPlugin:
         self.toolbar.setObjectName(PLUGIN_NAME)
         self.dockwidget = None
         self.area_workflow = AreaWorkflow(iface)
+        self.administrative_area_workflow = AdministrativeAreaWorkflow(iface)
         self.basemap_workflow = BasemapWorkflow(iface)
         self.layer_workflow = LayerWorkflow(iface)
         self.urban_planning_algorithm = UrbanPlanningAlgorithm(iface)
@@ -75,7 +76,7 @@ class GreenInfraPlugin:
         )
         self.nature_reserve_algorithm = NatureReserveAlgorithm(iface)
         self.did_area_algorithm = DidAreaAlgorithm(iface)
-        self.administrative_area_algorithm = AdministrativeAreaAlgorithm(iface)
+
         self.high_utilization_zone_algorithm = HighUtilizationZoneAlgorithm(iface)
         self.hazard_map_algorithm = FloodHazardAreaAlgorithm(iface)
         self.coastline_workflow = CoastlineWorkflow(iface)
@@ -84,7 +85,6 @@ class GreenInfraPlugin:
         self.fishing_port_workflow = FishingPortWorkflow(iface)
         self.port_area_workflow = PortAreaWorkflow(iface)
         self.hazard_map_workflow = HazardMapWorkflow(iface)
-
 
     def add_action(
         self,
@@ -186,20 +186,9 @@ class GreenInfraPlugin:
 
         # 行政区域ポリゴンレイヤーの可視化
         if self.dockwidget.checkBox_class3.isChecked():
-            layer = self.administrative_area_algorithm.create_administrative_area_layer()
-
-            if layer is not None and layer.isValid():
-                QgsProject.instance().addMapLayer(layer)
-                QgsMessageLog.logMessage(
-                    "行政区域レイヤーを追加しました",
-                    PLUGIN_NAME,
-                    level=Qgis.Success,
-                )
-            else:
-                message = "行政区域レイヤーの作成に失敗しました"
-                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
-
+            self.administrative_area_workflow.execute(
+                prefecture_name=self.dockwidget.comboBox_prefecture.currentText(),
+            )
 
         # 都市計画区域の可視化
         if self.dockwidget.checkBox_urban_area.isChecked():

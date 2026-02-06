@@ -70,7 +70,8 @@ class AdministrativeAreaAlgorithm:
 
         # MBTilesのURIの作成
         uri = f"type=mbtiles&url={mbtiles_path}"
-        class3_layer = QgsVectorTileLayer(uri, LAYER_NAME)
+        layer_name = f"{LAYER_NAME}_{prefecture_name}"
+        class3_layer = QgsVectorTileLayer(uri, layer_name)
 
         if not class3_layer.isValid():
             return None

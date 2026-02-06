@@ -15,7 +15,7 @@ from qgis.core import (
 )
 
 from ...utils.settings import PLUGIN_NAME
-from .settings import LAYER_NAME
+from .settings import CLASS3_STYLE, LAYER_NAME
 
 
 class AdministrativeAreaAlgorithm:
@@ -98,15 +98,21 @@ class AdministrativeAreaAlgorithm:
 
         if not class3_layer.isValid():
             return None
-        
+
         QgsMessageLog.logMessage(
-                f"べクタータイルの作成: {class3_layer.name()}",
-                PLUGIN_NAME,
-                level=Qgis.Info,
-            )
+            f"べクタータイルの作成: {class3_layer.name()}",
+            PLUGIN_NAME,
+            level=Qgis.Info,
+        )
 
+        # # スタイルの設定
+        # style = CLASS3_STYLE
 
-        # スタイルの設定
+        
+
+        
+
+        # レンダラーの適用
         renderer = QgsVectorTileBasicRenderer()
         polygon_style = QgsVectorTileBasicRendererStyle()
         polygon_style.setStyleName("Polygons")
@@ -115,17 +121,13 @@ class AdministrativeAreaAlgorithm:
         polygon_style.setGeometryType(Qgis.GeometryType.Polygon)
 
         # シンボルを作成
-        polygon_symbol = QgsFillSymbol.createSimple(
-            {
-                "color": "255,255,147,180",
-                "outline_color": "221,207,144,255",
-                "outline_width": "0.26",
-            }
-        )
+        polygon_symbol = QgsFillSymbol.createSimple(CLASS3_STYLE)
+
+
+        # レイヤーにスタイルを適用
         polygon_style.setSymbol(polygon_symbol)
         renderer.setStyles([polygon_style])
         class3_layer.setRenderer(renderer)
-
         class3_layer.triggerRepaint()
 
         # self._apply_style(class3_layer)

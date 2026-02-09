@@ -66,8 +66,6 @@ class AdministrativeAreaAlgorithm:
 
         data_source_path = self._get_data_source_path()
 
-        
-
         # レイヤーの作成
         layer_name = f"{LAYER_NAME}_{prefecture_name}"
         class3_layer = QgsVectorTileLayer(data_source_path, layer_name)

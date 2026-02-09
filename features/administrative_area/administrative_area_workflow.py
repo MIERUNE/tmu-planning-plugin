@@ -17,7 +17,9 @@ class AdministrativeAreaWorkflow:
         self.iface = iface
         self.algorithm = AdministrativeAreaAlgorithm(iface)
 
-    def execute(self, prefecture_name: str, class_type: Literal["class3", "class5"]) -> bool:
+    def execute(
+        self, prefecture_name: str, class_type: Literal["class3", "class5"]
+    ) -> bool:
         """
         指定されたアルゴリズムを実行し、レイヤーをQGISに追加する
 

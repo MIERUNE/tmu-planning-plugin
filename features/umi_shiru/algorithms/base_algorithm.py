@@ -261,7 +261,7 @@ class UmiShiruBaseAlgorithm(ABC):
                 except json.JSONDecodeError as e:
                     failed_count += 1
                     QgsMessageLog.logMessage(
-                        f"GeoJSON パース失敗 ({i+1}/{len(geojson_list)}): {str(e)}",
+                        f"GeoJSON パース失敗 ({i + 1}/{len(geojson_list)}): {str(e)}",
                         PLUGIN_NAME,
                         level=Qgis.Warning,
                     )

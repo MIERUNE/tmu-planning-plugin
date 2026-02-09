@@ -29,11 +29,6 @@ class AdministrativeAreaAlgorithm:
         plugin_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
         print("plugin_dir", plugin_dir)
 
-        QgsMessageLog.logMessage(
-            f"MBTilesファイルのパスを取得: {plugin_dir}",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
         return os.path.join(
             plugin_dir,
             "features",
@@ -50,18 +45,12 @@ class AdministrativeAreaAlgorithm:
 
         Args:
             prefecture_name: フィルタする都道府県名（例: "北海道"）
-            class_type: 行政区域のクラスタイプ ("3" または "5")
+            class_type: 行政区域のクラスタイプ ("class3" または "class5")
         Returns:
             QgsVectorTileLayer : 追加に成功した場合はレイヤーオブジェクト
         """
 
         mbtiles_path = self._get_mbtiles_path()
-
-        QgsMessageLog.logMessage(
-            f"MBTilesパス: {mbtiles_path}",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
 
         # MBTilesファイルの存在確認
         if not os.path.exists(mbtiles_path):

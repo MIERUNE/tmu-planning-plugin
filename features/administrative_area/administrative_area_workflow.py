@@ -23,7 +23,7 @@ class AdministrativeAreaWorkflow:
 
         Args:
             prefecture_name: 都道府県名（例: "北海道"）
-            class_type: 行政区域のクラスタイプ ("3" または "5")
+            class_type: 行政区域のクラスタイプ ("class3" または "class5")
 
         Returns:
             bool: 成功した場合はTrue、失敗した場合はFalse

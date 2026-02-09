@@ -13,6 +13,9 @@ from qgis.PyQt.QtCore import QCoreApplication, Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
+from .features.administrative_area.administrative_area_workflow import (
+    AdministrativeAreaWorkflow,
+)
 from .features.basemap.basemap_workflow import BasemapWorkflow
 from .features.estat.population_mesh_workflow import PopulationMeshWorkflow
 from .features.hazard_map_portal.flood_hazard_area_algorithm import (
@@ -62,6 +65,7 @@ class GreenInfraPlugin:
         self.toolbar.setObjectName(PLUGIN_NAME)
         self.dockwidget = None
         self.area_workflow = AreaWorkflow(iface)
+        self.administrative_area_workflow = AdministrativeAreaWorkflow(iface)
         self.basemap_workflow = BasemapWorkflow(iface)
         self.layer_workflow = LayerWorkflow(iface)
         self.urban_planning_algorithm = UrbanPlanningAlgorithm(iface)
@@ -72,6 +76,7 @@ class GreenInfraPlugin:
         )
         self.nature_reserve_algorithm = NatureReserveAlgorithm(iface)
         self.did_area_algorithm = DidAreaAlgorithm(iface)
+
         self.high_utilization_zone_algorithm = HighUtilizationZoneAlgorithm(iface)
         self.hazard_map_algorithm = FloodHazardAreaAlgorithm(iface)
         self.coastline_workflow = CoastlineWorkflow(iface)
@@ -179,6 +184,13 @@ class GreenInfraPlugin:
         # Phase 1: ベースマップレイヤーの可視化
         self.basemap_workflow.execute(self.dockwidget.get_selected_basemaps())
 
+        # Phase 2: 行政区域ポリゴンレイヤーの可視化
+        if self.dockwidget.checkBox_class3.isChecked():
+            self.administrative_area_workflow.execute(
+                prefecture_name=self.dockwidget.comboBox_prefecture.currentText(),
+            )
+
+        # Phase 3: 不動産情報ライブラリの各種レイヤー可視化
         # 都市計画区域の可視化
         if self.dockwidget.checkBox_urban_area.isChecked():
             if real_estate_api_key:
@@ -272,7 +284,7 @@ class GreenInfraPlugin:
                 QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
                 self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
 
-        # Phase 3: 海岸線データの可視化
+        # Phase 4: 海岸線データの可視化
         umi_shiru_api_key = ApikeyDialog.get_umi_shiru_api_key()
 
         # 海岸線データの可視化
@@ -297,7 +309,7 @@ class GreenInfraPlugin:
                 municipality_name=self.dockwidget.comboBox_municipality.currentText(),
             )
 
-        # Phase 4: 人口メッシュデータの可視化
+        # Phase 5: 人口メッシュデータの可視化
         if self.dockwidget.checkBox_population_mesh.isChecked():
             estat_api_key = ApikeyDialog.get_estat_api_key()
             # 3次メッシュ（1km）の処理
@@ -338,7 +350,7 @@ class GreenInfraPlugin:
                 self.hazard_map_algorithm,
             )
 
-        # Phase 5: 全てのレイヤー読み込み完了後、自治体領域にズームイン
+        # Phase 6: 全てのレイヤー読み込み完了後、自治体領域にズームイン
         self.zoom_to_municipality(self.dockwidget.comboBox_municipality.currentData())
 
         self.iface.messageBar().popWidget(waiting_item)

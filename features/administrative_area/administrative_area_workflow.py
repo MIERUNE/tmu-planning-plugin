@@ -9,7 +9,7 @@ from .administrative_area_algorithm import AdministrativeAreaAlgorithm
 
 
 class AdministrativeAreaWorkflow:
-    """行政区域ポリゴンののレイヤー取得・可視化のための汎用ワークフロー"""
+    """行政区域ポリゴンのレイヤー取得・可視化のための汎用ワークフロー"""
 
     def __init__(self, iface):
         self.iface = iface

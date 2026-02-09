@@ -24,35 +24,23 @@ class AdministrativeAreaAlgorithm:
     def __init__(self, iface):
         self.iface = iface
 
-    def _get_data_source_path(self) -> str:
-        """ベクタタイルのデータソースURIを構築する（暫定: ローカルMBTilesを参照。今後の対応：国交DPF配信開始後はAPIエンドポイントへの接続に置き換え予定）"""
+    def _get_mbtiles_path(self) -> str:
+        """MBTilesファイルのパスを取得（将来的にはここの関数をAPIからデータを取得する形に変更）"""
         plugin_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        print("plugin_dir", plugin_dir)
 
         QgsMessageLog.logMessage(
             f"MBTilesファイルのパスを取得: {plugin_dir}",
             PLUGIN_NAME,
             level=Qgis.Info,
         )
-
-        data_source_path = os.path.join(
+        return os.path.join(
             plugin_dir,
             "features",
             "administrative_area",
             "data",
             "class.mbtiles",
         )
-
-        # MBTilesファイルの存在確認
-        if not os.path.exists(data_source_path):
-            QgsMessageLog.logMessage(
-                f"MBTilesファイルが見つかりません: {data_source_path}",
-                PLUGIN_NAME,
-                level=Qgis.Warning,
-            )
-            return None
-
-        # MBTilesのURIの作成
-        return f"type=mbtiles&url={data_source_path}"
 
     def create_administrative_area_layer(
         self, prefecture_name: str
@@ -64,14 +52,35 @@ class AdministrativeAreaAlgorithm:
             prefecture_name: フィルタする都道府県名（例: "北海道"）
         """
 
-        data_source_path = self._get_data_source_path()
+        mbtiles_path = self._get_mbtiles_path()
 
-        # レイヤーの作成
+        QgsMessageLog.logMessage(
+            f"MBTilesパス: {mbtiles_path}",
+            PLUGIN_NAME,
+            level=Qgis.Info,
+        )
+
+        # MBTilesファイルの存在確認
+        if not os.path.exists(mbtiles_path):
+            QgsMessageLog.logMessage(
+                f"MBTilesファイルが見つかりません: {mbtiles_path}",
+                PLUGIN_NAME,
+                level=Qgis.Warning,
+            )
+
+        # MBTilesのURIの作成
+        uri = f"type=mbtiles&url={mbtiles_path}"
         layer_name = f"{LAYER_NAME}_{prefecture_name}"
-        class3_layer = QgsVectorTileLayer(data_source_path, layer_name)
+        class3_layer = QgsVectorTileLayer(uri, layer_name)
 
         if not class3_layer.isValid():
             return None
+
+        QgsMessageLog.logMessage(
+            f"べクタータイルの作成: {class3_layer.name()}",
+            PLUGIN_NAME,
+            level=Qgis.Info,
+        )
 
         # レンダラーの適用
         renderer = QgsVectorTileBasicRenderer()

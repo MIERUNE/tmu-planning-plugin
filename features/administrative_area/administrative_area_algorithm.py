@@ -27,7 +27,6 @@ class AdministrativeAreaAlgorithm:
     def _get_mbtiles_path(self) -> str:
         """MBTilesファイルのパスを取得（将来的にはここの関数をAPIからデータを取得する形に変更）"""
         plugin_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-        print("plugin_dir", plugin_dir)
 
         return os.path.join(
             plugin_dir,

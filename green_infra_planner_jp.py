@@ -196,7 +196,7 @@ class GreenInfraPlugin:
         if self.dockwidget.checkBox_class5.isChecked():
             self.administrative_area_workflow.execute(
                 prefecture_name=self.dockwidget.comboBox_prefecture.currentText(),
-                class_type="class5",  # class5
+                class_type="class5",  
             )
 
         # Phase 3: 不動産情報ライブラリの各種レイヤー可視化

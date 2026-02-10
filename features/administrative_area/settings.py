@@ -11,8 +11,7 @@ CLASS3_STYLES: dict[str, dict[str, str]] = {
         "outline_width": "0.7",
     },
     "2": {
-        # "color": "255,255,147,180",  # パステルイエロー
-        "color": "255,250,156,180",
+        "color": "255,250,156,180",  # パステルイエロー
         "outline_color": "120,120,120,255",
         "outline_width": "0.7",
     },

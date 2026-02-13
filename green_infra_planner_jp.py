@@ -10,8 +10,8 @@ from qgis.core import (
 )
 from qgis.gui import QgsMessageBarItem
 from qgis.PyQt.QtCore import QCoreApplication, Qt
-from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction
+from qgis.PyQt.QtGui import QIcon, QColor, QPixmap
+from qgis.PyQt.QtWidgets import QAction, QLabel
 
 from .features.administrative_area.administrative_area_workflow import (
     AdministrativeAreaWorkflow,
@@ -51,6 +51,9 @@ from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .utils.estat.client import AdministrativeAreaClient
 from .utils.settings import CITY_DEFAULT_BOUNDS
 
+# TODO あとで凡例の処理を分ける時に消す
+from .features.administrative_area.settings import CLASS3_STYLES
+
 PLUGIN_NAME = "GreenInfraPlannerJP"
 
 
@@ -85,6 +88,33 @@ class GreenInfraPlugin:
         self.fishing_port_workflow = FishingPortWorkflow(iface)
         self.port_area_workflow = PortAreaWorkflow(iface)
         self.hazard_map_workflow = HazardMapWorkflow(iface)
+
+    def _create_class3_legend(self):
+        """class3の凡例を動的に生成"""
+        if not self.dockwidget:
+            return
+        labels = {
+        "1": "1:xxxxxxxx",
+        "2": "2:xxxxxxxx",
+        "3": "3:xxxxxxxx",
+    }
+
+        layout = self.dockwidget.horizontalLayout_class3_legend 
+        for value, style in CLASS3_STYLES.items():
+            color_label = QLabel()
+            pixmap = QPixmap(16, 16)
+            rgba = style["color"].split(",")
+            pixmap.fill(QColor(int(rgba[0]), int(rgba[1]), int(rgba[2]), int(rgba[3])))
+            color_label.setPixmap(pixmap)
+
+            # text_label = QLabel(value)
+            text_label = QLabel(labels.get(value, value))
+
+            layout.addWidget(color_label)
+            layout.addWidget(color_label)
+            layout.addWidget(text_label)
+
+        layout.addStretch()
 
     def add_action(
         self,
@@ -151,7 +181,7 @@ class GreenInfraPlugin:
             self.dockwidget.pushButton_execute.clicked.connect(
                 self.execute_data_visualization
             )
-
+        self._create_class3_legend()
         self.dockwidget.show()
 
     def execute_data_visualization(self):

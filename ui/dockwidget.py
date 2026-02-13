@@ -5,8 +5,8 @@ from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import (
     QCheckBox,
     QComboBox,
-    QHBoxLayout,
     QDockWidget,
+    QHBoxLayout,
     QPushButton,
     QRadioButton,
     QToolButton,
@@ -29,12 +29,12 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
         self.comboBox_prefecture: QComboBox = self.comboBox_prefecture
         self.comboBox_municipality: QComboBox = self.comboBox_municipality
         self.toolButton_basemap_info: QToolButton = self.toolButton_basemap_info
-        self.checkBox_land: QCheckBox = self.checkBox_land
+        # self.checkBox_land: QCheckBox = self.checkBox_land
         self.checkBox_water: QCheckBox = self.checkBox_water
         self.checkBox_highway: QCheckBox = self.checkBox_highway
         self.checkBox_major_road: QCheckBox = self.checkBox_major_road
         self.checkBox_building: QCheckBox = self.checkBox_building
-        self.colorButton_land: QgsColorButton = self.colorButton_land
+        # self.colorButton_land: QgsColorButton = self.colorButton_land
         self.colorButton_water: QgsColorButton = self.colorButton_water
         self.colorButton_highway: QgsColorButton = self.colorButton_highway
         self.colorButton_major_road: QgsColorButton = self.colorButton_major_road
@@ -44,7 +44,9 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
         self.checkBox_fishing_port_area: QCheckBox = self.checkBox_fishing_port_area
         self.checkBox_class3: QCheckBox = self.checkBox_class3
         self.checkBox_class5: QCheckBox = self.checkBox_class5
-        self.horizontalLayout_class3_legend: QHBoxLayout = self.horizontalLayout_class3_legend
+        self.horizontalLayout_class3_legend: QHBoxLayout = (
+            self.horizontalLayout_class3_legend
+        )
         self.checkBox_urban_area: QCheckBox = self.checkBox_urban_area
         self.checkBox_use_district: QCheckBox = self.checkBox_use_district
         self.checkBox_district_planning: QCheckBox = self.checkBox_district_planning
@@ -86,8 +88,8 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
         selected_features = {}
 
         # 国土
-        if self.checkBox_land.isChecked():
-            selected_features["land"] = self.colorButton_land.color()
+        # if self.checkBox_land.isChecked():
+        #     selected_features["land"] = self.colorButton_land.color()
         # 水域
         if self.checkBox_water.isChecked():
             selected_features["water"] = self.colorButton_water.color()

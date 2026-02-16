@@ -194,14 +194,14 @@ QToolButton:hover {
           <item>
            <layout class="QHBoxLayout" name="administrative_boundary_area_horizontalLayout">
             <item>
-             <widget class="QRadioButton" name="administrative_boundary_all_radioButton">
+             <widget class="QCheckBox" name="administrative_boundary_all_checkBox">
               <property name="text">
                <string>全国</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QRadioButton" name="administrative_boundary_municipality_radioButton">
+             <widget class="QCheckBox" name="administrative_boundary_municipality_checkBox">
               <property name="text">
                <string>都道府県</string>
               </property>
@@ -237,6 +237,27 @@ QToolButton:hover {
                <string>class3</string>
               </property>
              </widget>
+            </item>
+            <item>
+             <widget class="QWidget" name="widget_class3_legend">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <layout class="QHBoxLayout" name="horizontalLayout_class3_legend">
+                  <property name="leftMargin">
+                   <number>20</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+               </layout>
+              </widget>
             </item>
             <item>
              <widget class="QCheckBox" name="checkBox_class5_2">

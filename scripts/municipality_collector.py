@@ -290,7 +290,7 @@ class NationwideCollector:
         if self.output_file.exists():
             file_size = self.output_file.stat().st_size
             print(
-                f"   💾 ファイルサイズ: {file_size:,} bytes ({file_size/1024:.1f} KB)"
+                f"   💾 ファイルサイズ: {file_size:,} bytes ({file_size / 1024:.1f} KB)"
             )
 
         # 地域別統計

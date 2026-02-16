@@ -3,7 +3,7 @@
 """
 
 import os
-from typing import Optional
+from typing import Literal, Optional
 
 from qgis.core import (
     Qgis,
@@ -15,7 +15,7 @@ from qgis.core import (
 )
 
 from ...utils.settings import PLUGIN_NAME
-from .settings import CLASS3_STYLES, LAYER_NAME
+from .settings import CLASS3_STYLES, CLASS5_STYLES, LAYER_NAME
 
 
 class AdministrativeAreaAlgorithm:
@@ -27,13 +27,7 @@ class AdministrativeAreaAlgorithm:
     def _get_mbtiles_path(self) -> str:
         """MBTilesファイルのパスを取得（将来的にはここの関数をAPIからデータを取得する形に変更）"""
         plugin_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-        print("plugin_dir", plugin_dir)
 
-        QgsMessageLog.logMessage(
-            f"MBTilesファイルのパスを取得: {plugin_dir}",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
         return os.path.join(
             plugin_dir,
             "features",
@@ -43,22 +37,19 @@ class AdministrativeAreaAlgorithm:
         )
 
     def create_administrative_area_layer(
-        self, prefecture_name: str
+        self, prefecture_name: str, class_type: Literal["class3", "class5"]
     ) -> Optional[QgsVectorTileLayer]:
         """
         行政区域データのベクタタイルレイヤーを作成
 
         Args:
             prefecture_name: フィルタする都道府県名（例: "北海道"）
+            class_type: 行政区域のクラスタイプ ("class3" または "class5")
+        Returns:
+            QgsVectorTileLayer : 追加に成功した場合はレイヤーオブジェクト
         """
 
         mbtiles_path = self._get_mbtiles_path()
-
-        QgsMessageLog.logMessage(
-            f"MBTilesパス: {mbtiles_path}",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
 
         # MBTilesファイルの存在確認
         if not os.path.exists(mbtiles_path):
@@ -70,34 +61,34 @@ class AdministrativeAreaAlgorithm:
 
         # MBTilesのURIの作成
         uri = f"type=mbtiles&url={mbtiles_path}"
-        layer_name = f"{LAYER_NAME}_{prefecture_name}"
-        class3_layer = QgsVectorTileLayer(uri, layer_name)
+        layer_name = f"{LAYER_NAME}{class_type}_{prefecture_name}"
+        administrative_area_layer = QgsVectorTileLayer(uri, layer_name)
 
-        if not class3_layer.isValid():
+        if not administrative_area_layer.isValid():
             return None
-
-        QgsMessageLog.logMessage(
-            f"べクタータイルの作成: {class3_layer.name()}",
-            PLUGIN_NAME,
-            level=Qgis.Info,
-        )
 
         # レンダラーの適用
         renderer = QgsVectorTileBasicRenderer()
         styles = []
 
-        for class3info_value, style_props in CLASS3_STYLES.items():
+        # class_typeに応じて設定を選択
+        if class_type == "class3":
+            attr_name = "class3info"
+            styles_dict = CLASS3_STYLES
+        else:  # class5
+            attr_name = "class5nofo"
+            styles_dict = CLASS5_STYLES
+
+        # 共通処理
+        for attr_value, style_props in styles_dict.items():
             polygon_style = QgsVectorTileBasicRendererStyle()
-            polygon_style.setStyleName(f"class3info_{class3info_value}")
+            polygon_style.setStyleName(f"{attr_name}_{attr_value}")
             polygon_style.setEnabled(True)
-
             polygon_style.setGeometryType(Qgis.GeometryType.Polygon)
-
             # 都道府県名でフィルタ
             polygon_style.setFilterExpression(
-                f"class3info = {class3info_value} AND N03_001 = '{prefecture_name}'"
+                f"{attr_name} = {attr_value} AND N03_001 = '{prefecture_name}'"
             )
-
             # シンボルを作成
             polygon_symbol = QgsFillSymbol.createSimple(style_props)
             polygon_style.setSymbol(polygon_symbol)
@@ -105,7 +96,7 @@ class AdministrativeAreaAlgorithm:
 
         # レイヤーにスタイルを適用
         renderer.setStyles(styles)
-        class3_layer.setRenderer(renderer)
-        class3_layer.triggerRepaint()
+        administrative_area_layer.setRenderer(renderer)
+        administrative_area_layer.triggerRepaint()
 
-        return class3_layer
+        return administrative_area_layer

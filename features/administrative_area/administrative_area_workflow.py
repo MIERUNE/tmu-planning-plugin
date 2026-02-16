@@ -1,3 +1,5 @@
+from typing import Literal
+
 from qgis.core import (
     Qgis,
     QgsMessageLog,
@@ -15,15 +17,21 @@ class AdministrativeAreaWorkflow:
         self.iface = iface
         self.algorithm = AdministrativeAreaAlgorithm(iface)
 
-    def execute(self, prefecture_name: str) -> bool:
+    def execute(
+        self, prefecture_name: str, class_type: Literal["class3", "class5"]
+    ) -> bool:
         """
         指定されたアルゴリズムを実行し、レイヤーをQGISに追加する
 
         Args:
             prefecture_name: 都道府県名（例: "北海道"）
+            class_type: 行政区域のクラスタイプ ("class3" または "class5")
+
+        Returns:
+            bool: 成功した場合はTrue、失敗した場合はFalse
         """
         added_layer = self.algorithm.create_administrative_area_layer(
-            prefecture_name=prefecture_name
+            prefecture_name=prefecture_name, class_type=class_type
         )
 
         if not added_layer:

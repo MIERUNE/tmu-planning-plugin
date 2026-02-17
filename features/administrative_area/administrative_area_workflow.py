@@ -1,7 +1,8 @@
-from typing import Literal
+from typing import Literal, Optional
 
 from qgis.core import (
     Qgis,
+    QgsLayerTreeGroup,
     QgsMessageLog,
     QgsProject,
 )
@@ -18,7 +19,10 @@ class AdministrativeAreaWorkflow:
         self.algorithm = AdministrativeAreaAlgorithm(iface)
 
     def execute(
-        self, prefecture_name: str, class_type: Literal["class3", "class5"]
+        self,
+        prefecture_name: str,
+        class_type: Literal["class3", "class5"],
+        group: Optional[QgsLayerTreeGroup] = None,
     ) -> bool:
         """
         指定されたアルゴリズムを実行し、レイヤーをQGISに追加する
@@ -26,6 +30,7 @@ class AdministrativeAreaWorkflow:
         Args:
             prefecture_name: 都道府県名（例: "北海道"）
             class_type: 行政区域のクラスタイプ ("class3" または "class5")
+            group: 行政区域を表示するグループ（ベースマップグループに追加）
 
         Returns:
             bool: 成功した場合はTrue、失敗した場合はFalse
@@ -62,7 +67,17 @@ class AdministrativeAreaWorkflow:
             return False
 
         # プロジェクトに追加
-        QgsProject.instance().addMapLayer(added_layer)
+        if group:
+            # 『行政区域』サブグループをを取得または作成してからレイヤーを追加
+            sub_group_name = "行政区域"
+            sub_group = group.findGroup(sub_group_name)
+            if not sub_group:
+                sub_group = group.addGroup(sub_group_name)
+    
+            QgsProject.instance().addMapLayer(added_layer, False)
+            sub_group.addLayer(added_layer)
+        else:
+            QgsProject.instance().addMapLayer(added_layer)
 
         QgsMessageLog.logMessage(
             f"'{added_layer.name()}' レイヤーを追加しました。",

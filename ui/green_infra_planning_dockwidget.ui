@@ -57,25 +57,9 @@
        <string>QGroupBox { font-weight: bold; }</string>
       </property>
       <property name="title">
-       <string>基本設定</string>
+       <string>対象地域</string>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_basic">
-       <property name="topMargin">
-        <number>12</number>
-       </property>
-       <item>
-        <widget class="QLabel" name="label_area_title">
-         <property name="font">
-          <font>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>■ 対象地域</string>
-         </property>
-        </widget>
-       </item>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
         <layout class="QGridLayout" name="gridLayout_area">
          <item row="0" column="1">
@@ -114,215 +98,6 @@
          </item>
         </layout>
        </item>
-       <item>
-        <widget class="Line" name="line_1">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_basemap_title">
-         <item>
-          <widget class="QLabel" name="label_basemap_title">
-           <property name="font">
-            <font>
-             <weight>75</weight>
-             <bold>true</bold>
-            </font>
-           </property>
-           <property name="text">
-            <string>■ ベースマップ設定</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QToolButton" name="toolButton_basemap_info">
-           <property name="maximumSize">
-            <size>
-             <width>20</width>
-             <height>20</height>
-            </size>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;【APIの提供元】 &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;国土地理院ベクトルタイル提供サイト&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;【APIサイト】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;https://maps.gsi.go.jp/development/vt.html &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;【クレジット】 &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;出典：国土地理院ウェブサイト 地理院タイル（ベクトルタイル）を加工して作成&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="styleSheet">
-            <string>QToolButton {
-    border: none;
-    background-color: transparent;
-    color: #2196F3;
-    font-weight: bold;
-}
-QToolButton:hover {
-    color: #1976D2;
-}</string>
-           </property>
-           <property name="text">
-            <string>ⓘ</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_basemap">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QGridLayout" name="gridLayout_basemap">
-         <property name="horizontalSpacing">
-          <number>10</number>
-         </property>
-         <property name="verticalSpacing">
-          <number>4</number>
-         </property>
-         <item row="0" column="0">
-          <widget class="QCheckBox" name="checkBox_land">
-           <property name="text">
-            <string>国土</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QgsColorButton" name="colorButton_land">
-           <property name="minimumSize">
-            <size>
-             <width>80</width>
-             <height>25</height>
-            </size>
-           </property>
-           <property name="color">
-            <color>
-             <red>240</red>
-             <green>240</green>
-             <blue>240</blue>
-            </color>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="2">
-          <widget class="QCheckBox" name="checkBox_water">
-           <property name="text">
-            <string>水域</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="3">
-          <widget class="QgsColorButton" name="colorButton_water">
-           <property name="minimumSize">
-            <size>
-             <width>80</width>
-             <height>25</height>
-            </size>
-           </property>
-           <property name="color">
-            <color>
-             <red>150</red>
-             <green>200</green>
-             <blue>255</blue>
-            </color>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QCheckBox" name="checkBox_highway">
-           <property name="text">
-            <string>高速道路</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QgsColorButton" name="colorButton_highway">
-           <property name="minimumSize">
-            <size>
-             <width>80</width>
-             <height>25</height>
-            </size>
-           </property>
-           <property name="color">
-            <color>
-             <red>255</red>
-             <green>100</green>
-             <blue>100</blue>
-            </color>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="2">
-          <widget class="QCheckBox" name="checkBox_major_road">
-           <property name="text">
-            <string>主要道路</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="3">
-          <widget class="QgsColorButton" name="colorButton_major_road">
-           <property name="minimumSize">
-            <size>
-             <width>80</width>
-             <height>25</height>
-            </size>
-           </property>
-           <property name="color">
-            <color>
-             <red>255</red>
-             <green>200</green>
-             <blue>100</blue>
-            </color>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QCheckBox" name="checkBox_building">
-           <property name="text">
-            <string>建物ポリゴン</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QgsColorButton" name="colorButton_building">
-           <property name="minimumSize">
-            <size>
-             <width>80</width>
-             <height>25</height>
-            </size>
-           </property>
-           <property name="color">
-            <color>
-             <red>200</red>
-             <green>200</green>
-             <blue>200</blue>
-            </color>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
       </layout>
      </widget>
     </item>
@@ -331,6 +106,328 @@ QToolButton:hover {
       <property name="currentIndex">
        <number>0</number>
       </property>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>ベースマップ</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <widget class="QScrollArea" name="scrollArea">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>503</width>
+             <height>386</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_basemap_content">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_administrative_area">
+              <item>
+               <widget class="QLabel" name="label_administrative_area">
+                <property name="font">
+                 <font>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>行政区域</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_administrative_area">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_class3">
+              <item>
+               <widget class="QCheckBox" name="checkBox_class3">
+                <property name="text">
+                 <string>class3</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_2">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBox_class3_legend">
+              <property name="title">
+               <string>凡例</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_2">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_class3_legend">
+                 <property name="leftMargin">
+                  <number>20</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_class5">
+              <item>
+               <widget class="QCheckBox" name="checkBox_class5">
+                <property name="text">
+                 <string>class5</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_class5">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBox_class5_legend">
+              <property name="title">
+               <string>凡例</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="Line" name="line_basemap">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_basemap">
+              <item>
+               <widget class="QLabel" name="label_basemap">
+                <property name="text">
+                 <string>その他ベースマップ</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="toolButton_basemap_info">
+                <property name="maximumSize">
+                 <size>
+                  <width>20</width>
+                  <height>20</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;【APIの提供元】 &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;国土地理院ベクトルタイル提供サイト&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;【APIサイト】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;https://maps.gsi.go.jp/development/vt.html &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;【クレジット】 &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;出典：国土地理院ウェブサイト 地理院タイル（ベクトルタイル）を加工して作成&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="styleSheet">
+                 <string>QToolButton {
+    border: none;
+    background-color: transparent;
+    color: #2196F3;
+    font-weight: bold;
+}
+QToolButton:hover {
+    color: #1976D2;
+}</string>
+                </property>
+                <property name="text">
+                 <string>ⓘ</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_basemap">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QGridLayout" name="gridLayout_basemap">
+              <property name="horizontalSpacing">
+               <number>10</number>
+              </property>
+              <property name="verticalSpacing">
+               <number>4</number>
+              </property>
+              <item row="2" column="1">
+               <widget class="QgsColorButton" name="colorButton_highway">
+                <property name="minimumSize">
+                 <size>
+                  <width>80</width>
+                  <height>25</height>
+                 </size>
+                </property>
+                <property name="color">
+                 <color>
+                  <red>255</red>
+                  <green>100</green>
+                  <blue>100</blue>
+                 </color>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QCheckBox" name="checkBox_highway">
+                <property name="text">
+                 <string>高速道路</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="2">
+               <widget class="QCheckBox" name="checkBox_major_road">
+                <property name="text">
+                 <string>主要道路</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="3">
+               <widget class="QgsColorButton" name="colorButton_major_road">
+                <property name="minimumSize">
+                 <size>
+                  <width>80</width>
+                  <height>25</height>
+                 </size>
+                </property>
+                <property name="color">
+                 <color>
+                  <red>255</red>
+                  <green>200</green>
+                  <blue>100</blue>
+                 </color>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QCheckBox" name="checkBox_water">
+                <property name="text">
+                 <string>水域</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QgsColorButton" name="colorButton_water">
+                <property name="minimumSize">
+                 <size>
+                  <width>80</width>
+                  <height>25</height>
+                 </size>
+                </property>
+                <property name="color">
+                 <color>
+                  <red>150</red>
+                  <green>200</green>
+                  <blue>255</blue>
+                 </color>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="2">
+               <widget class="QCheckBox" name="checkBox_building">
+                <property name="text">
+                 <string>建物ポリゴン</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="3">
+               <widget class="QgsColorButton" name="colorButton_building">
+                <property name="minimumSize">
+                 <size>
+                  <width>80</width>
+                  <height>25</height>
+                 </size>
+                </property>
+                <property name="color">
+                 <color>
+                  <red>200</red>
+                  <green>200</green>
+                  <blue>200</blue>
+                 </color>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_basemap">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="tab_population">
        <attribute name="title">
         <string>人口・社会</string>
@@ -347,7 +444,7 @@ QToolButton:hover {
              <x>0</x>
              <y>0</y>
              <width>503</width>
-             <height>215</height>
+             <height>386</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_population_content">
@@ -544,62 +641,11 @@ QToolButton:hover {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>488</width>
-             <height>275</height>
+             <width>503</width>
+             <height>386</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_urban_content">
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_administrative_area">
-              <item>
-               <widget class="QLabel" name="label_administrative_area">
-                <property name="font">
-                 <font>
-                  <weight>75</weight>
-                  <bold>true</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>行政区域</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="verticalSpacer_administrative">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="checkBox_class3">
-              <property name="text">
-               <string>class3</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="checkBox_class5">
-              <property name="text">
-               <string>class5</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="Line" name="line_urban">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-             </widget>
-            </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_real_estate">
               <item>
@@ -734,7 +780,7 @@ QToolButton:hover {
              <x>0</x>
              <y>0</y>
              <width>503</width>
-             <height>215</height>
+             <height>386</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_env_content">
@@ -858,7 +904,7 @@ QToolButton:hover {
              <x>0</x>
              <y>0</y>
              <width>503</width>
-             <height>215</height>
+             <height>386</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_hazard_content">

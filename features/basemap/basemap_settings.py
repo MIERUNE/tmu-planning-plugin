@@ -15,7 +15,6 @@ GROUP_LAYER_NAME = "ベースマップ"
 # レイヤーのデフォルトカラー設定
 # ====================
 DEFAULT_COLOR = {
-    "land": QColor(128, 128, 128, 100),
     "water": QColor(0, 0, 255, 100),
     "highway": QColor(255, 0, 0, 100),
     "major_road": QColor(255, 165, 0, 100),
@@ -39,26 +38,6 @@ ZOOM_SCALE_THRESHOLDS = {
 # 地物設定定数
 # ====================
 LAYER_FEATURE_SETTINGS = {
-    "land": {
-        "features": [
-            {
-                "ft_code": "7401",
-                "source_layer": "landforma",
-                "geometry_type": "Polygon",
-                "description": "湿地帯",
-            },
-            {
-                "ft_code": "7403",
-                "source_layer": "landforma",
-                "geometry_type": "Polygon",
-                "description": "砂礫地（領域が明瞭な場合）",
-            },
-        ],
-        "layer_name": "国土",
-        "zoom_min": 8,
-        "zoom_max": 16,
-        "display_zoom_min": 8,
-    },
     "water": {
         "features": [
             {

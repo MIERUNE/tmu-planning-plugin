@@ -90,7 +90,7 @@ class BasemapWorkflow(BaseWorkflow):
             raise Exception("地理院ベクトルタイルグループの作成に失敗しました")
 
         return group
-    
+
     def create_group(self) -> QgsLayerTreeGroup:
         """ベースマップグループを取得または作成（行政区域などベースマップ外の機能）
         Returns:

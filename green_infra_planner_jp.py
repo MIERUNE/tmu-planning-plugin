@@ -10,13 +10,12 @@ from qgis.core import (
 )
 from qgis.gui import QgsMessageBarItem
 from qgis.PyQt.QtCore import QCoreApplication, Qt
-from qgis.PyQt.QtGui import QColor, QIcon, QPixmap
-from qgis.PyQt.QtWidgets import QAction, QLabel
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtWidgets import QAction
 
 from .features.administrative_area.administrative_area_workflow import (
     AdministrativeAreaWorkflow,
 )
-from .features.administrative_area.settings import CLASS3_STYLES
 from .features.basemap.basemap_workflow import BasemapWorkflow
 from .features.estat.population_mesh_workflow import PopulationMeshWorkflow
 from .features.hazard_map_portal.flood_hazard_area_algorithm import (
@@ -134,33 +133,6 @@ class GreenInfraPlugin:
             self.iface.removeToolBarIcon(action)
         del self.toolbar
 
-    def _create_class3_legend(self):
-        """class3の凡例を動的に生成"""
-        if not self.dockwidget:
-            return
-        labels = {
-            "1": "1:xxxxxxxx",
-            "2": "2:xxxxxxxx",
-            "3": "3:xxxxxxxx",
-        }
-
-        layout = self.dockwidget.horizontalLayout_class3_legend
-        for value, style in CLASS3_STYLES.items():
-            color_label = QLabel()
-            pixmap = QPixmap(16, 16)
-            rgba = style["color"].split(",")
-            pixmap.fill(QColor(int(rgba[0]), int(rgba[1]), int(rgba[2]), int(rgba[3])))
-            color_label.setPixmap(pixmap)
-
-            # text_label = QLabel(value)
-            text_label = QLabel(labels.get(value, value))
-
-            layout.addWidget(color_label)
-            layout.addWidget(color_label)
-            layout.addWidget(text_label)
-
-        layout.addStretch()
-
     def show_dock_widget(self):
         # DockWidgetが作成されていない場合のみ作成
         if self.dockwidget is None:
@@ -180,7 +152,6 @@ class GreenInfraPlugin:
                 self.execute_data_visualization
             )
 
-        self._create_class3_legend()
         self.dockwidget.show()
 
     def execute_data_visualization(self):

@@ -38,13 +38,13 @@ class AdministrativeAreaAlgorithm:
 
     def create_administrative_area_layer(
         self,
-        class_type: Literal["class3", "class5"],
+        class_type: Literal["base", "class3", "class5"],
     ) -> Optional[QgsVectorTileLayer]:
         """
         行政区域データのベクタタイルレイヤーを作成
 
         Args:
-            class_type: 行政区域のクラスタイプ ("class3" または "class5")
+            class_type: 行政区域のクラスタイプ ("base", "class3" または "class5")
         Returns:
             QgsVectorTileLayer : 追加に成功した場合はレイヤーオブジェクト
         """
@@ -61,7 +61,6 @@ class AdministrativeAreaAlgorithm:
 
         # MBTilesのURIの作成
         uri = f"type=mbtiles&url={mbtiles_path}"
-        # layer_name = f"{LAYER_NAME}{class_type}_{prefecture_name}"
         layer_name = f"{LAYER_NAME}_{class_type}"
         administrative_area_layer = QgsVectorTileLayer(uri, layer_name)
 
@@ -72,22 +71,11 @@ class AdministrativeAreaAlgorithm:
         renderer = QgsVectorTileBasicRenderer()
         styles = []
 
-        # # class_typeに応じて設定を選択
-        # if class_type == "class3":
-        #     attr_name = "class3info"
-        #     styles_dict = CLASS3_STYLES
-        # elif class_type == "class5":  # class5
-        #     attr_name = "class5nofo"
-        #     styles_dict = CLASS5_STYLES
-        # else:  # base
-        #     attr_name = "baseinfo"
-        #     styles_dict = BASE_STYLE
-
         # class_typeに応じて設定を選択
         CLASS_TYPE_MAP = {
             "class3": ("class3info", CLASS3_STYLES),
             "class5": ("class5nofo", CLASS5_STYLES),
-            "base": ("class3info", BASE_STYLE),
+            "base": (None, BASE_STYLE),
         }
 
         attr_name, styles_dict = CLASS_TYPE_MAP[class_type]
@@ -102,10 +90,7 @@ class AdministrativeAreaAlgorithm:
             # フィルタ式を設定
             if class_type != "base":
                 polygon_style.setFilterExpression(f"{attr_name} = {attr_value}")
-            # # 都道府県名でフィルタ
-            # polygon_style.setFilterExpression(
-            #     f"{attr_name} = {attr_value} AND N03_001 = '{prefecture_name}'"
-            # )
+
             # シンボルを作成
             polygon_symbol = QgsFillSymbol.createSimple(style_props)
             polygon_style.setSymbol(polygon_symbol)

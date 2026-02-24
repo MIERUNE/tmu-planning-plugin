@@ -37,13 +37,13 @@ class AdministrativeAreaAlgorithm:
         )
 
     def create_administrative_area_layer(
-        self, prefecture_name: str, class_type: Literal["class3", "class5"]
+        self,
+        class_type: Literal["class3", "class5"],
     ) -> Optional[QgsVectorTileLayer]:
         """
         行政区域データのベクタタイルレイヤーを作成
 
         Args:
-            prefecture_name: フィルタする都道府県名（例: "北海道"）
             class_type: 行政区域のクラスタイプ ("class3" または "class5")
         Returns:
             QgsVectorTileLayer : 追加に成功した場合はレイヤーオブジェクト
@@ -61,7 +61,8 @@ class AdministrativeAreaAlgorithm:
 
         # MBTilesのURIの作成
         uri = f"type=mbtiles&url={mbtiles_path}"
-        layer_name = f"{LAYER_NAME}{class_type}_{prefecture_name}"
+        # layer_name = f"{LAYER_NAME}{class_type}_{prefecture_name}"
+        layer_name = f"{LAYER_NAME}_{class_type}"
         administrative_area_layer = QgsVectorTileLayer(uri, layer_name)
 
         if not administrative_area_layer.isValid():
@@ -99,14 +100,8 @@ class AdministrativeAreaAlgorithm:
             polygon_style.setGeometryType(Qgis.GeometryType.Polygon)
 
             # フィルタ式を設定
-            if class_type == "base":
-                # ベースレイヤーは都道府県名のみでフィルタ（全ポリゴンを白で表示）
-                polygon_style.setFilterExpression(f"N03_001 = '{prefecture_name}'")
-            else:
-                # class3/class5はクラス属性 + 都道府県名でフィルタ
-                polygon_style.setFilterExpression(
-                    f"{attr_name} = {attr_value} AND N03_001 = '{prefecture_name}'"
-                )
+            if class_type != "base":
+                polygon_style.setFilterExpression(f"{attr_name} = {attr_value}")
             # # 都道府県名でフィルタ
             # polygon_style.setFilterExpression(
             #     f"{attr_name} = {attr_value} AND N03_001 = '{prefecture_name}'"

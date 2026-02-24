@@ -20,7 +20,6 @@ class AdministrativeAreaWorkflow:
 
     def execute(
         self,
-        prefecture_name: str,
         class_type: Literal["base", "class3", "class5"],
         group: Optional[QgsLayerTreeGroup] = None,
     ) -> bool:
@@ -28,7 +27,6 @@ class AdministrativeAreaWorkflow:
         指定されたアルゴリズムを実行し、レイヤーをQGISに追加する
 
         Args:
-            prefecture_name: 都道府県名（例: "北海道"）
             class_type: 行政区域のクラスタイプ ("base", "class3" または "class5")
             group: 行政区域を表示するグループ（ベースマップグループに追加）
 
@@ -36,7 +34,7 @@ class AdministrativeAreaWorkflow:
             bool: 成功した場合はTrue、失敗した場合はFalse
         """
         added_layer = self.algorithm.create_administrative_area_layer(
-            prefecture_name=prefecture_name, class_type=class_type
+            class_type=class_type
         )
 
         if not added_layer:
@@ -73,7 +71,7 @@ class AdministrativeAreaWorkflow:
             sub_group = group.findGroup(sub_group_name)
             if not sub_group:
                 sub_group = group.addGroup(sub_group_name)
-    
+
             QgsProject.instance().addMapLayer(added_layer, False)
             sub_group.addLayer(added_layer)
         else:

@@ -218,7 +218,6 @@ class GreenInfraPlugin:
         # 行政区域class3レイヤーの可視化
         if self.dockwidget.checkBox_class3.isChecked():
             self.administrative_area_workflow.execute(
-                prefecture_name=self.dockwidget.comboBox_prefecture.currentText(),
                 class_type="class3",
                 group=basemap_group,
             )
@@ -226,14 +225,12 @@ class GreenInfraPlugin:
         # 行政区域class5レイヤーの可視化
         if self.dockwidget.checkBox_class5.isChecked():
             self.administrative_area_workflow.execute(
-                prefecture_name=self.dockwidget.comboBox_prefecture.currentText(),
                 class_type="class5",
                 group=basemap_group,
             )
 
         # 行政区域ベースレイヤー（白）の可視化
         self.administrative_area_workflow.execute(
-            prefecture_name=self.dockwidget.comboBox_prefecture.currentText(),
             class_type="base",
             group=basemap_group,
         )

@@ -21,7 +21,7 @@ class AdministrativeAreaWorkflow:
     def execute(
         self,
         prefecture_name: str,
-        class_type: Literal["class3", "class5"],
+        class_type: Literal["base", "class3", "class5"],
         group: Optional[QgsLayerTreeGroup] = None,
     ) -> bool:
         """
@@ -29,7 +29,7 @@ class AdministrativeAreaWorkflow:
 
         Args:
             prefecture_name: 都道府県名（例: "北海道"）
-            class_type: 行政区域のクラスタイプ ("class3" または "class5")
+            class_type: 行政区域のクラスタイプ ("base", "class3" または "class5")
             group: 行政区域を表示するグループ（ベースマップグループに追加）
 
         Returns:

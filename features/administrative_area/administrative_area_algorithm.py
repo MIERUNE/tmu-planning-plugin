@@ -15,7 +15,7 @@ from qgis.core import (
 )
 
 from ...utils.settings import PLUGIN_NAME
-from .settings import CLASS3_STYLES, CLASS5_STYLES, LAYER_NAME
+from .settings import BASE_STYLE, CLASS3_STYLES, CLASS5_STYLES, LAYER_NAME
 
 
 class AdministrativeAreaAlgorithm:
@@ -71,13 +71,25 @@ class AdministrativeAreaAlgorithm:
         renderer = QgsVectorTileBasicRenderer()
         styles = []
 
+        # # class_typeに応じて設定を選択
+        # if class_type == "class3":
+        #     attr_name = "class3info"
+        #     styles_dict = CLASS3_STYLES
+        # elif class_type == "class5":  # class5
+        #     attr_name = "class5nofo"
+        #     styles_dict = CLASS5_STYLES
+        # else:  # base
+        #     attr_name = "baseinfo"
+        #     styles_dict = BASE_STYLE
+
         # class_typeに応じて設定を選択
-        if class_type == "class3":
-            attr_name = "class3info"
-            styles_dict = CLASS3_STYLES
-        else:  # class5
-            attr_name = "class5nofo"
-            styles_dict = CLASS5_STYLES
+        CLASS_TYPE_MAP = {
+            "class3": ("class3info", CLASS3_STYLES),
+            "class5": ("class5nofo", CLASS5_STYLES),
+            "base": ("class3info", BASE_STYLE),
+        }
+
+        attr_name, styles_dict = CLASS_TYPE_MAP[class_type]
 
         # 共通処理
         for attr_value, style_props in styles_dict.items():
@@ -85,10 +97,20 @@ class AdministrativeAreaAlgorithm:
             polygon_style.setStyleName(f"{attr_name}_{attr_value}")
             polygon_style.setEnabled(True)
             polygon_style.setGeometryType(Qgis.GeometryType.Polygon)
-            # 都道府県名でフィルタ
-            polygon_style.setFilterExpression(
-                f"{attr_name} = {attr_value} AND N03_001 = '{prefecture_name}'"
-            )
+
+            # フィルタ式を設定
+            if class_type == "base":
+                # ベースレイヤーは都道府県名のみでフィルタ（全ポリゴンを白で表示）
+                polygon_style.setFilterExpression(f"N03_001 = '{prefecture_name}'")
+            else:
+                # class3/class5はクラス属性 + 都道府県名でフィルタ
+                polygon_style.setFilterExpression(
+                    f"{attr_name} = {attr_value} AND N03_001 = '{prefecture_name}'"
+                )
+            # # 都道府県名でフィルタ
+            # polygon_style.setFilterExpression(
+            #     f"{attr_name} = {attr_value} AND N03_001 = '{prefecture_name}'"
+            # )
             # シンボルを作成
             polygon_symbol = QgsFillSymbol.createSimple(style_props)
             polygon_style.setSymbol(polygon_symbol)

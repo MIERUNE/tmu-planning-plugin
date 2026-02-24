@@ -10,12 +10,13 @@ from qgis.core import (
 )
 from qgis.gui import QgsMessageBarItem
 from qgis.PyQt.QtCore import QCoreApplication, Qt
-from qgis.PyQt.QtGui import QIcon, QColor, QPixmap
+from qgis.PyQt.QtGui import QColor, QIcon, QPixmap
 from qgis.PyQt.QtWidgets import QAction, QLabel
 
 from .features.administrative_area.administrative_area_workflow import (
     AdministrativeAreaWorkflow,
 )
+from .features.administrative_area.settings import CLASS3_STYLES
 from .features.basemap.basemap_workflow import BasemapWorkflow
 from .features.estat.population_mesh_workflow import PopulationMeshWorkflow
 from .features.hazard_map_portal.flood_hazard_area_algorithm import (
@@ -50,7 +51,6 @@ from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .utils.estat.client import AdministrativeAreaClient
 from .utils.settings import CITY_DEFAULT_BOUNDS
-from .features.administrative_area.settings import CLASS3_STYLES
 
 PLUGIN_NAME = "GreenInfraPlannerJP"
 
@@ -139,12 +139,12 @@ class GreenInfraPlugin:
         if not self.dockwidget:
             return
         labels = {
-        "1": "1:xxxxxxxx",
-        "2": "2:xxxxxxxx",
-        "3": "3:xxxxxxxx",
-    }
+            "1": "1:xxxxxxxx",
+            "2": "2:xxxxxxxx",
+            "3": "3:xxxxxxxx",
+        }
 
-        layout = self.dockwidget.horizontalLayout_class3_legend 
+        layout = self.dockwidget.horizontalLayout_class3_legend
         for value, style in CLASS3_STYLES.items():
             color_label = QLabel()
             pixmap = QPixmap(16, 16)
@@ -230,6 +230,13 @@ class GreenInfraPlugin:
                 class_type="class5",
                 group=basemap_group,
             )
+
+        # 行政区域ベースレイヤー（白）の可視化
+        self.administrative_area_workflow.execute(
+            prefecture_name=self.dockwidget.comboBox_prefecture.currentText(),
+            class_type="base",
+            group=basemap_group,
+        )
 
         # Phase 3: 不動産情報ライブラリの各種レイヤー可視化
         # 都市計画区域の可視化

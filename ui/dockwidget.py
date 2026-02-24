@@ -27,6 +27,8 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
         self.pushButton_execute: QPushButton = self.pushButton_execute
         self.comboBox_prefecture: QComboBox = self.comboBox_prefecture
         self.comboBox_municipality: QComboBox = self.comboBox_municipality
+        self.checkBox_class3: QCheckBox = self.checkBox_class3
+        self.checkBox_class5: QCheckBox = self.checkBox_class5
         self.toolButton_basemap_info: QToolButton = self.toolButton_basemap_info
         self.checkBox_water: QCheckBox = self.checkBox_water
         self.checkBox_highway: QCheckBox = self.checkBox_highway
@@ -79,9 +81,6 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
         """地理院ベクトルタイルの選択された地物と色を取得"""
         selected_features = {}
 
-        # 国土
-        if self.checkBox_land.isChecked():
-            selected_features["land"] = self.colorButton_land.color()
         # 水域
         if self.checkBox_water.isChecked():
             selected_features["water"] = self.colorButton_water.color()

@@ -75,7 +75,7 @@ class AdministrativeAreaAlgorithm:
         CLASS_TYPE_MAP = {
             "class3": ("class3info", CLASS3_STYLES),
             "class5": ("class5nofo", CLASS5_STYLES),
-            "base": (None, BASE_STYLE),
+            "base": ("base", BASE_STYLE),
         }
 
         attr_name, styles_dict = CLASS_TYPE_MAP[class_type]

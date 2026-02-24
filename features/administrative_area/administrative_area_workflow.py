@@ -66,14 +66,27 @@ class AdministrativeAreaWorkflow:
 
         # プロジェクトに追加
         if group:
-            # 『行政区域』サブグループをを取得または作成してからレイヤーを追加
+            # 『行政区域』サブグループを取得または作成してからレイヤーを追加
             sub_group_name = "行政区域"
             sub_group = group.findGroup(sub_group_name)
-            if not sub_group:
+
+            if sub_group:
+                # 既に同名のレイヤーがサブグループ内に存在する場合は削除
+                for child in sub_group.children():
+                    if (
+                        hasattr(child, "layer")
+                        and child.layer()
+                        and child.layer().name() == added_layer.name()
+                    ):
+                        QgsProject.instance().removeMapLayer(child.layer().id())
+            else:
+                # サブグループが存在しない場合は新規作成
                 sub_group = group.addGroup(sub_group_name)
 
+            # レイヤーをサブグループに追加
             QgsProject.instance().addMapLayer(added_layer, False)
             sub_group.addLayer(added_layer)
+
         else:
             QgsProject.instance().addMapLayer(added_layer)
 

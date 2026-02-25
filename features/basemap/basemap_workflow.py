@@ -91,6 +91,13 @@ class BasemapWorkflow(BaseWorkflow):
 
         return group
 
+    def create_group(self) -> QgsLayerTreeGroup:
+        """ベースマップグループを取得または作成（行政区域などベースマップ外の機能）
+        Returns:
+            QgsLayerTreeGroup: ベースマップグループオブジェクト
+        """
+        return self._setup_basemap_group()
+
     # ==================
     # 3. レイヤー管理
     # ==================

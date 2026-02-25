@@ -4,6 +4,15 @@
 
 LAYER_NAME = "行政区域"
 
+# ベースの行政区域ポリゴン（白）のスタイル
+BASE_STYLE: dict[str, dict[str, str]] = {
+    "base": {
+        "color": "255,255,255,120",  # 白
+        "outline_color": "120,120,120,255",
+        "outline_width": "0.7",
+    }
+}
+
 CLASS3_STYLES: dict[str, dict[str, str]] = {
     "1": {
         "color": "255,204,204,180",  # パステルピンク

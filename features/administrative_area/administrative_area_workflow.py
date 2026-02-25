@@ -1,7 +1,8 @@
-from typing import Literal
+from typing import Literal, Optional
 
 from qgis.core import (
     Qgis,
+    QgsLayerTreeGroup,
     QgsMessageLog,
     QgsProject,
 )
@@ -18,20 +19,22 @@ class AdministrativeAreaWorkflow:
         self.algorithm = AdministrativeAreaAlgorithm(iface)
 
     def execute(
-        self, prefecture_name: str, class_type: Literal["class3", "class5"]
+        self,
+        class_type: Literal["base", "class3", "class5"],
+        group: Optional[QgsLayerTreeGroup] = None,
     ) -> bool:
         """
         指定されたアルゴリズムを実行し、レイヤーをQGISに追加する
 
         Args:
-            prefecture_name: 都道府県名（例: "北海道"）
-            class_type: 行政区域のクラスタイプ ("class3" または "class5")
+            class_type: 行政区域のクラスタイプ ("base", "class3" または "class5")
+            group: 行政区域を表示するグループ（ベースマップグループに追加）
 
         Returns:
             bool: 成功した場合はTrue、失敗した場合はFalse
         """
         added_layer = self.algorithm.create_administrative_area_layer(
-            prefecture_name=prefecture_name, class_type=class_type
+            class_type=class_type
         )
 
         if not added_layer:
@@ -62,7 +65,30 @@ class AdministrativeAreaWorkflow:
             return False
 
         # プロジェクトに追加
-        QgsProject.instance().addMapLayer(added_layer)
+        if group:
+            # 『行政区域』サブグループを取得または作成してからレイヤーを追加
+            sub_group_name = "行政区域"
+            sub_group = group.findGroup(sub_group_name)
+
+            if sub_group:
+                # 既に同名のレイヤーがサブグループ内に存在する場合は削除
+                for child in sub_group.children():
+                    if (
+                        hasattr(child, "layer")
+                        and child.layer()
+                        and child.layer().name() == added_layer.name()
+                    ):
+                        QgsProject.instance().removeMapLayer(child.layer().id())
+            else:
+                # サブグループが存在しない場合は新規作成
+                sub_group = group.addGroup(sub_group_name)
+
+            # レイヤーをサブグループに追加
+            QgsProject.instance().addMapLayer(added_layer, False)
+            sub_group.addLayer(added_layer)
+
+        else:
+            QgsProject.instance().addMapLayer(added_layer)
 
         QgsMessageLog.logMessage(
             f"'{added_layer.name()}' レイヤーを追加しました。",

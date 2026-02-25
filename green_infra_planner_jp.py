@@ -184,20 +184,27 @@ class GreenInfraPlugin:
         # Phase 1: ベースマップレイヤーの可視化
         self.basemap_workflow.execute(self.dockwidget.get_selected_basemaps())
 
-        # Phase 2: 行政区域ポリゴンレイヤーの可視化
+        # Phase 2: 行政区域ポリゴンレイヤーの可視化（ベースマップグループ内に追加）
+        basemap_group = self.basemap_workflow.create_group()
         # 行政区域class3レイヤーの可視化
         if self.dockwidget.checkBox_class3.isChecked():
             self.administrative_area_workflow.execute(
-                prefecture_name=self.dockwidget.comboBox_prefecture.currentText(),
                 class_type="class3",
+                group=basemap_group,
             )
 
         # 行政区域class5レイヤーの可視化
         if self.dockwidget.checkBox_class5.isChecked():
             self.administrative_area_workflow.execute(
-                prefecture_name=self.dockwidget.comboBox_prefecture.currentText(),
                 class_type="class5",
+                group=basemap_group,
             )
+
+        # 行政区域ベースレイヤー（白）の可視化
+        self.administrative_area_workflow.execute(
+            class_type="base",
+            group=basemap_group,
+        )
 
         # Phase 3: 不動産情報ライブラリの各種レイヤー可視化
         # 都市計画区域の可視化

@@ -132,16 +132,16 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
         # 未選択状態に設定
         self.comboBox_municipality.setCurrentIndex(0)
 
-    def create_legends(self):
+    def create_legends(self, class3: dict, class5: dict):
         """全凡例を生成"""
         self._create_legend(
             layout=self.horizontalLayout_class3_legend,
-            styles=CLASS3_STYLES,
+            styles=class3,
             labels={"1": "1:xxxxxxxx", "2": "2:xxxxxxxx", "3": "3:xxxxxxxx"},
         )
         self._create_legend(
             layout=self.verticalLayout_class5_legend_container,
-            styles=CLASS5_STYLES,
+            styles=class5,
             labels={
                 "1": "1:xxxxxxxx",
                 "2": "2:xxxxxxxx",

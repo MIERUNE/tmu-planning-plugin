@@ -10,8 +10,8 @@ from qgis.core import (
 )
 from qgis.gui import QgsMessageBarItem
 from qgis.PyQt.QtCore import QCoreApplication, Qt
-from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction
+from qgis.PyQt.QtGui import QColor, QIcon, QPixmap
+from qgis.PyQt.QtWidgets import QAction, QHBoxLayout, QLabel
 
 from .features.administrative_area.administrative_area_workflow import (
     AdministrativeAreaWorkflow,
@@ -133,6 +133,64 @@ class GreenInfraPlugin:
             self.iface.removeToolBarIcon(action)
         del self.toolbar
 
+    # def _create_legend(
+    #     self,
+    #     layout,
+    #     styles: dict[str, dict[str, str]],
+    #     labels: dict[str, str],
+    #     items_per_row: Optional[int] = None,
+    # ):
+    #     """凡例を動的に生成
+    #     Args:
+    #         layout: 凡例を配置する対象レイアウト
+    #         styles: スタイル辞書 (CLASS3_STYLES / CLASS5_STYLES)
+    #         labels: 表示ラベル辞書
+    #         items_per_row: 1行あたりのアイテム数。Noneなら全て1行に配置
+    #     """
+    #     if not self.dockwidget:
+    #         return
+
+    #     # レイアウトをクリア
+    #     while layout.count():
+    #         item = layout.takeAt(0)
+    #         if item.layout():
+    #             row = item.layout()
+    #             while row.count():
+    #                 child = row.takeAt(0)
+    #                 if child.widget():
+    #                     child.widget().deleteLater()
+    #         elif item.widget():
+    #             item.widget().deleteLater()
+
+    #     # 折り返しありの場合は行レイアウトを作成
+    #     if items_per_row:
+    #         row_layout = QHBoxLayout()
+    #         layout.addLayout(row_layout)
+    #     else:
+    #         row_layout = layout
+
+    #     for i, (value, style) in enumerate(styles.items()):
+    #         # 折り返し
+    #         if items_per_row and i > 0 and i % items_per_row == 0:
+    #             row_layout.addStretch()
+    #             row_layout = QHBoxLayout()
+    #             layout.addLayout(row_layout)
+
+    #         # カラーボックス
+    #         color_label = QLabel()
+    #         pixmap = QPixmap(16, 16)
+    #         rgba = style["color"].split(",")
+    #         pixmap.fill(QColor(int(rgba[0]), int(rgba[1]), int(rgba[2]), int(rgba[3])))
+    #         color_label.setPixmap(pixmap)
+
+    #         # テキストラベル
+    #         text_label = QLabel(labels.get(value, value))
+
+    #         row_layout.addWidget(color_label)
+    #         row_layout.addWidget(text_label)
+
+    #     row_layout.addStretch()
+
     def show_dock_widget(self):
         # DockWidgetが作成されていない場合のみ作成
         if self.dockwidget is None:
@@ -152,6 +210,24 @@ class GreenInfraPlugin:
                 self.execute_data_visualization
             )
 
+        # self._create_legend(
+        #     layout=self.dockwidget.horizontalLayout_class3_legend,
+        #     styles=CLASS3_STYLES,
+        #     labels={"1": "1:xxxxxxxx", "2": "2:xxxxxxxx", "3": "3:xxxxxxxx"},
+        # )
+        # self._create_legend(
+        #     layout=self.dockwidget.verticalLayout_class5_legend_container,
+        #     styles=CLASS5_STYLES,
+        #     labels={
+        #         "1": "1:xxxxxxxx",
+        #         "2": "2:xxxxxxxx",
+        #         "3": "3:xxxxxxxx",
+        #         "4": "4:xxxxxxxx",
+        #         "5": "5:xxxxxxxx",
+        #     },
+        #     items_per_row=3,
+        # )
+        self.dockwidget.create_legends()
         self.dockwidget.show()
 
     def execute_data_visualization(self):

@@ -159,7 +159,7 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
         items_per_row: Optional[int] = None,
     ):
         """凡例を動的に生成"""
-        # 中身は今と同じ（self.dockwidget → self に変わるだけ）
+        # 既存の凡例アイテムをクリア
         while layout.count():
             item = layout.takeAt(0)
             if item.layout():
@@ -168,6 +168,8 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
                     child = row.takeAt(0)
                     if child.widget():
                         child.widget().deleteLater()
+                        row.setParent(None)
+                        row.deleteLater()
             elif item.widget():
                 item.widget().deleteLater()
 
@@ -177,6 +179,7 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
         else:
             row_layout = layout
 
+        # stylesの内容に基づいて凡例アイテムを生成
         for i, (value, style) in enumerate(styles.items()):
             if items_per_row and i > 0 and i % items_per_row == 0:
                 row_layout.addStretch()

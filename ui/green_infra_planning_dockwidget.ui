@@ -231,19 +231,18 @@
                             <property name="title">
                               <string>凡例</string>
                             </property>
-                            <layout class="QVBoxLayout" name="verticalLayout_class5_legend_container">
+                            <layout class="QVBoxLayout"
+                              name="verticalLayout_class5_legend_container">
                               <item>
-                                <layout class="QHBoxLayout" name="horizontalLayout_class5_legend">
-                                  <property name="leftMargin">
-                                    <number>0</number>
-                                  </property>
-                                  <property name="topMargin">
-                                    <number>0</number>
-                                  </property>
-                                  <property name="bottomMargin">
-                                    <number>0</number>
-                                  </property>
-                                </layout>
+                                <property name="leftMargin">
+                                  <number>0</number>
+                                </property>
+                                <property name="topMargin">
+                                  <number>0</number>
+                                </property>
+                                <property name="bottomMargin">
+                                  <number>0</number>
+                                </property>
                               </item>
                             </layout>
                           </widget>
@@ -273,18 +272,31 @@
                                   </size>
                                 </property>
                                 <property name="toolTip">
-                                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-size:10pt; font-weight:600;"&gt;【APIの提供元】 &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;"&gt;国土地理院ベクトルタイル提供サイト&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt; font-weight:600;"&gt;【APIサイト】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;"&gt;https://maps.gsi.go.jp/development/vt.html &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt; font-weight:600;"&gt;【クレジット】 &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;"&gt;出典：国土地理院ウェブサイト 地理院タイル（ベクトルタイル）を加工して作成&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                                  <string>
+                                    &lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span
+                                    style=" font-size:10pt; font-weight:600;"&gt;【APIの提供元】
+                                    &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style="
+                                    font-size:10pt;"&gt;国土地理院ベクトルタイル提供サイト&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span
+                                    style=" font-size:10pt;
+                                    font-weight:600;"&gt;【APIサイト】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span
+                                    style="
+                                    font-size:10pt;"&gt;https://maps.gsi.go.jp/development/vt.html
+                                    &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;
+                                    font-weight:600;"&gt;【クレジット】
+                                    &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style="
+                                    font-size:10pt;"&gt;出典：国土地理院ウェブサイト
+                                    地理院タイル（ベクトルタイル）を加工して作成&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                                 </property>
                                 <property name="styleSheet">
                                   <string>QToolButton {
-    border: none;
-    background-color: transparent;
-    color: #2196F3;
-    font-weight: bold;
-}
-QToolButton:hover {
-    color: #1976D2;
-}</string>
+                                    border: none;
+                                    background-color: transparent;
+                                    color: #2196F3;
+                                    font-weight: bold;
+                                    }
+                                    QToolButton:hover {
+                                    color: #1976D2;
+                                    }</string>
                                 </property>
                                 <property name="text">
                                   <string>ⓘ</string>
@@ -487,18 +499,39 @@ QToolButton:hover {
                                   </size>
                                 </property>
                                 <property name="toolTip">
-                                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-size:10pt; font-weight:600;"&gt;【APIの提供元】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;"&gt;政府統計の総合窓口 e-Stat&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt; font-weight:600;"&gt;【APIサイト】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;"&gt;https://www.e-stat.go.jp/&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt; font-weight:600;"&gt;【クレジット】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-family:'Hiragino Sans'; font-size:10pt;"&gt;このサービスは、政府統計総合窓口&lt;/span&gt;&lt;span style=" font-family:'Helvetica Neue'; font-size:10pt;"&gt;(e-Stat)&lt;/span&gt;&lt;span style=" font-family:'Hiragino Sans'; font-size:10pt;"&gt;の&lt;/span&gt;&lt;span style=" font-family:'Helvetica Neue'; font-size:10pt;"&gt;API&lt;/span&gt;&lt;span style=" font-family:'Hiragino Sans'; font-size:10pt;"&gt;機能を使用していますが、サービスの内容は国によって保証されたものではありません。&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                                  <string>
+                                    &lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span
+                                    style=" font-size:10pt;
+                                    font-weight:600;"&gt;【APIの提供元】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span
+                                    style=" font-size:10pt;"&gt;政府統計の総合窓口
+                                    e-Stat&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style="
+                                    font-size:10pt;
+                                    font-weight:600;"&gt;【APIサイト】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span
+                                    style="
+                                    font-size:10pt;"&gt;https://www.e-stat.go.jp/&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span
+                                    style=" font-size:10pt;
+                                    font-weight:600;"&gt;【クレジット】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span
+                                    style=" font-family:'Hiragino Sans';
+                                    font-size:10pt;"&gt;このサービスは、政府統計総合窓口&lt;/span&gt;&lt;span
+                                    style=" font-family:'Helvetica Neue';
+                                    font-size:10pt;"&gt;(e-Stat)&lt;/span&gt;&lt;span style="
+                                    font-family:'Hiragino Sans';
+                                    font-size:10pt;"&gt;の&lt;/span&gt;&lt;span style="
+                                    font-family:'Helvetica Neue';
+                                    font-size:10pt;"&gt;API&lt;/span&gt;&lt;span style="
+                                    font-family:'Hiragino Sans';
+                                    font-size:10pt;"&gt;機能を使用していますが、サービスの内容は国によって保証されたものではありません。&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                                 </property>
                                 <property name="styleSheet">
                                   <string>QToolButton {
-    border: none;
-    background-color: transparent;
-    color: #2196F3;
-    font-weight: bold;
-}
-QToolButton:hover {
-    color: #1976D2;
-}</string>
+                                    border: none;
+                                    background-color: transparent;
+                                    color: #2196F3;
+                                    font-weight: bold;
+                                    }
+                                    QToolButton:hover {
+                                    color: #1976D2;
+                                    }</string>
                                 </property>
                                 <property name="text">
                                   <string>ⓘ</string>
@@ -582,18 +615,29 @@ QToolButton:hover {
                                   </size>
                                 </property>
                                 <property name="toolTip">
-                                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-size:10pt; font-weight:600;"&gt;【APIの提供元】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;"&gt;国土交通省 不動産情報ライブラリ &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt; font-weight:600;"&gt;【APIサイト】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;"&gt;https://www.reinfolib.mlit.go.jp/ &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt; font-weight:600;"&gt;【クレジット】 &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;"&gt;このサービスは、国土交通省の不動産情報ライブラリのAPI機能を使用していますが、提供情報の最新性、正確性、完全性等が保証されたものではありません&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                                  <string>
+                                    &lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span
+                                    style=" font-size:10pt;
+                                    font-weight:600;"&gt;【APIの提供元】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span
+                                    style=" font-size:10pt;"&gt;国土交通省 不動産情報ライブラリ
+                                    &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;
+                                    font-weight:600;"&gt;【APIサイト】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span
+                                    style=" font-size:10pt;"&gt;https://www.reinfolib.mlit.go.jp/
+                                    &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;
+                                    font-weight:600;"&gt;【クレジット】
+                                    &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style="
+                                    font-size:10pt;"&gt;このサービスは、国土交通省の不動産情報ライブラリのAPI機能を使用していますが、提供情報の最新性、正確性、完全性等が保証されたものではありません&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                                 </property>
                                 <property name="styleSheet">
                                   <string>QToolButton {
-                    border: none;
-                    background-color: transparent;
-                    color: #2196F3;
-                    font-weight: bold;
-                }
-                QToolButton:hover {
-                    color: #1976D2;
-                }</string>
+                                    border: none;
+                                    background-color: transparent;
+                                    color: #2196F3;
+                                    font-weight: bold;
+                                    }
+                                    QToolButton:hover {
+                                    color: #1976D2;
+                                    }</string>
                                 </property>
                                 <property name="text">
                                   <string>ⓘ</string>
@@ -685,18 +729,29 @@ QToolButton:hover {
                                   </size>
                                 </property>
                                 <property name="toolTip">
-                                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-size:10pt; font-weight:600;"&gt;【APIの提供元】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;"&gt;国土交通省 不動産情報ライブラリ &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt; font-weight:600;"&gt;【APIサイト】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;"&gt;https://www.reinfolib.mlit.go.jp/ &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;"&gt;【クレジット】 &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;"&gt;このサービスは、国土交通省の不動産情報ライブラリのAPI機能を使用していますが、提供情報の最新性、正確性、完全性等が保証されたものではありません&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                                  <string>
+                                    &lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span
+                                    style=" font-size:10pt;
+                                    font-weight:600;"&gt;【APIの提供元】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span
+                                    style=" font-size:10pt;"&gt;国土交通省 不動産情報ライブラリ
+                                    &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;
+                                    font-weight:600;"&gt;【APIサイト】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span
+                                    style=" font-size:10pt;"&gt;https://www.reinfolib.mlit.go.jp/
+                                    &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style="
+                                    font-size:10pt;"&gt;【クレジット】
+                                    &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style="
+                                    font-size:10pt;"&gt;このサービスは、国土交通省の不動産情報ライブラリのAPI機能を使用していますが、提供情報の最新性、正確性、完全性等が保証されたものではありません&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                                 </property>
                                 <property name="styleSheet">
                                   <string>QToolButton {
-                    border: none;
-                    background-color: transparent;
-                    color: #2196F3;
-                    font-weight: bold;
-                }
-                QToolButton:hover {
-                    color: #1976D2;
-                }</string>
+                                    border: none;
+                                    background-color: transparent;
+                                    color: #2196F3;
+                                    font-weight: bold;
+                                    }
+                                    QToolButton:hover {
+                                    color: #1976D2;
+                                    }</string>
                                 </property>
                                 <property name="text">
                                   <string>ⓘ</string>
@@ -823,18 +878,29 @@ QToolButton:hover {
                                   </size>
                                 </property>
                                 <property name="toolTip">
-                                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-size:10pt; font-weight:600;"&gt;【APIの提供元】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;"&gt;海上保安庁 海洋状況表示システム（海しる） &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt; font-weight:600;"&gt;【APIサイト】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;"&gt;https://www.msil.go.jp/ &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt; font-weight:600;"&gt;【クレジット】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;"&gt;このサービスは、海しるAPIを利用して取得した情報をもとに作成しているが、サービスの内容は海上保安庁によって保証されたものではない&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                                  <string>
+                                    &lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span
+                                    style=" font-size:10pt;
+                                    font-weight:600;"&gt;【APIの提供元】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span
+                                    style=" font-size:10pt;"&gt;海上保安庁 海洋状況表示システム（海しる）
+                                    &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;
+                                    font-weight:600;"&gt;【APIサイト】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span
+                                    style=" font-size:10pt;"&gt;https://www.msil.go.jp/
+                                    &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;
+                                    font-weight:600;"&gt;【クレジット】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span
+                                    style="
+                                    font-size:10pt;"&gt;このサービスは、海しるAPIを利用して取得した情報をもとに作成しているが、サービスの内容は海上保安庁によって保証されたものではない&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                                 </property>
                                 <property name="styleSheet">
                                   <string>QToolButton {
-                    border: none;
-                    background-color: transparent;
-                    color: #2196F3;
-                    font-weight: bold;
-                }
-                QToolButton:hover {
-                    color: #1976D2;
-                }</string>
+                                    border: none;
+                                    background-color: transparent;
+                                    color: #2196F3;
+                                    font-weight: bold;
+                                    }
+                                    QToolButton:hover {
+                                    color: #1976D2;
+                                    }</string>
                                 </property>
                                 <property name="text">
                                   <string>ⓘ</string>
@@ -947,18 +1013,31 @@ QToolButton:hover {
                                   </size>
                                 </property>
                                 <property name="toolTip">
-                                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-size:10pt; font-weight:600;"&gt;【APIの提供元】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;"&gt;国土交通省 ハザードマップポータルサイト &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt; font-weight:600;"&gt;【APIサイト】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;"&gt;https://disaportal.gsi.go.jp/ &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt; font-weight:600;"&gt;【出典・クレジット】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;"&gt;出典：「ハザードマップポータルサイト」（https://disaportal.gsi.go.jp/）&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;"&gt;このサービスは、ハザードマップポータルサイトのデータを加工して作成しています。&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                                  <string>
+                                    &lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span
+                                    style=" font-size:10pt;
+                                    font-weight:600;"&gt;【APIの提供元】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span
+                                    style=" font-size:10pt;"&gt;国土交通省 ハザードマップポータルサイト
+                                    &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;
+                                    font-weight:600;"&gt;【APIサイト】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span
+                                    style=" font-size:10pt;"&gt;https://disaportal.gsi.go.jp/
+                                    &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=" font-size:10pt;
+                                    font-weight:600;"&gt;【出典・クレジット】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span
+                                    style="
+                                    font-size:10pt;"&gt;出典：「ハザードマップポータルサイト」（https://disaportal.gsi.go.jp/）&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span
+                                    style="
+                                    font-size:10pt;"&gt;このサービスは、ハザードマップポータルサイトのデータを加工して作成しています。&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                                 </property>
                                 <property name="styleSheet">
                                   <string>QToolButton {
-                    border: none;
-                    background-color: transparent;
-                    color: #2196F3;
-                    font-weight: bold;
-                }
-                QToolButton:hover {
-                    color: #1976D2;
-                }</string>
+                                    border: none;
+                                    background-color: transparent;
+                                    color: #2196F3;
+                                    font-weight: bold;
+                                    }
+                                    QToolButton:hover {
+                                    color: #1976D2;
+                                    }</string>
                                 </property>
                                 <property name="text">
                                   <string>ⓘ</string>
@@ -1032,17 +1111,17 @@ QToolButton:hover {
             </property>
             <property name="styleSheet">
               <string>QPushButton {
-    background-color: #2196F3;
-    color: white;
-    border-radius: 4px;
-    border: none;
-}
-QPushButton:hover {
-    background-color: #1976D2;
-}
-QPushButton:pressed {
-    background-color: #0D47A1;
-}</string>
+                background-color: #2196F3;
+                color: white;
+                border-radius: 4px;
+                border: none;
+                }
+                QPushButton:hover {
+                background-color: #1976D2;
+                }
+                QPushButton:pressed {
+                background-color: #0D47A1;
+                }</string>
             </property>
             <property name="text">
               <string>データ取得・可視化実行</string>
@@ -1059,6 +1138,6 @@ QPushButton:pressed {
       <header>qgscolorbutton.h</header>
     </customwidget>
   </customwidgets>
-  <resources/>
-  <connections/>
+  <resources />
+  <connections />
 </ui>

@@ -15,7 +15,6 @@ from qgis.PyQt.QtWidgets import (
     QToolButton,
 )
 
-from ..features.administrative_area.settings import CLASS3_STYLES, CLASS5_STYLES
 from .apikey_dialog import ApikeyDialog
 
 ui_dockwidget, _ = uic.loadUiType(

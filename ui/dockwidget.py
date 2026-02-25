@@ -187,9 +187,7 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
             color_label = QLabel()
             pixmap = QPixmap(16, 16)
             rgba = style["color"].split(",")
-            pixmap.fill(
-                QColor(int(rgba[0]), int(rgba[1]), int(rgba[2]), int(rgba[3]))
-            )
+            pixmap.fill(QColor(int(rgba[0]), int(rgba[1]), int(rgba[2]), int(rgba[3])))
             color_label.setPixmap(pixmap)
             text_label = QLabel(labels.get(value, value))
 

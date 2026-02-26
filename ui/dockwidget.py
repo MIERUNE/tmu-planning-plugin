@@ -136,17 +136,17 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
         self._create_legend(
             layout=self.horizontalLayout_class3_legend,
             styles=class3,
-            labels={"1": "1:xxxxxxxx", "2": "2:xxxxxxxx", "3": "3:xxxxxxxx"},
+            labels={"1": "1：都市型", "2": "2：農地緑地型", "3": "3：森林型"},
         )
         self._create_legend(
             layout=self.verticalLayout_class5_legend_container,
             styles=class5,
             labels={
-                "1": "1:xxxxxxxx",
-                "2": "2:xxxxxxxx",
-                "3": "3:xxxxxxxx",
-                "4": "4:xxxxxxxx",
-                "5": "5:xxxxxxxx",
+                "1": "1：森林型",
+                "2": "2：都市型",
+                "3": "3：農地緑地型",
+                "4": "4：森林型やや都市より",
+                "5": "5：農地緑地型やや都市より",
             },
             items_per_row=3,
         )

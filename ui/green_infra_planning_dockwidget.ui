@@ -161,7 +161,7 @@
                             <item>
                               <widget class="QCheckBox" name="checkBox_class3">
                                 <property name="text">
-                                  <string>class3</string>
+                                  <string>3クラス</string>
                                 </property>
                               </widget>
                             </item>
@@ -207,7 +207,7 @@
                             <item>
                               <widget class="QCheckBox" name="checkBox_class5">
                                 <property name="text">
-                                  <string>class5</string>
+                                  <string>5クラス</string>
                                 </property>
                               </widget>
                             </item>

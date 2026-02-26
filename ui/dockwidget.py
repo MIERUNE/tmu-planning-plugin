@@ -168,8 +168,8 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
                     child = row.takeAt(0)
                     if child.widget():
                         child.widget().deleteLater()
-                        row.setParent(None)
-                        row.deleteLater()
+                row.setParent(None)
+                row.deleteLater()
             elif item.widget():
                 item.widget().deleteLater()
 

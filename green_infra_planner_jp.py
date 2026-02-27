@@ -50,6 +50,7 @@ from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .utils.estat.client import AdministrativeAreaClient
 from .utils.settings import CITY_DEFAULT_BOUNDS
+from .features.administrative_area.settings import CLASS3_STYLES, CLASS5_STYLES
 
 PLUGIN_NAME = "GreenInfraPlannerJP"
 
@@ -152,6 +153,7 @@ class GreenInfraPlugin:
                 self.execute_data_visualization
             )
 
+        self.dockwidget.create_legends(CLASS3_STYLES, CLASS5_STYLES)
         self.dockwidget.show()
 
     def execute_data_visualization(self):

@@ -1,11 +1,15 @@
 import os
+from typing import Optional
 
 from qgis.gui import QgsColorButton
 from qgis.PyQt import uic
+from qgis.PyQt.QtGui import QColor, QPixmap
 from qgis.PyQt.QtWidgets import (
     QCheckBox,
     QComboBox,
     QDockWidget,
+    QHBoxLayout,
+    QLabel,
     QPushButton,
     QRadioButton,
     QToolButton,
@@ -126,6 +130,73 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
 
         # 未選択状態に設定
         self.comboBox_municipality.setCurrentIndex(0)
+
+    def create_legends(self, class3: dict, class5: dict):
+        """全凡例を生成"""
+        self._create_legend(
+            layout=self.horizontalLayout_class3_legend,
+            styles=class3,
+            labels={"1": "1：都市型", "2": "2：農地緑地型", "3": "3：森林型"},
+        )
+        self._create_legend(
+            layout=self.verticalLayout_class5_legend_container,
+            styles=class5,
+            labels={
+                "1": "1：森林型",
+                "2": "2：都市型",
+                "3": "3：農地緑地型",
+                "4": "4：森林型やや都市より",
+                "5": "5：農地緑地型やや都市より",
+            },
+            items_per_row=3,
+        )
+
+    def _create_legend(
+        self,
+        layout,
+        styles: dict,
+        labels: dict,
+        items_per_row: Optional[int] = None,
+    ):
+        """凡例を動的に生成"""
+        # 既存の凡例アイテムをクリア
+        while layout.count():
+            item = layout.takeAt(0)
+            if item.layout():
+                row = item.layout()
+                while row.count():
+                    child = row.takeAt(0)
+                    if child.widget():
+                        child.widget().deleteLater()
+                row.setParent(None)
+                row.deleteLater()
+            elif item.widget():
+                item.widget().deleteLater()
+
+        if items_per_row:
+            row_layout = QHBoxLayout()
+            layout.addLayout(row_layout)
+        else:
+            row_layout = layout
+
+        # stylesの内容に基づいて凡例アイテムを生成
+        for i, (value, style) in enumerate(styles.items()):
+            if items_per_row and i > 0 and i % items_per_row == 0:
+                row_layout.addStretch()
+                row_layout = QHBoxLayout()
+                layout.addLayout(row_layout)
+
+            color_label = QLabel()
+            pixmap = QPixmap(16, 16)
+            rgba = style["color"].split(",")
+            pixmap.fill(QColor(int(rgba[0]), int(rgba[1]), int(rgba[2]), int(rgba[3])))
+            color_label.setPixmap(pixmap)
+            text_label = QLabel(labels.get(value, value))
+
+            row_layout.addWidget(color_label)
+            row_layout.addWidget(text_label)
+
+        row_layout.addStretch()
 
     def _set_population_mesh_controls(self):
         """人口メッシュ関連のコントロールを初期化"""

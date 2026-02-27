@@ -5,7 +5,7 @@
 このプラグインは、国土交通データプラットフォームや各省庁のオープンデータを QGIS 上で統合的に可視化し、グリーンインフラ計画の策定を支援することを目的としています。
 
 - **主な技術**: QGIS 3, Python 3.9+, PyQGIS, `uv`
-- **連携 API**: 国土地理院, 不動産情報ライブラリ, 海しる API, e-Stat API
+- **連携 API**: 国土地理院, 不動産情報ライブラリ, 海しる API, e-Stat API, ハザードマップポータルサイト
 
 ---
 
@@ -17,8 +17,24 @@
 
 **実装**: `basemap/basemap_algorithm.py`
 
-- ベースマップ表示（国土 / 水域 / 道路 / 建物）
+- ベースマップ表示（高速道路 / 水域 / 道路 / 建物）
 - タイル取得 URL: `https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf`
+
+### 行政区域ポリゴン
+
+**実装**: `administrative_area/`
+
+- 行政区域データの表示（MBTiles 形式のローカルデータを使用）
+- 3 種類の表示モードに対応:
+
+| モード     | 説明                             | 属性フィールド |
+| ---------- | -------------------------------- | -------------- |
+| ベース(白) | 行政区域を白色で表示             | -              |
+| class3     | 3 区分の行政区域分類で色分け表示 | `class3info`   |
+| class5     | 5 区分の行政区域分類で色分け表示 | `class5nofo`   |
+
+- データソース: ローカル MBTiles ファイル（`features/administrative_area/data/class.mbtiles`）
+- ベースマップグループ内の「行政区域」サブグループに追加
 
 ### 国土交通省 不動産情報ライブラリ（MLIT Reinfolib）
 
@@ -32,8 +48,19 @@
 | 立地適正化計画区域      | `XKT003`       | `location_normalization_plan_algorithm.py` |
 | 自然公園地域            | `XKT019`       | `nature_reserve_algorithm.py`              |
 | 高度利用地区            | `XKT024`       | `high_utilization_zone_algorithm.py`       |
-| 人口集中地区         | `XKT031`      | `did_algorithm.py`                             |
-| 市区町村一覧         | `XIT002`       | `area/area_algorithm.py`                  |
+| 人口集中地区            | `XKT031`       | `did_algorithm.py`                         |
+| 市区町村一覧            | `XIT002`       | `area/area_algorithm.py`                   |
+
+### ハザードマップポータルサイト
+
+**実装**: `hazard_map_portal/`
+
+| 機能                             | データ形式   | アルゴリズム                     |
+| -------------------------------- | ------------ | -------------------------------- |
+| 洪水浸水想定区域（想定最大規模） | ラスタタイル | `flood_hazard_area_algorithm.py` |
+
+- タイル取得 URL: `https://disaportaldata.gsi.go.jp/raster/01_flood_l2_shinsuishin_data/{z}/{x}/{y}.png`
+- 国土交通省ハザードマップポータルサイトが提供する洪水浸水想定区域（想定最大規模）のラスタタイルデータを表示
 
 ### 海しる API
 
@@ -168,30 +195,47 @@ tmu-planning-plugin/
 │   ├── apikey_dialog.py           # APIキー設定ダイアログ
 │   └── *.ui                       # Qt Designer UIファイル
 │
-├── workflows/                      # 処理フロー制御（オーケストレーター）
-│   ├── base_workflow.py           # 基底クラス（共通処理）
-│   ├── coastline_workflow.py      # 海岸線取得フロー
-│   ├── land_use_layer_workflow.py # 土地利用レイヤー取得フロー
-│   └── ...                        # その他の機能別ワークフロー
-│
-├── basemap/                        # 国土地理院ベースマップ機能
-│   ├── basemap_algorithm.py       # ベクトルタイルレイヤー生成
-│   └── basemap_settings.py        # スタイル設定
-│
-├── real_estate_lib/                # 不動産情報ライブラリAPI連携
-│   ├── connect.py                 # API接続・認証
-│   ├── area/                      # 行政区域取得
-│   └── land_use/                  # 土地利用データ取得
-│
-├── umi_shiru/                      # 海しるAPI連携
-│   ├── client.py                  # API接続・認証
-│   ├── coastline/                 # 海岸線データ処理
-│   ├── fishing_port/              # 漁港区域データ処理
-│   └── port_area/                 # 港湾区域データ処理
-│
-├── estat/                          # e-Stat API連携
-│   ├── connect.py                 # 統計データ接続
-│   └── population_mesh_algorithm.py # 人口メッシュ・DID処理
+├── features/                       # 機能モジュール
+│   ├── basemap/                   # 国土地理院ベースマップ機能
+│   │   ├── basemap_algorithm.py   # ベクトルタイルレイヤー生成
+│   │   ├── basemap_settings.py    # スタイル設定
+│   │   └── basemap_workflow.py    # ベースマップワークフロー
+│   │
+│   ├── administrative_area/       # 行政区域ポリゴン機能
+│   │   ├── administrative_area_algorithm.py  # MBTilesレイヤー生成
+│   │   ├── administrative_area_workflow.py    # 行政区域ワークフロー
+│   │   ├── settings.py            # class3/class5スタイル定義
+│   │   └── data/                  # ローカルデータ
+│   │       └── class.mbtiles      # 行政区域MBTilesファイル
+│   │
+│   ├── hazard_map_portal/         # ハザードマップポータルサイト連携
+│   │   ├── flood_hazard_area_algorithm.py  # 洪水浸水想定区域レイヤー生成
+│   │   └── hazard_map_workflow.py          # ハザードマップワークフロー
+│   │
+│   ├── real_estate_lib/           # 不動産情報ライブラリAPI連携
+│   │   ├── connect.py             # API接続・認証
+│   │   ├── algorithms/            # 各種アルゴリズム
+│   │   │   ├── urban_planning_algorithm.py
+│   │   │   ├── zoning_district_algorithm.py
+│   │   │   ├── district_plan_algorithm.py
+│   │   │   ├── location_normalization_plan_algorithm.py
+│   │   │   ├── nature_reserve_algorithm.py
+│   │   │   ├── high_utilization_zone_algorithm.py
+│   │   │   └── did_algorithm.py
+│   │   └── workflows/             # ワークフロー
+│   │       ├── area_workflow.py   # 行政区域取得
+│   │       └── land_use_layer_workflow.py  # 土地利用レイヤー取得
+│   │
+│   ├── umi_shiru/                 # 海しるAPI連携
+│   │   ├── client.py              # API接続・認証
+│   │   └── workflows/
+│   │       ├── coastline_workflow.py      # 海岸線データ処理
+│   │       ├── fishing_port_workflow.py   # 漁港区域データ処理
+│   │       └── port_area_workflow.py      # 港湾区域データ処理
+│   │
+│   └── estat/                     # e-Stat API連携
+│       ├── connect.py             # 統計データ接続
+│       └── population_mesh_workflow.py  # 人口メッシュ処理
 │
 ├── utils/                          # 共通ユーティリティ
 │   └── estat/                     # e-Stat関連ヘルパー
@@ -209,7 +253,7 @@ tmu-planning-plugin/
 
 ---
 
-# 7. 外部 API エンドポイント
+## 7. 外部 API エンドポイント
 
 本プラグインが連携する主要な API エンドポイントです。
 
@@ -222,6 +266,10 @@ tmu-planning-plugin/
 - 高度利用地区: `XKT024`
 - 地区計画: `XKT023`
 - 人口集中地区: `XKT031`
+
+#### ハザードマップポータルサイト
+
+- 洪水浸水想定区域（想定最大規模）: `https://disaportaldata.gsi.go.jp/raster/01_flood_l2_shinsuishin_data/{z}/{x}/{y}.png`
 
 #### 海しる API
 
@@ -252,6 +300,10 @@ tmu-planning-plugin/
 1. [e-Stat API 登録ページ](https://www.e-stat.go.jp/api/)にアクセス
 2. アカウント作成後、API 利用申請
 3. 発行されたキーをプラグイン設定ダイアログに入力
+
+#### ハザードマップポータルサイト
+
+- API キー不要（公開ラスタタイル）
 
 ---
 

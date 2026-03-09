@@ -9,10 +9,16 @@ from qgis.core import (
     Qgis,
     QgsFillSymbol,
     QgsMessageLog,
+    QgsPalLayerSettings,
+    QgsTextBufferSettings,
+    QgsTextFormat,
+    QgsVectorTileBasicLabeling,
+    QgsVectorTileBasicLabelingStyle,
     QgsVectorTileBasicRenderer,
     QgsVectorTileBasicRendererStyle,
     QgsVectorTileLayer,
 )
+from qgis.PyQt.QtGui import QColor, QFont
 
 from ...utils.settings import PLUGIN_NAME
 from .settings import BASE_STYLE, CLASS3_STYLES, CLASS5_STYLES, LAYER_NAME
@@ -35,6 +41,48 @@ class AdministrativeAreaAlgorithm:
             "data",
             "class.mbtiles",
         )
+
+    def _create_labeling(self) -> QgsVectorTileBasicLabeling:
+        """N03_004属性を使用したラベリングを作成"""
+
+        # テキストフォーマットの設定
+        text_format = QgsTextFormat()
+        text_format.setFont(QFont("Noto Sans CJK JP"))
+        text_format.setSize(10)
+        text_format.setColor(QColor(50, 50, 50))
+
+        # テキストバッファ（白縁取り）の設定
+        buffer_settings = QgsTextBufferSettings()
+        buffer_settings.setEnabled(True)
+        buffer_settings.setSize(1.0)
+        buffer_settings.setColor(QColor(255, 255, 255))
+        text_format.setBuffer(buffer_settings)
+
+        # ラベルの表示フィールドを設定
+        pal_settings = QgsPalLayerSettings()
+        pal_settings.fieldName = "N03_004"
+        pal_settings.setFormat(text_format)
+
+        # 重複ラベルの軽減設定
+        pal_settings.displayAll = False
+        pal_settings.minimumFeatureSize = 100
+        pal_settings.repeatDistance = 1000
+
+        # ラベルスタイルの設定
+        label_style = QgsVectorTileBasicLabelingStyle()
+        label_style.setStyleName("municipal_label")
+        label_style.setEnabled(True)
+        label_style.setGeometryType(Qgis.GeometryType.Polygon)
+        label_style.setLabelSettings(pal_settings)
+
+        # 小さいポリゴン断片にラベルを出さない（面積ベースのフィルタ）
+        label_style.setFilterExpression("$area > 10000")
+        
+
+        # ラベリングの作成と適用
+        labeling = QgsVectorTileBasicLabeling()
+        labeling.setStyles([label_style])
+        return labeling
 
     def create_administrative_area_layer(
         self,
@@ -99,6 +147,11 @@ class AdministrativeAreaAlgorithm:
         # レイヤーにスタイルを適用
         renderer.setStyles(styles)
         administrative_area_layer.setRenderer(renderer)
+
+        # ラベリングの適用
+        labeling = self._create_labeling()
+        administrative_area_layer.setLabeling(labeling)
+
         administrative_area_layer.triggerRepaint()
 
         return administrative_area_layer

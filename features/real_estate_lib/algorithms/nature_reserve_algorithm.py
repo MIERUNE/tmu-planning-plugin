@@ -21,8 +21,8 @@ from ....utils.settings import PLUGIN_NAME
 from ..settings import PREFECTURE_LIST
 from ..connect import (
     NATURE_RESERVE_AREA_API_ENDPOINT,
-    ZOOM9_SCALE_THRESHOLD,
 )
+from ....utils.settings import ZOOM9_SCALE_THRESHOLD
 
 
 class NatureReserveAlgorithm:

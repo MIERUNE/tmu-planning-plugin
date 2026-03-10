@@ -20,9 +20,8 @@ from qgis.PyQt.QtNetwork import QNetworkRequest
 from ....utils.settings import PLUGIN_NAME
 from ..connect import (
     HEIGHTENED_USE_DISTRICT_API_ENDPOINT,
-    ZOOM9_SCALE_THRESHOLD,
 )
-
+from ....utils.settings import ZOOM9_SCALE_THRESHOLD
 
 class HighUtilizationZoneAlgorithm:
     """高度利用地区データ取得クラス"""

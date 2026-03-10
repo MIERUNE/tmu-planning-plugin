@@ -8,7 +8,8 @@ from qgis.core import (
     QgsRasterLayer,
 )
 
-from .connect import FLOOD_HZARD_AREA_API_ENDPOINT, ZOOM9_SCALE_THRESHOLD
+from .connect import FLOOD_HZARD_AREA_API_ENDPOINT
+from ...utils.settings import ZOOM9_SCALE_THRESHOLD
 
 
 class FloodHazardAreaAlgorithm:

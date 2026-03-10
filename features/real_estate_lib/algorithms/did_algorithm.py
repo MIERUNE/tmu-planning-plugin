@@ -20,9 +20,9 @@ from qgis.PyQt.QtNetwork import QNetworkRequest
 from ....utils.settings import PLUGIN_NAME
 from ..connect import (
     DID_AREA_API_ENDPOINT,
-    ZOOM9_SCALE_THRESHOLD,
 )
 from ..settings import DESIGNATED_CITIES_CODES
+from ....utils.settings import ZOOM9_SCALE_THRESHOLD
 
 
 class DidAreaAlgorithm:

@@ -1,6 +1,9 @@
 # ログメッセージ用プラグイン名
 PLUGIN_NAME = "GreenInfraPlannerJP"
 
+# ズームレベル９のスケール閾値
+ZOOM9_SCALE_THRESHOLD = 1160000
+
 # 政令指定都市のデフォルト境界範囲
 CITY_DEFAULT_BOUNDS = {
     # 北海道

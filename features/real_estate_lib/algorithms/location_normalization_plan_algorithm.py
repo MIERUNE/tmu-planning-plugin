@@ -20,8 +20,8 @@ from qgis.PyQt.QtNetwork import QNetworkRequest
 from ....utils.settings import PLUGIN_NAME
 from ..connect import (
     LOCATION_NORMALIZATION_PLAN_API_ENDPOINT,
-    ZOOM9_SCALE_THRESHOLD,
 )
+from ....utils.settings import ZOOM9_SCALE_THRESHOLD
 
 
 class LocationNormalizationPlanAlgorithm:

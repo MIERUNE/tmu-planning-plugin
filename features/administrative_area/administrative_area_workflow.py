@@ -33,11 +33,11 @@ class AdministrativeAreaWorkflow:
         Returns:
             bool: 成功した場合はTrue、失敗した場合はFalse
         """
-        added_layer = self.algorithm.create_administrative_area_layer(
+        add_layers = self.algorithm.create_administrative_area_layer(
             class_type=class_type
         )
 
-        if not added_layer:
+        if not add_layers:
             QgsMessageLog.logMessage(
                 "行政区域レイヤーの取得に失敗しました。",
                 PLUGIN_NAME,
@@ -50,19 +50,22 @@ class AdministrativeAreaWorkflow:
             )
             return False
 
+        polygon_layer, label_layer = add_layers
+
         # レイヤー有効性チェック
-        if not added_layer.isValid():
-            QgsMessageLog.logMessage(
-                f"レイヤーが無効です: {added_layer.name()}",
-                PLUGIN_NAME,
-                level=Qgis.Critical,
-            )
-            self.iface.messageBar().pushMessage(
-                "エラー",
-                f"{added_layer.name()}レイヤーが無効です。",
-                level=Qgis.Critical,
-            )
-            return False
+        for layer in (polygon_layer, label_layer):
+            if not layer.isValid():
+                QgsMessageLog.logMessage(
+                    f"レイヤーが無効です: {layer.name()}",
+                    PLUGIN_NAME,
+                    level=Qgis.Critical,
+                )
+                self.iface.messageBar().pushMessage(
+                    "エラー",
+                    f"{layer.name()}レイヤーが無効です。",
+                    level=Qgis.Critical,
+                )
+                return False
 
         # プロジェクトに追加
         if group:
@@ -72,32 +75,35 @@ class AdministrativeAreaWorkflow:
 
             if sub_group:
                 # 既に同名のレイヤーがサブグループ内に存在する場合は削除
+                layer_names = {polygon_layer.name(), label_layer.name()}
                 for child in sub_group.children():
                     if (
                         hasattr(child, "layer")
                         and child.layer()
-                        and child.layer().name() == added_layer.name()
+                        and child.layer().name() in layer_names
                     ):
                         QgsProject.instance().removeMapLayer(child.layer().id())
             else:
                 # サブグループが存在しない場合は新規作成
                 sub_group = group.addGroup(sub_group_name)
 
-            # レイヤーをサブグループに追加
-            QgsProject.instance().addMapLayer(added_layer, False)
-            sub_group.addLayer(added_layer)
+            # レイヤーをサブグループに追加（ポリゴン→ラベルの順で、ラベルが上に表示）
+            for layer in (polygon_layer, label_layer):
+                QgsProject.instance().addMapLayer(layer, False)
+                sub_group.addLayer(layer)
 
         else:
-            QgsProject.instance().addMapLayer(added_layer)
+            for layer in (polygon_layer, label_layer):
+                QgsProject.instance().addMapLayer(layer)
 
         QgsMessageLog.logMessage(
-            f"'{added_layer.name()}' レイヤーを追加しました。",
+            f"'{polygon_layer.name()}' レイヤーを追加しました。",
             PLUGIN_NAME,
             level=Qgis.Success,
         )
         self.iface.messageBar().pushMessage(
             "成功",
-            f"{added_layer.name()}を表示しました。",
+            f"{polygon_layer.name()}を表示しました。",
             level=Qgis.Success,
             duration=3,
         )

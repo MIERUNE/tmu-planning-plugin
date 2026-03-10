@@ -8,6 +8,7 @@ from typing import Literal, Optional
 from qgis.core import (
     Qgis,
     QgsFillSymbol,
+    QgsMarkerSymbol,
     QgsMessageLog,
     QgsPalLayerSettings,
     QgsTextBufferSettings,
@@ -20,8 +21,15 @@ from qgis.core import (
 )
 from qgis.PyQt.QtGui import QColor, QFont
 
-from ...utils.settings import PLUGIN_NAME
-from .settings import BASE_STYLE, CLASS3_STYLES, CLASS5_STYLES, LAYER_NAME
+from ...utils.settings import PLUGIN_NAME, ZOOM9_SCALE_THRESHOLD
+from .settings import (
+    BASE_STYLE,
+    CLASS3_STYLES,
+    CLASS5_STYLES,
+    LABEL_LAYER_NAME,
+    LAYER_NAME,
+)
+
 
 
 class AdministrativeAreaAlgorithm:
@@ -42,8 +50,40 @@ class AdministrativeAreaAlgorithm:
             "class.mbtiles",
         )
 
-    def _create_labeling(self) -> QgsVectorTileBasicLabeling:
-        """N03_004属性を使用したラベリングを作成"""
+    def _create_labeling(self) -> Optional[QgsVectorTileLayer]:
+        """labels.mbtilesからラベル用レイヤーを作成"""
+        plugin_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        labels_path = os.path.join(
+            plugin_dir, "features", "administrative_area", "data", "labels.mbtiles"
+        )
+
+        if not os.path.exists(labels_path):
+            QgsMessageLog.logMessage(
+                f"ラベルMBTilesファイルが見つかりません: {labels_path}",
+                PLUGIN_NAME,
+                level=Qgis.Warning,
+            )
+            return None
+
+        uri = f"type=mbtiles&url={labels_path}"
+        label_layer = QgsVectorTileLayer(uri, LABEL_LAYER_NAME)
+
+        if not label_layer.isValid():
+            return None
+
+        # ポイントを透明にするレンダラー
+        renderer = QgsVectorTileBasicRenderer()
+        renderer_style = QgsVectorTileBasicRendererStyle()
+        renderer_style.setStyleName("centroids_invisible")
+        renderer_style.setLayerName("centroids")
+        renderer_style.setEnabled(True)
+        renderer_style.setGeometryType(Qgis.GeometryType.Point)
+        symbol = QgsMarkerSymbol.createSimple(
+            {"color": "0,0,0,0", "outline_color": "0,0,0,0", "size": "0"}
+        )
+        renderer_style.setSymbol(symbol)
+        renderer.setStyles([renderer_style])
+        label_layer.setRenderer(renderer)
 
         # テキストフォーマットの設定
         text_format = QgsTextFormat()
@@ -63,38 +103,37 @@ class AdministrativeAreaAlgorithm:
         pal_settings.fieldName = "N03_004"
         pal_settings.setFormat(text_format)
 
-        # 重複ラベルの軽減設定
-        pal_settings.displayAll = False
-        pal_settings.minimumFeatureSize = 100
-        pal_settings.repeatDistance = 1000
-
         # ラベルスタイルの設定
         label_style = QgsVectorTileBasicLabelingStyle()
         label_style.setStyleName("municipal_label")
+        label_style.setLayerName("centroids")
         label_style.setEnabled(True)
-        label_style.setGeometryType(Qgis.GeometryType.Polygon)
+        label_style.setGeometryType(Qgis.GeometryType.Point)
         label_style.setLabelSettings(pal_settings)
 
-        # 小さいポリゴン断片にラベルを出さない（面積ベースのフィルタ）
-        label_style.setFilterExpression("$area > 10000")
-        
-
-        # ラベリングの作成と適用
+        # ラベリングの適用
         labeling = QgsVectorTileBasicLabeling()
         labeling.setStyles([label_style])
-        return labeling
+        label_layer.setLabeling(labeling)
+        
+        # ズームレベル９以下では表示しない
+        label_layer.setScaleBasedVisibility(True)
+        label_layer.setMinimumScale(ZOOM9_SCALE_THRESHOLD)
+
+        label_layer.triggerRepaint()
+        return label_layer
 
     def create_administrative_area_layer(
         self,
         class_type: Literal["base", "class3", "class5"],
-    ) -> Optional[QgsVectorTileLayer]:
+    ) -> Optional[tuple[QgsVectorTileLayer, QgsVectorTileLayer]]:
         """
         行政区域データのベクタタイルレイヤーを作成
 
         Args:
             class_type: 行政区域のクラスタイプ ("base", "class3" または "class5")
         Returns:
-            QgsVectorTileLayer : 追加に成功した場合はレイヤーオブジェクト
+            tuple[QgsVectorTileLayer, QgsVectorTileLayer] : (ポリゴンレイヤー, ラベルレイヤー)
         """
 
         mbtiles_path = self._get_mbtiles_path()
@@ -147,11 +186,11 @@ class AdministrativeAreaAlgorithm:
         # レイヤーにスタイルを適用
         renderer.setStyles(styles)
         administrative_area_layer.setRenderer(renderer)
-
-        # ラベリングの適用
-        labeling = self._create_labeling()
-        administrative_area_layer.setLabeling(labeling)
-
         administrative_area_layer.triggerRepaint()
 
-        return administrative_area_layer
+        # ラベルレイヤーの作成
+        label_layer = self._create_labeling()
+        if not label_layer:
+            return None
+
+        return (administrative_area_layer, label_layer)

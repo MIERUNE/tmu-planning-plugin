@@ -21,7 +21,7 @@ from qgis.core import (
 )
 from qgis.PyQt.QtGui import QColor, QFont
 
-from ...utils.settings import PLUGIN_NAME, ZOOM9_SCALE_THRESHOLD
+from ...utils.settings import PLUGIN_NAME, ZOOM10_SCALE_THRESHOLD
 from .settings import (
     BASE_STYLE,
     CLASS3_STYLES,
@@ -116,9 +116,10 @@ class AdministrativeAreaAlgorithm:
         labeling.setStyles([label_style])
         label_layer.setLabeling(labeling)
         
-        # ズームレベル９以下では表示しない
+        # ズームレベル10-14の間で表示
         label_layer.setScaleBasedVisibility(True)
-        label_layer.setMinimumScale(ZOOM9_SCALE_THRESHOLD)
+        label_layer.setMinimumScale(ZOOM10_SCALE_THRESHOLD)
+      
 
         label_layer.triggerRepaint()
         return label_layer

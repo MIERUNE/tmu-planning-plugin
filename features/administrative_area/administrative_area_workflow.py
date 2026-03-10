@@ -52,8 +52,12 @@ class AdministrativeAreaWorkflow:
 
         polygon_layer, label_layer = add_layers
 
+        layers_to_add = [polygon_layer]
+        if label_layer:
+            layers_to_add.append(label_layer)
+
         # レイヤー有効性チェック
-        for layer in (polygon_layer, label_layer):
+        for layer in layers_to_add:
             if not layer.isValid():
                 QgsMessageLog.logMessage(
                     f"レイヤーが無効です: {layer.name()}",
@@ -75,7 +79,7 @@ class AdministrativeAreaWorkflow:
 
             if sub_group:
                 # 既に同名のレイヤーがサブグループ内に存在する場合は削除
-                layer_names = {polygon_layer.name(), label_layer.name()}
+                layer_names = {layer.name() for layer in layers_to_add}
                 for child in sub_group.children():
                     if (
                         hasattr(child, "layer")
@@ -88,12 +92,12 @@ class AdministrativeAreaWorkflow:
                 sub_group = group.addGroup(sub_group_name)
 
             # レイヤーをサブグループに追加（ポリゴン→ラベルの順で、ラベルが上に表示）
-            for layer in (polygon_layer, label_layer):
+            for layer in layers_to_add:
                 QgsProject.instance().addMapLayer(layer, False)
                 sub_group.addLayer(layer)
 
         else:
-            for layer in (polygon_layer, label_layer):
+            for layer in (layers_to_add):
                 QgsProject.instance().addMapLayer(layer)
 
         QgsMessageLog.logMessage(

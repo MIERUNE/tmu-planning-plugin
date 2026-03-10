@@ -49,7 +49,7 @@ class AdministrativeAreaAlgorithm:
             "class.mbtiles",
         )
 
-    def _create_labeling(self) -> Optional[QgsVectorTileLayer]:
+    def _create_label_layer(self) -> Optional[QgsVectorTileLayer]:
         """labels.mbtilesからラベル用レイヤーを作成"""
         plugin_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
         labels_path = os.path.join(
@@ -115,7 +115,7 @@ class AdministrativeAreaAlgorithm:
         labeling.setStyles([label_style])
         label_layer.setLabeling(labeling)
 
-        # ズームレベル10-14の間で表示
+        # ズームレベル10未満では表示しない
         label_layer.setScaleBasedVisibility(True)
         label_layer.setMinimumScale(ZOOM10_SCALE_THRESHOLD)
 
@@ -188,8 +188,6 @@ class AdministrativeAreaAlgorithm:
         administrative_area_layer.triggerRepaint()
 
         # ラベルレイヤーの作成
-        label_layer = self._create_labeling()
-        if not label_layer:
-            return None
+        label_layer = self._create_label_layer()
 
         return (administrative_area_layer, label_layer)

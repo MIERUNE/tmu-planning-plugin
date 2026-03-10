@@ -97,7 +97,7 @@ class AdministrativeAreaWorkflow:
                 sub_group.addLayer(layer)
 
         else:
-            for layer in (layers_to_add):
+            for layer in layers_to_add:
                 QgsProject.instance().addMapLayer(layer)
 
         QgsMessageLog.logMessage(

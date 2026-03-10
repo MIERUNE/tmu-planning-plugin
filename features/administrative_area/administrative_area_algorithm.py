@@ -31,7 +31,6 @@ from .settings import (
 )
 
 
-
 class AdministrativeAreaAlgorithm:
     """行政区域データの取得クラス"""
 
@@ -115,11 +114,10 @@ class AdministrativeAreaAlgorithm:
         labeling = QgsVectorTileBasicLabeling()
         labeling.setStyles([label_style])
         label_layer.setLabeling(labeling)
-        
+
         # ズームレベル10-14の間で表示
         label_layer.setScaleBasedVisibility(True)
         label_layer.setMinimumScale(ZOOM10_SCALE_THRESHOLD)
-      
 
         label_layer.triggerRepaint()
         return label_layer

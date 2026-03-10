@@ -23,6 +23,7 @@ from ..connect import (
 )
 from ....utils.settings import ZOOM9_SCALE_THRESHOLD
 
+
 class HighUtilizationZoneAlgorithm:
     """高度利用地区データ取得クラス"""
 

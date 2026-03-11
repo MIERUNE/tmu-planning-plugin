@@ -3,6 +3,7 @@
 """
 
 LAYER_NAME = "行政区域"
+LABEL_LAYER_NAME = "行政区域_自治体名"
 
 # ベースの行政区域ポリゴン（白）のスタイル
 BASE_STYLE: dict[str, dict[str, str]] = {

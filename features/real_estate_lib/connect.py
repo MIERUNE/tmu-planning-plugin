@@ -41,6 +41,3 @@ HEIGHTENED_USE_DISTRICT_API_ENDPOINT = (
 
 # レスポンス文字エンコーディング
 RESPONSE_ENCODING = "utf-8-sig"
-
-# ズームレベル９のスケール閾値
-ZOOM9_SCALE_THRESHOLD = 1160000

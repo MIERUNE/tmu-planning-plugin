@@ -29,7 +29,7 @@ jobs:
       - name: Docker pull and create qgis-testing-environment
         run: |
           docker pull "$DOCKER_IMAGE":${{ matrix.docker_tags }}
-          docker run -dt --name qgis-testing-environment -v .:/tests_directory/plugin_dir -e QT_QPA_PLATFORM=offscreen "$DOCKER_IMAGE":${{ matrix.docker_tags }}
+          docker run -dt --name qgis-testing-environment -v .:/tests_directory/plugin_dir -e QT_QPA_PLATFORM=offscreen -e DISPLAY=:99 "$DOCKER_IMAGE":${{ matrix.docker_tags }}
 
       - name: Docker set up QGIS
         run: |

@@ -36,8 +36,14 @@ jobs:
           docker exec qgis-testing-environment sh -c "qgis_setup.sh plugin_dir"
           docker exec qgis-testing-environment sh -c "rm -f /root/.local/share/QGIS/QGIS3/profiles/default/python/plugins/plugin_dir"
           docker exec qgis-testing-environment sh -c "ln -s /tests_directory/plugin_dir /root/.local/share/QGIS/QGIS3/profiles/default/python/plugins/plugin_dir"
-          docker exec qgis-testing-environment sh -c "pip3 install --break-system-packages -r /tests_directory/plugin_dir/requirements.txt"
+          docker exec qgis-testing-environment sh -c "pip3 install --break-system-packages coverage -r /tests_directory/plugin_dir/requirements.txt"
 
       - name: Docker run plugin tests
         run: |
           docker exec qgis-testing-environment sh -c "qgis_testrunner.sh plugin_dir.test_suite.test_package"
+
+      # qgis_testrunner.sh は QGIS の標準エラー出力を捨てるため、失敗時のみエラー内容を表示する
+      - name: Show QGIS error output on failure
+        if: failure()
+        run: |
+          docker exec qgis-testing-environment sh -c "QGIS_TEST_MODULE=plugin_dir.test_suite.test_package timeout 300 qgis --version-migration --nologo --code /usr/bin/qgis_testrunner.py plugin_dir.test_suite.test_package" || true

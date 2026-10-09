@@ -33,6 +33,8 @@ jobs:
 
       - name: Docker set up QGIS
         run: |
+          # qgis_testrunner.sh が使う unbuffer コマンド（expect パッケージ）がイメージに含まれていないため追加
+          docker exec qgis-testing-environment sh -c "apt-get update && apt-get install -y expect"
           docker exec qgis-testing-environment sh -c "qgis_setup.sh plugin_dir"
           docker exec qgis-testing-environment sh -c "rm -f /root/.local/share/QGIS/QGIS3/profiles/default/python/plugins/plugin_dir"
           docker exec qgis-testing-environment sh -c "ln -s /tests_directory/plugin_dir /root/.local/share/QGIS/QGIS3/profiles/default/python/plugins/plugin_dir"

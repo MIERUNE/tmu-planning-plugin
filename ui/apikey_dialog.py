@@ -126,3 +126,11 @@ class ApikeyDialog(QDialog, ui_dialog):
             str: e-Stat APIキーの値
         """
         return ApikeyDialog.get_saved_api_key_by_id(3)
+
+    @staticmethod
+    def get_mlit_dpf_api_key() -> str:
+        """国土交通データプラットフォームAPIキー（ID:4）を取得
+        Returns:
+            str: 国土交通データプラットフォームAPIキーの値
+        """
+        return ApikeyDialog.get_saved_api_key_by_id(4)

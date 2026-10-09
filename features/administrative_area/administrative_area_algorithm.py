@@ -125,15 +125,14 @@ class AdministrativeAreaAlgorithm:
     def create_administrative_area_layer(
         self,
         class_type: Literal["base", "class3", "class5"],
-    ) -> Optional[tuple[QgsVectorTileLayer, Optional[QgsVectorTileLayer]]]:
+    ) -> Optional[tuple[QgsVectorTileLayer, QgsVectorTileLayer]]:
         """
         行政区域データのベクタタイルレイヤーを作成
 
         Args:
             class_type: 行政区域のクラスタイプ ("base", "class3" または "class5")
         Returns:
-            tuple[QgsVectorTileLayer, Optional[QgsVectorTileLayer]] : (ポリゴンレイヤー, ラベルレイヤー)
-                ラベルレイヤーが作成できない場合は None
+            tuple[QgsVectorTileLayer, QgsVectorTileLayer] : (ポリゴンレイヤー, ラベルレイヤー)
         """
 
         mbtiles_path = self._get_mbtiles_path()

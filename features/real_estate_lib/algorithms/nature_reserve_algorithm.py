@@ -31,11 +31,8 @@ class NatureReserveAlgorithm:
     def __init__(self, iface):
         self.iface = iface
 
-    def _get_prefecture_name(self, prefecture_code: Optional[str]) -> Optional[str]:
+    def _get_prefecture_name(self, prefecture_code: str) -> Optional[str]:
         """都道府県コードから都道府県名を取得"""
-        if prefecture_code is None:
-            return None
-
         prefecture_dict = dict(PREFECTURE_LIST)
 
         return prefecture_dict.get(prefecture_code, None)
@@ -52,9 +49,7 @@ class NatureReserveAlgorithm:
         request.setRawHeader(b"Ocp-Apim-Subscription-Key", api_key.encode("utf-8"))
 
         nam = QgsNetworkAccessManager.instance()
-        reply = nam.get(request) if nam else None
-        if reply is None:
-            return False, None
+        reply = nam.get(request)
 
         loop = QEventLoop()
         reply.finished.connect(loop.quit)

@@ -207,10 +207,7 @@ class PortAreaWorkflow(BaseWorkflow):
             layer = self.algorithm.create_layer(geojson_data, layer_name)
 
             # 5. QGISプロジェクトに追加
-            project = QgsProject.instance()
-            if project is None:
-                return False
-            project.addMapLayer(layer)
+            QgsProject.instance().addMapLayer(layer)
 
             # 6. UI更新
             self.iface.mapCanvas().refresh()

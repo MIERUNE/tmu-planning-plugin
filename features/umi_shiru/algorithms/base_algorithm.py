@@ -13,10 +13,7 @@ from qgis.PyQt.QtGui import QColor
 from qgis.core import (
     Qgis,
     QgsCoordinateReferenceSystem,
-    QgsLineSymbol,
     QgsMessageLog,
-    QgsSimpleFillSymbolLayer,
-    QgsSingleSymbolRenderer,
     QgsVectorLayer,
 )
 
@@ -353,12 +350,7 @@ class UmiShiruBaseAlgorithm(ABC):
             style_config = self.layer_settings.get_style_config()
 
             # スタイル設定
-            renderer = layer.renderer()
-            if not isinstance(renderer, QgsSingleSymbolRenderer):
-                return
-            symbol = renderer.symbol()
-            if symbol is None:
-                return
+            symbol = layer.renderer().symbol()
             color = QColor(style_config["color"])
             symbol.setColor(color)
 
@@ -368,14 +360,14 @@ class UmiShiruBaseAlgorithm(ABC):
             if geometry_type == Qgis.GeometryType.Polygon:
                 # 面（Polygon）の場合
                 symbol_layer = symbol.symbolLayer(0)
-                if isinstance(symbol_layer, QgsSimpleFillSymbolLayer):
+                if symbol_layer:
                     symbol_layer.setStrokeWidth(style_config["width"])
                     symbol_layer.setStrokeColor(color)
                     fill_color = QColor(color)
                     fill_color.setAlphaF(style_config["opacity"])
                     symbol_layer.setFillColor(fill_color)
-            elif isinstance(symbol, QgsLineSymbol):
-                # 線（LineString）の場合
+            else:
+                # 線（LineString）や点（Point）の場合
                 symbol.setWidth(style_config["width"])
 
             symbol.setOpacity(style_config["opacity"])

@@ -39,9 +39,7 @@ class UrbanPlanningAlgorithm:
         request.setRawHeader(b"Ocp-Apim-Subscription-Key", api_key.encode("utf-8"))
 
         nam = QgsNetworkAccessManager.instance()
-        reply = nam.get(request) if nam else None
-        if reply is None:
-            return False, None
+        reply = nam.get(request)
 
         loop = QEventLoop()
         reply.finished.connect(loop.quit)

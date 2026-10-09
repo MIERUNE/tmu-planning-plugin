@@ -7,13 +7,11 @@ from typing import Dict, Optional
 from qgis.core import QgsVectorLayer
 
 
-def calculate_municipality_bbox(
-    layer: Optional[QgsVectorLayer],
-) -> Optional[Dict[str, float]]:
+def calculate_municipality_bbox(layer: QgsVectorLayer) -> Optional[Dict[str, float]]:
     """
     行政区域ポリゴンレイヤーからbboxを計算
     Args:
-        layer (Optional[QgsVectorLayer]): 行政区域ポリゴンレイヤー
+        layer (QgsVectorLayer): 行政区域ポリゴンレイヤー
     Returns:
         dict: bbox座標 {'min_lon', 'min_lat', 'max_lon', 'max_lat'} または None
     """

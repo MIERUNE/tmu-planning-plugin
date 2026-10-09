@@ -39,10 +39,8 @@ class MergePopulationMeshLayers:
         renderer = QgsGraduatedSymbolRenderer(target_field)
         renderer.setClassAttribute(target_field)
 
-        style = QgsStyle.defaultStyle()
-        color_ramp = style.colorRamp("Viridis") if style else None
-        if color_ramp:
-            renderer.setSourceColorRamp(color_ramp)
+        color_ramp = QgsStyle.defaultStyle().colorRamp("Viridis")
+        renderer.setSourceColorRamp(color_ramp)
 
         renderer.setClassificationMethod(QgsClassificationJenks())
         renderer.updateClasses(layer, class_count)
@@ -76,10 +74,6 @@ class MergePopulationMeshLayers:
             )
             return None
 
-        project = QgsProject.instance()
-        if project is None:
-            return None
-
         # 1つのレイヤーの場合はマージしない
         if len(added_population_layers) == 1:
             single_layer = added_population_layers[0]["layer"]
@@ -87,7 +81,7 @@ class MergePopulationMeshLayers:
                 f"{MESH_TYPE_CONFIG[mesh_type]['output_layer_name']}_{municipality_name}"
             )
 
-            project.addMapLayer(single_layer)
+            QgsProject.instance().addMapLayer(single_layer)
 
             # 可視化を適用
             self._apply_population_style(single_layer)
@@ -118,7 +112,7 @@ class MergePopulationMeshLayers:
         )
 
         # 統合レイヤーをプロジェクトに追加
-        project.addMapLayer(merged_layer)
+        QgsProject.instance().addMapLayer(merged_layer)
 
         QgsMessageLog.logMessage(
             f"統合レイヤー '{merged_layer.name()}' を作成しました。",
@@ -132,7 +126,7 @@ class MergePopulationMeshLayers:
         # 元の個別レイヤーを削除
         if remove_originals:
             for layer_obj in layer_objects:
-                project.removeMapLayer(layer_obj.id())
+                QgsProject.instance().removeMapLayer(layer_obj.id())
             QgsMessageLog.logMessage(
                 f"{len(layer_objects)}個の個別レイヤーを削除しました。",
                 PLUGIN_NAME,

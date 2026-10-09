@@ -88,10 +88,7 @@ class UmiShiruApiClient:
         request.setRawHeader(b"Ocp-Apim-Subscription-Key", self.api_key.encode("utf-8"))
 
         nam = QgsNetworkAccessManager.instance()
-        reply = nam.get(request) if nam else None
-        if reply is None:
-            raise Exception(f"APIリクエストを送信できませんでした。URL: {full_url}")
-
+        reply = nam.get(request)
         loop = QEventLoop()
         reply.finished.connect(loop.quit)
         loop.exec()
@@ -102,7 +99,7 @@ class UmiShiruApiClient:
                 http_status = reply.attribute(
                     QNetworkRequest.Attribute.HttpStatusCodeAttribute
                 )
-                error_response = bytes(reply.readAll()).decode("utf-8", errors="ignore")
+                error_response = reply.readAll().data().decode("utf-8", errors="ignore")
                 error_message = f"APIリクエスト失敗: {reply.errorString()} (HTTP {http_status or 'Unknown'})"
 
                 QgsMessageLog.logMessage(
@@ -122,7 +119,7 @@ class UmiShiruApiClient:
                 level=Qgis.MessageLevel.Info,
             )
 
-            return bytes(response_data).decode("utf-8-sig")
+            return response_data.data().decode("utf-8-sig")
 
         finally:
             reply.deleteLater()

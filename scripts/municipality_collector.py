@@ -4,7 +4,7 @@
 
 import json
 from pathlib import Path
-from typing import List, Tuple, Dict, Any, Optional
+from typing import List, Tuple, Dict, Any
 
 from qgis.PyQt.QtCore import QEventLoop, QUrl, QByteArray
 from qgis.PyQt.QtNetwork import QNetworkRequest
@@ -118,10 +118,7 @@ class NationwideCollector:
         request.setRawHeader(b"Ocp-Apim-Subscription-Key", api_key.encode("utf-8"))
 
         nam = QgsNetworkAccessManager.instance()
-        reply = nam.get(request) if nam else None
-        if reply is None:
-            raise Exception("APIリクエストを送信できませんでした")
-
+        reply = nam.get(request)
         loop = QEventLoop()
         reply.finished.connect(loop.quit)
         loop.exec()
@@ -138,10 +135,10 @@ class NationwideCollector:
 
     def _decode_response(
         self, response_data: QByteArray, prefecture_code: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Dict[str, Any]:
         """レスポンスデータをデコード"""
         try:
-            response_string = bytes(response_data).decode(RESPONSE_ENCODING)
+            response_string = response_data.data().decode(RESPONSE_ENCODING)
             return json.loads(response_string)
         except (UnicodeDecodeError, json.JSONDecodeError):
             return None

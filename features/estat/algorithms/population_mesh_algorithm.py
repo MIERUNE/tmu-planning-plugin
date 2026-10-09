@@ -154,8 +154,6 @@ class PopulationMeshAlgorithm:
         # 一時レイヤーを作成
         temp_layer = QgsVectorLayer("None", "temp_population", "memory")
         provider = temp_layer.dataProvider()
-        if provider is None:
-            return None
         provider.addAttributes(
             [
                 QgsField("mesh_code", QMetaType.Type.QString),

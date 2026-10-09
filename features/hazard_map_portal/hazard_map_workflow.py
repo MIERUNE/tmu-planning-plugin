@@ -50,10 +50,7 @@ class HazardMapWorkflow:
         added_layer.renderer().setOpacity(0.65)
 
         # プロジェクトに追加
-        project = QgsProject.instance()
-        if project is None:
-            return False
-        project.addMapLayer(added_layer)
+        QgsProject.instance().addMapLayer(added_layer)
 
         QgsMessageLog.logMessage(
             f"'{added_layer.name()}' レイヤーを追加しました。",

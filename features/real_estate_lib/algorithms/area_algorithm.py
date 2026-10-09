@@ -60,10 +60,7 @@ class AreaAlgorithm:
         request.setRawHeader(b"Ocp-Apim-Subscription-Key", api_key.encode("utf-8"))
 
         nam = QgsNetworkAccessManager.instance()
-        reply = nam.get(request) if nam else None
-        if reply is None:
-            raise Exception("APIリクエストを送信できませんでした")
-
+        reply = nam.get(request)
         loop = QEventLoop()
         reply.finished.connect(loop.quit)
         loop.exec()
@@ -84,7 +81,7 @@ class AreaAlgorithm:
         self, response_data: QByteArray, response_encoding: str, prefecture_code: str
     ) -> Dict[str, Any]:
         try:
-            response_string = bytes(response_data).decode(response_encoding)
+            response_string = response_data.data().decode(response_encoding)
             return json.loads(response_string)
         except (UnicodeDecodeError, json.JSONDecodeError) as decode_error:
             raise Exception(

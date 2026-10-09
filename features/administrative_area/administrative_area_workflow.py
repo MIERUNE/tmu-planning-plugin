@@ -3,7 +3,6 @@ from typing import Literal, Optional
 from qgis.core import (
     Qgis,
     QgsLayerTreeGroup,
-    QgsLayerTreeLayer,
     QgsMessageLog,
     QgsProject,
 )
@@ -73,10 +72,6 @@ class AdministrativeAreaWorkflow:
                 return False
 
         # プロジェクトに追加
-        project = QgsProject.instance()
-        if project is None:
-            return False
-
         if group:
             # 『行政区域』サブグループを取得または作成してからレイヤーを追加
             sub_group_name = "行政区域"
@@ -86,24 +81,24 @@ class AdministrativeAreaWorkflow:
                 # 既に同名のレイヤーがサブグループ内に存在する場合は削除
                 layer_names = {layer.name() for layer in layers_to_add}
                 for child in sub_group.children():
-                    if isinstance(child, QgsLayerTreeLayer):
-                        child_layer = child.layer()
-                        if child_layer and child_layer.name() in layer_names:
-                            project.removeMapLayer(child_layer.id())
+                    if (
+                        hasattr(child, "layer")
+                        and child.layer()
+                        and child.layer().name() in layer_names
+                    ):
+                        QgsProject.instance().removeMapLayer(child.layer().id())
             else:
                 # サブグループが存在しない場合は新規作成
                 sub_group = group.addGroup(sub_group_name)
-                if sub_group is None:
-                    return False
 
             # レイヤーをサブグループに追加（ポリゴン→ラベルの順で、ラベルが上に表示）
             for layer in layers_to_add:
-                project.addMapLayer(layer, False)
+                QgsProject.instance().addMapLayer(layer, False)
                 sub_group.addLayer(layer)
 
         else:
             for layer in layers_to_add:
-                project.addMapLayer(layer)
+                QgsProject.instance().addMapLayer(layer)
 
         QgsMessageLog.logMessage(
             f"'{polygon_layer.name()}' レイヤーを追加しました。",

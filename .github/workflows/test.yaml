@@ -14,8 +14,9 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
-        docker_tags: ["3.44"]
+        docker_tags: ["3.44", "4.2"]
 
     steps:
       - name: Checkout
@@ -38,6 +39,8 @@ jobs:
           docker exec qgis-testing-environment sh -c "qgis_setup.sh plugin_dir"
           docker exec qgis-testing-environment sh -c "rm -f /root/.local/share/QGIS/QGIS3/profiles/default/python/plugins/plugin_dir"
           docker exec qgis-testing-environment sh -c "ln -s /tests_directory/plugin_dir /root/.local/share/QGIS/QGIS3/profiles/default/python/plugins/plugin_dir"
+          # qgis_setup.sh はプロファイルを QGIS3 に決め打ちで作るため、QGIS 4 用に QGIS4 へも複製する
+          docker exec qgis-testing-environment sh -c "mkdir -p /root/.local/share/QGIS/QGIS4 && cp -a /root/.local/share/QGIS/QGIS3/. /root/.local/share/QGIS/QGIS4/"
           docker exec qgis-testing-environment sh -c "pip3 install --break-system-packages coverage -r /tests_directory/plugin_dir/requirements.txt"
 
       - name: Docker run plugin tests

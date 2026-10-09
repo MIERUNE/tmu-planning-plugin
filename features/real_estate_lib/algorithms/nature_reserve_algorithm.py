@@ -15,7 +15,7 @@ from qgis.core import (
     QgsVectorTileLayer,
 )
 from qgis.PyQt.QtCore import QEventLoop, QUrl
-from qgis.PyQt.QtNetwork import QNetworkRequest
+from qgis.PyQt.QtNetwork import QNetworkReply, QNetworkRequest
 
 from ....utils.settings import PLUGIN_NAME
 from ..settings import PREFECTURE_LIST
@@ -57,7 +57,7 @@ class NatureReserveAlgorithm:
 
         http_status = reply.attribute(QNetworkRequest.Attribute.HttpStatusCodeAttribute)
 
-        if reply.error():
+        if reply.error() != QNetworkReply.NetworkError.NoError:
             QgsMessageLog.logMessage(
                 f"API接続に失敗しました: {reply.errorString()} (HTTPステータス: {http_status})",
                 PLUGIN_NAME,

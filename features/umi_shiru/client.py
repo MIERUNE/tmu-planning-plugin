@@ -3,7 +3,7 @@
 """
 
 from qgis.PyQt.QtCore import QEventLoop, QUrl, QUrlQuery
-from qgis.PyQt.QtNetwork import QNetworkRequest
+from qgis.PyQt.QtNetwork import QNetworkReply, QNetworkRequest
 from qgis.core import Qgis, QgsMessageLog, QgsNetworkAccessManager
 
 from ...utils.settings import PLUGIN_NAME
@@ -95,7 +95,7 @@ class UmiShiruApiClient:
 
         try:
             # エラーチェック
-            if reply.error():
+            if reply.error() != QNetworkReply.NetworkError.NoError:
                 http_status = reply.attribute(
                     QNetworkRequest.Attribute.HttpStatusCodeAttribute
                 )

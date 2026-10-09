@@ -7,7 +7,10 @@ from typing import List, Optional
 
 from qgis.core import (
     Qgis,
+    QgsLayerTree,
     QgsLayerTreeGroup,
+    QgsLayerTreeLayer,
+    QgsLineSymbol,
     QgsProject,
     QgsSimpleFillSymbolLayer,
     QgsSymbol,
@@ -26,6 +29,20 @@ class BaseMapAlgorithm:
     def __init__(self, iface):
         self.iface = iface
 
+    def _get_project(self) -> QgsProject:
+        """現在のQGISプロジェクトを取得"""
+        project = QgsProject.instance()
+        if project is None:
+            raise Exception("QGISプロジェクトを取得できませんでした")
+        return project
+
+    def _get_layer_tree_root(self) -> QgsLayerTree:
+        """レイヤーツリーのルートを取得"""
+        root = self._get_project().layerTreeRoot()
+        if root is None:
+            raise Exception("レイヤーツリーを取得できませんでした")
+        return root
+
     # ====================
     # 1. グループ管理機能
     # ====================
@@ -36,8 +53,10 @@ class BaseMapAlgorithm:
         Returns:
             QgsLayerTreeGroup: 作成されたグループオブジェクト
         """
-        root = QgsProject.instance().layerTreeRoot()
-        return root.insertGroup(0, group_name)
+        group = self._get_layer_tree_root().insertGroup(0, group_name)
+        if group is None:
+            raise Exception(f"グループ「{group_name}」を作成できませんでした")
+        return group
 
     def get_layer_groups(self, group_name: str) -> List[QgsLayerTreeGroup]:
         """指定された名前の全グループを検索
@@ -46,7 +65,7 @@ class BaseMapAlgorithm:
         Returns:
             list: 見つかった全グループのリスト
         """
-        root = QgsProject.instance().layerTreeRoot()
+        root = self._get_layer_tree_root()
         found_groups = []
 
         for child in root.children():
@@ -70,7 +89,7 @@ class BaseMapAlgorithm:
                 )
                 return False
 
-            root = QgsProject.instance().layerTreeRoot()
+            root = self._get_layer_tree_root()
             for group in existing_groups:
                 root.removeChildNode(group)
 
@@ -119,7 +138,7 @@ class BaseMapAlgorithm:
             # ズームレベル制御を適用
             self._apply_zoom_level_control(new_layer, display_zoom_min)
 
-            QgsProject.instance().addMapLayer(new_layer, False)
+            self._get_project().addMapLayer(new_layer, False)
             if group:
                 group.addLayer(new_layer)
 
@@ -143,7 +162,7 @@ class BaseMapAlgorithm:
 
         layers = []
         for child in group.children():
-            if hasattr(child, "layer"):
+            if isinstance(child, QgsLayerTreeLayer):
                 layer = child.layer()
                 if layer:
                     layers.append(layer)
@@ -166,9 +185,9 @@ class BaseMapAlgorithm:
             return None
 
         for child in group.children():
-            if hasattr(child, "layer"):
+            if isinstance(child, QgsLayerTreeLayer):
                 layer = child.layer()
-                if layer and layer.name() == layer_name:
+                if isinstance(layer, QgsVectorTileLayer) and layer.name() == layer_name:
                     return layer
         return None
 
@@ -186,7 +205,7 @@ class BaseMapAlgorithm:
             bool: 成功した場合はTrue、失敗した場合はFalse
         """
         try:
-            root = QgsProject.instance().layerTreeRoot()
+            root = self._get_layer_tree_root()
             layer_tree_layer = root.findLayer(basemap_layer.id())
 
             if layer_tree_layer:
@@ -317,6 +336,8 @@ class BaseMapAlgorithm:
     def _create_polygon_symbol(self, color: QColor) -> QgsSymbol:
         """ポリゴン用のシンボルを作成"""
         symbol = QgsSymbol.defaultSymbol(Qgis.GeometryType.Polygon)
+        if symbol is None:
+            raise Exception("ポリゴン用のシンボルを作成できませんでした")
         symbol.setColor(color)
         symbol.setOpacity(0.7)
         symbol_layer = symbol.symbolLayer(0)
@@ -328,6 +349,8 @@ class BaseMapAlgorithm:
     def _create_line_symbol(self, color: QColor) -> QgsSymbol:
         """ライン用のシンボルを作成"""
         symbol = QgsSymbol.defaultSymbol(Qgis.GeometryType.Line)
+        if not isinstance(symbol, QgsLineSymbol):
+            raise Exception("ライン用のシンボルを作成できませんでした")
         symbol.setColor(color)
         symbol.setWidth(1.0)
         return symbol
@@ -335,6 +358,8 @@ class BaseMapAlgorithm:
     def _create_point_symbol(self, color: QColor) -> QgsSymbol:
         """ポイント用のシンボルを作成"""
         symbol = QgsSymbol.defaultSymbol(Qgis.GeometryType.Point)
+        if symbol is None:
+            raise Exception("ポイント用のシンボルを作成できませんでした")
         symbol.setColor(color)
         return symbol
 

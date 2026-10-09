@@ -3,6 +3,7 @@ from typing import Literal, Optional
 import processing
 from qgis.core import (
     Qgis,
+    QgsClassificationJenks,
     QgsGraduatedSymbolRenderer,
     QgsMessageLog,
     QgsProject,
@@ -38,10 +39,13 @@ class MergePopulationMeshLayers:
         renderer = QgsGraduatedSymbolRenderer(target_field)
         renderer.setClassAttribute(target_field)
 
-        color_ramp = QgsStyle.defaultStyle().colorRamp("Viridis")
-        renderer.setSourceColorRamp(color_ramp)
+        style = QgsStyle.defaultStyle()
+        color_ramp = style.colorRamp("Viridis") if style else None
+        if color_ramp:
+            renderer.setSourceColorRamp(color_ramp)
 
-        renderer.updateClasses(layer, QgsGraduatedSymbolRenderer.Jenks, class_count)
+        renderer.setClassificationMethod(QgsClassificationJenks())
+        renderer.updateClasses(layer, class_count)
 
         layer.setRenderer(renderer)
         layer.triggerRepaint()  # 地図を再描画
@@ -49,7 +53,7 @@ class MergePopulationMeshLayers:
         QgsMessageLog.logMessage(
             f"レイヤー '{layer.name()}' に可視化を適用しました。",
             PLUGIN_NAME,
-            level=Qgis.Info,
+            level=Qgis.MessageLevel.Info,
         )
 
     def merge_population_mesh_layers(
@@ -68,8 +72,12 @@ class MergePopulationMeshLayers:
             QgsMessageLog.logMessage(
                 "統合するレイヤーがありません。",
                 PLUGIN_NAME,
-                level=Qgis.Warning,
+                level=Qgis.MessageLevel.Warning,
             )
+            return None
+
+        project = QgsProject.instance()
+        if project is None:
             return None
 
         # 1つのレイヤーの場合はマージしない
@@ -79,7 +87,7 @@ class MergePopulationMeshLayers:
                 f"{MESH_TYPE_CONFIG[mesh_type]['output_layer_name']}_{municipality_name}"
             )
 
-            QgsProject.instance().addMapLayer(single_layer)
+            project.addMapLayer(single_layer)
 
             # 可視化を適用
             self._apply_population_style(single_layer)
@@ -91,7 +99,7 @@ class MergePopulationMeshLayers:
         QgsMessageLog.logMessage(
             f"{len(layer_objects)}個のレイヤーを統合中...",
             PLUGIN_NAME,
-            level=Qgis.Info,
+            level=Qgis.MessageLevel.Info,
         )
 
         # プロセシングツールで統合
@@ -110,12 +118,12 @@ class MergePopulationMeshLayers:
         )
 
         # 統合レイヤーをプロジェクトに追加
-        QgsProject.instance().addMapLayer(merged_layer)
+        project.addMapLayer(merged_layer)
 
         QgsMessageLog.logMessage(
             f"統合レイヤー '{merged_layer.name()}' を作成しました。",
             PLUGIN_NAME,
-            level=Qgis.Success,
+            level=Qgis.MessageLevel.Success,
         )
 
         # 可視化を適用
@@ -124,11 +132,11 @@ class MergePopulationMeshLayers:
         # 元の個別レイヤーを削除
         if remove_originals:
             for layer_obj in layer_objects:
-                QgsProject.instance().removeMapLayer(layer_obj.id())
+                project.removeMapLayer(layer_obj.id())
             QgsMessageLog.logMessage(
                 f"{len(layer_objects)}個の個別レイヤーを削除しました。",
                 PLUGIN_NAME,
-                level=Qgis.Info,
+                level=Qgis.MessageLevel.Info,
             )
 
         return merged_layer

@@ -64,21 +64,29 @@ class CoastlineWorkflow(BaseWorkflow):
                 message = (
                     f"市区町村「{display_name}」の範囲には海岸線データが存在しません。"
                 )
-                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Info)
-                self.iface.messageBar().pushMessage("情報", message, level=Qgis.Info)
+                QgsMessageLog.logMessage(
+                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Info
+                )
+                self.iface.messageBar().pushMessage(
+                    "情報", message, level=Qgis.MessageLevel.Info
+                )
                 return False
 
             QgsMessageLog.logMessage(
                 f"海岸線データを取得しました（{len(features)} features）",
                 PLUGIN_NAME,
-                level=Qgis.Info,
+                level=Qgis.MessageLevel.Info,
             )
             return True
 
         except json.JSONDecodeError:
             message = "取得したデータの形式が正しくありません。"
-            QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-            self.iface.messageBar().pushMessage("エラー", message, level=Qgis.Warning)
+            QgsMessageLog.logMessage(
+                message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+            )
+            self.iface.messageBar().pushMessage(
+                "エラー", message, level=Qgis.MessageLevel.Warning
+            )
             return False
 
     def _calculate_municipality_bounds(
@@ -106,9 +114,11 @@ class CoastlineWorkflow(BaseWorkflow):
                 calculated_bbox = CITY_DEFAULT_BOUNDS[municipality_code]
             else:
                 message = f"市区町村「{display_name}」のbbox計算に失敗しました。デフォルト境界範囲も設定されていません。"
-                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                QgsMessageLog.logMessage(
+                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+                )
                 self.iface.messageBar().pushMessage(
-                    "エラー", message, level=Qgis.Warning
+                    "エラー", message, level=Qgis.MessageLevel.Warning
                 )
                 return None
 
@@ -143,14 +153,22 @@ class CoastlineWorkflow(BaseWorkflow):
                 message = (
                     "海しるAPIキーが未設定のため、海岸線データの処理をスキップします。"
                 )
-                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+                QgsMessageLog.logMessage(
+                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+                )
+                self.iface.messageBar().pushMessage(
+                    "警告", message, level=Qgis.MessageLevel.Warning
+                )
                 return False
 
             if not municipality_code:
                 message = "海岸線を表示するには市区町村を選択してください。"
-                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+                QgsMessageLog.logMessage(
+                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+                )
+                self.iface.messageBar().pushMessage(
+                    "警告", message, level=Qgis.MessageLevel.Warning
+                )
                 return False
 
             display_name = self._get_display_name(municipality_code, municipality_name)
@@ -176,9 +194,11 @@ class CoastlineWorkflow(BaseWorkflow):
 
             if not geojson_data:
                 message = "海しるAPIからのデータ取得に失敗しました。"
-                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                QgsMessageLog.logMessage(
+                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+                )
                 self.iface.messageBar().pushMessage(
-                    "エラー", message, level=Qgis.Warning
+                    "エラー", message, level=Qgis.MessageLevel.Warning
                 )
                 return False
 
@@ -191,22 +211,29 @@ class CoastlineWorkflow(BaseWorkflow):
             layer = self.algorithm.create_layer(geojson_data, layer_name)
 
             # 5. QGISプロジェクトに追加
-            QgsProject.instance().addMapLayer(layer)
+            project = QgsProject.instance()
+            if project is None:
+                return False
+            project.addMapLayer(layer)
 
             # 6. UI更新
             self.iface.mapCanvas().refresh()
 
             success_message = f"海岸線レイヤー '{layer_name}' が正常に追加されました"
-            QgsMessageLog.logMessage(success_message, PLUGIN_NAME, level=Qgis.Success)
+            QgsMessageLog.logMessage(
+                success_message, PLUGIN_NAME, level=Qgis.MessageLevel.Success
+            )
             self.iface.messageBar().pushMessage(
-                "成功", success_message, level=Qgis.Success
+                "成功", success_message, level=Qgis.MessageLevel.Success
             )
             return True
 
         except Exception as e:
             error_message = f"海岸線の可視化中にエラーが発生: {str(e)}"
-            QgsMessageLog.logMessage(error_message, PLUGIN_NAME, level=Qgis.Critical)
+            QgsMessageLog.logMessage(
+                error_message, PLUGIN_NAME, level=Qgis.MessageLevel.Critical
+            )
             self.iface.messageBar().pushMessage(
-                "エラー", error_message, level=Qgis.Critical
+                "エラー", error_message, level=Qgis.MessageLevel.Critical
             )
             return False

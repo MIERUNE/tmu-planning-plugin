@@ -40,19 +40,21 @@ class DidAreaAlgorithm:
         request.setRawHeader(b"Ocp-Apim-Subscription-Key", api_key.encode("utf-8"))
 
         nam = QgsNetworkAccessManager.instance()
-        reply = nam.get(request)
+        reply = nam.get(request) if nam else None
+        if reply is None:
+            return False, None
 
         loop = QEventLoop()
         reply.finished.connect(loop.quit)
-        loop.exec_()
+        loop.exec()
 
-        http_status = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
+        http_status = reply.attribute(QNetworkRequest.Attribute.HttpStatusCodeAttribute)
 
         if reply.error():
             QgsMessageLog.logMessage(
                 f"API接続に失敗しました: {reply.errorString()} (HTTPステータス: {http_status})",
                 PLUGIN_NAME,
-                level=Qgis.Critical,
+                level=Qgis.MessageLevel.Critical,
             )
             reply.deleteLater()
             return False, http_status
@@ -83,7 +85,7 @@ class DidAreaAlgorithm:
             QgsMessageLog.logMessage(
                 f"政令指定都市({municipality_code})のため、全区のコードを使用します: {ward_codes}",
                 PLUGIN_NAME,
-                level=Qgis.Info,
+                level=Qgis.MessageLevel.Info,
             )
             return ",".join(ward_codes)
 
@@ -91,7 +93,7 @@ class DidAreaAlgorithm:
         QgsMessageLog.logMessage(
             f"通常の市区町村コードを使用します: {municipality_code}",
             PLUGIN_NAME,
-            level=Qgis.Info,
+            level=Qgis.MessageLevel.Info,
         )
         return municipality_code
 
@@ -117,7 +119,7 @@ class DidAreaAlgorithm:
             self.iface.messageBar().pushMessage(
                 "API接続エラー",
                 f"{user_message} (HTTP Status: {status_code})",
-                level=Qgis.Critical,
+                level=Qgis.MessageLevel.Critical,
             )
             return None
 

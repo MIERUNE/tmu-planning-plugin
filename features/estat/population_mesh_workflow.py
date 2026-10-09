@@ -32,14 +32,14 @@ class PopulationMeshWorkflow:
             QgsMessageLog.logMessage(
                 f"自治体コード '{municipality_code}' のデータセットIDが取得できませんでした。",
                 PLUGIN_NAME,
-                level=Qgis.Warning,
+                level=Qgis.MessageLevel.Warning,
             )
             return {}
 
         QgsMessageLog.logMessage(
             f"取得したデータセット数: {len(dataset_id_dict)}",
             PLUGIN_NAME,
-            level=Qgis.Info,
+            level=Qgis.MessageLevel.Info,
         )
 
         return dataset_id_dict
@@ -65,7 +65,7 @@ class PopulationMeshWorkflow:
             QgsMessageLog.logMessage(
                 f"メッシュコード '{mesh_code}' の処理を開始...",
                 PLUGIN_NAME,
-                level=Qgis.Info,
+                level=Qgis.MessageLevel.Info,
             )
 
             # アルゴリズムに個別メッシュの処理を委譲
@@ -84,13 +84,13 @@ class PopulationMeshWorkflow:
                 QgsMessageLog.logMessage(
                     f"メッシュコード '{mesh_code}' のレイヤー '{population_mesh_layer.name()}' を追加",
                     PLUGIN_NAME,
-                    level=Qgis.Success,
+                    level=Qgis.MessageLevel.Success,
                 )
             else:
                 QgsMessageLog.logMessage(
                     f"メッシュコード '{mesh_code}' のレイヤー追加に失敗",
                     PLUGIN_NAME,
-                    level=Qgis.Warning,
+                    level=Qgis.MessageLevel.Warning,
                 )
 
         return added_layers

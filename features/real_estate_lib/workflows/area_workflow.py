@@ -41,7 +41,7 @@ class AreaWorkflow:
             QgsMessageLog.logMessage(
                 f"都道府県リストの読み込み中にエラーが発生: {str(e)}",
                 PLUGIN_NAME,
-                level=Qgis.Critical,
+                level=Qgis.MessageLevel.Critical,
             )
             return False
 
@@ -82,7 +82,7 @@ class AreaWorkflow:
                 QgsMessageLog.logMessage(
                     f"APIおよびJSONファイルの両方から市区町村データが取得できませんでした（都道府県: {prefecture_code}）。元のエラー: {str(e)}",
                     PLUGIN_NAME,
-                    level=Qgis.Critical,
+                    level=Qgis.MessageLevel.Critical,
                 )
                 dockwidget.set_municipality_combobox([])
                 return False

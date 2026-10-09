@@ -88,22 +88,27 @@ class UmiShiruApiClient:
         request.setRawHeader(b"Ocp-Apim-Subscription-Key", self.api_key.encode("utf-8"))
 
         nam = QgsNetworkAccessManager.instance()
-        reply = nam.get(request)
+        reply = nam.get(request) if nam else None
+        if reply is None:
+            raise Exception(f"APIリクエストを送信できませんでした。URL: {full_url}")
+
         loop = QEventLoop()
         reply.finished.connect(loop.quit)
-        loop.exec_()
+        loop.exec()
 
         try:
             # エラーチェック
             if reply.error():
-                http_status = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
-                error_response = reply.readAll().data().decode("utf-8", errors="ignore")
+                http_status = reply.attribute(
+                    QNetworkRequest.Attribute.HttpStatusCodeAttribute
+                )
+                error_response = bytes(reply.readAll()).decode("utf-8", errors="ignore")
                 error_message = f"APIリクエスト失敗: {reply.errorString()} (HTTP {http_status or 'Unknown'})"
 
                 QgsMessageLog.logMessage(
                     f"{error_message}\nレスポンス詳細: {error_response}",
                     PLUGIN_NAME,
-                    level=Qgis.Critical,
+                    level=Qgis.MessageLevel.Critical,
                 )
                 raise Exception(error_message)
 
@@ -112,10 +117,12 @@ class UmiShiruApiClient:
                 raise Exception(f"APIからのレスポンスが空です。URL: {full_url}")
 
             QgsMessageLog.logMessage(
-                f"海しるAPIリクエスト成功: {full_url}", PLUGIN_NAME, level=Qgis.Info
+                f"海しるAPIリクエスト成功: {full_url}",
+                PLUGIN_NAME,
+                level=Qgis.MessageLevel.Info,
             )
 
-            return response_data.data().decode("utf-8-sig")
+            return bytes(response_data).decode("utf-8-sig")
 
         finally:
             reply.deleteLater()

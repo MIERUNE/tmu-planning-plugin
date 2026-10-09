@@ -4,10 +4,10 @@
 
 import json
 from pathlib import Path
-from typing import List, Tuple, Dict, Any
+from typing import List, Tuple, Dict, Any, Optional
 
-from PyQt5.QtCore import QEventLoop, QUrl, QByteArray
-from PyQt5.QtNetwork import QNetworkRequest
+from qgis.PyQt.QtCore import QEventLoop, QUrl, QByteArray
+from qgis.PyQt.QtNetwork import QNetworkRequest
 from qgis.core import QgsNetworkAccessManager
 
 # =============================================================================
@@ -118,14 +118,19 @@ class NationwideCollector:
         request.setRawHeader(b"Ocp-Apim-Subscription-Key", api_key.encode("utf-8"))
 
         nam = QgsNetworkAccessManager.instance()
-        reply = nam.get(request)
+        reply = nam.get(request) if nam else None
+        if reply is None:
+            raise Exception("APIリクエストを送信できませんでした")
+
         loop = QEventLoop()
         reply.finished.connect(loop.quit)
-        loop.exec_()
+        loop.exec()
 
         try:
             if reply.error():
-                http_status = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
+                http_status = reply.attribute(
+                    QNetworkRequest.Attribute.HttpStatusCodeAttribute
+                )
                 raise Exception(f"HTTP {http_status}: {reply.errorString()}")
             return reply.readAll()
         finally:
@@ -133,10 +138,10 @@ class NationwideCollector:
 
     def _decode_response(
         self, response_data: QByteArray, prefecture_code: str
-    ) -> Dict[str, Any]:
+    ) -> Optional[Dict[str, Any]]:
         """レスポンスデータをデコード"""
         try:
-            response_string = response_data.data().decode(RESPONSE_ENCODING)
+            response_string = bytes(response_data).decode(RESPONSE_ENCODING)
             return json.loads(response_string)
         except (UnicodeDecodeError, json.JSONDecodeError):
             return None

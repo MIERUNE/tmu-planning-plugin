@@ -138,7 +138,9 @@ class GreenInfraPlugin:
         # DockWidgetが作成されていない場合のみ作成
         if self.dockwidget is None:
             self.dockwidget = GreenInfraPlanningDockwidget()
-            self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
+            self.iface.addDockWidget(
+                Qt.DockWidgetArea.RightDockWidgetArea, self.dockwidget
+            )
 
             # 都道府県リストを読み込み
             self.area_workflow.load_prefecture_dropdown(self.dockwidget)
@@ -163,8 +165,12 @@ class GreenInfraPlugin:
 
         if not self.dockwidget.comboBox_municipality.currentData():
             message = "市区町村が選択されていません。市区町村を選択してください。"
-            QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-            self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+            QgsMessageLog.logMessage(
+                message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+            )
+            self.iface.messageBar().pushMessage(
+                "警告", message, level=Qgis.MessageLevel.Warning
+            )
             return
 
         # レイヤツリーの選択状態を解除
@@ -176,7 +182,7 @@ class GreenInfraPlugin:
         waiting_item = QgsMessageBarItem(
             "読み込み中",
             "処理中です...",
-            Qgis.Info,
+            Qgis.MessageLevel.Info,
             0,  # duration=0で自動で消えない
         )
 
@@ -219,8 +225,12 @@ class GreenInfraPlugin:
                 )
             else:
                 message = "不動産情報ライブラリAPIキーが未設定のため、都市計画区域の取得をスキップします。"
-                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+                QgsMessageLog.logMessage(
+                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+                )
+                self.iface.messageBar().pushMessage(
+                    "警告", message, level=Qgis.MessageLevel.Warning
+                )
 
         # 用途地域の可視化
         if self.dockwidget.checkBox_use_district.isChecked():
@@ -231,8 +241,12 @@ class GreenInfraPlugin:
                 )
             else:
                 message = "不動産情報ライブラリAPIキーが未設定のため、用途地域の取得をスキップします。"
-                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+                QgsMessageLog.logMessage(
+                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+                )
+                self.iface.messageBar().pushMessage(
+                    "警告", message, level=Qgis.MessageLevel.Warning
+                )
 
         # 地区計画の可視化
         if self.dockwidget.checkBox_district_planning.isChecked():
@@ -243,8 +257,12 @@ class GreenInfraPlugin:
                 )
             else:
                 message = "不動産情報ライブラリAPIキーが未設定のため、地区計画の取得をスキップします。"
-                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+                QgsMessageLog.logMessage(
+                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+                )
+                self.iface.messageBar().pushMessage(
+                    "警告", message, level=Qgis.MessageLevel.Warning
+                )
 
         # 立地適正化計画の可視化
         if self.dockwidget.checkBox_location_normalization_plan.isChecked():
@@ -256,8 +274,12 @@ class GreenInfraPlugin:
                 )
             else:
                 message = "不動産情報ライブラリAPIキーが未設定のため、立地適正化計画の取得をスキップします。"
-                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+                QgsMessageLog.logMessage(
+                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+                )
+                self.iface.messageBar().pushMessage(
+                    "警告", message, level=Qgis.MessageLevel.Warning
+                )
 
         # 自然公園地域の可視化
         if self.dockwidget.checkBox_nature_reserve.isChecked():
@@ -273,8 +295,12 @@ class GreenInfraPlugin:
                 )
             else:
                 message = "不動産情報ライブラリAPIキーが未設定のため、自然公園地域の取得をスキップします。"
-                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+                QgsMessageLog.logMessage(
+                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+                )
+                self.iface.messageBar().pushMessage(
+                    "警告", message, level=Qgis.MessageLevel.Warning
+                )
 
         # 人口集中地区(DID)の可視化
         if self.dockwidget.checkBox_did.isChecked():
@@ -287,8 +313,12 @@ class GreenInfraPlugin:
                 )
             else:
                 message = "不動産情報ライブラリAPIキーが未設定のため、人口集中地区(DID)の取得をスキップします。"
-                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+                QgsMessageLog.logMessage(
+                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+                )
+                self.iface.messageBar().pushMessage(
+                    "警告", message, level=Qgis.MessageLevel.Warning
+                )
 
         # 高度利用地区の可視化
         if self.dockwidget.checkBox_high_level_use_districts.isChecked():
@@ -299,8 +329,12 @@ class GreenInfraPlugin:
                 )
             else:
                 message = "不動産情報ライブラリAPIキーが未設定のため、高度利用地区の取得をスキップします。"
-                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+                QgsMessageLog.logMessage(
+                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+                )
+                self.iface.messageBar().pushMessage(
+                    "警告", message, level=Qgis.MessageLevel.Warning
+                )
 
         # Phase 4: 海岸線データの可視化
         umi_shiru_api_key = ApikeyDialog.get_umi_shiru_api_key()
@@ -342,9 +376,11 @@ class GreenInfraPlugin:
 
                 else:
                     message = "e-Stat APIキーが未設定のため、人口メッシュ（3次メッシュ）データの取得をスキップします。"
-                    QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                    QgsMessageLog.logMessage(
+                        message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+                    )
                     self.iface.messageBar().pushMessage(
-                        "警告", message, level=Qgis.Warning
+                        "警告", message, level=Qgis.MessageLevel.Warning
                     )
 
             # 4次メッシュ（500m）の処理
@@ -358,9 +394,11 @@ class GreenInfraPlugin:
                     )
                 else:
                     message = "e-Stat APIキーが未設定のため、人口メッシュ（4次メッシュ）データの取得をスキップします。"
-                    QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                    QgsMessageLog.logMessage(
+                        message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+                    )
                     self.iface.messageBar().pushMessage(
-                        "警告", message, level=Qgis.Warning
+                        "警告", message, level=Qgis.MessageLevel.Warning
                     )
 
         if self.dockwidget.checkBox_hazard.isChecked():
@@ -390,8 +428,12 @@ class GreenInfraPlugin:
         # municipality_code が None または空値の場合は早期リターン
         if not municipality_code:
             message = "市区町村コードが指定されていません。"
-            QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-            self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+            QgsMessageLog.logMessage(
+                message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+            )
+            self.iface.messageBar().pushMessage(
+                "警告", message, level=Qgis.MessageLevel.Warning
+            )
             return
         # 範囲とCRSを取得
         if municipality_code in CITY_DEFAULT_BOUNDS:
@@ -411,8 +453,12 @@ class GreenInfraPlugin:
             )
             if polygon_layer is None or not polygon_layer.isValid():
                 message = "自治体の行政区域データの取得に失敗しました。"
-                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+                QgsMessageLog.logMessage(
+                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+                )
+                self.iface.messageBar().pushMessage(
+                    "警告", message, level=Qgis.MessageLevel.Warning
+                )
                 return
             extent = polygon_layer.extent()
             source_crs = polygon_layer.crs()

@@ -60,7 +60,7 @@ class AdministrativeAreaAlgorithm:
             QgsMessageLog.logMessage(
                 f"ラベルMBTilesファイルが見つかりません: {labels_path}",
                 PLUGIN_NAME,
-                level=Qgis.Warning,
+                level=Qgis.MessageLevel.Warning,
             )
             return None
 
@@ -125,14 +125,15 @@ class AdministrativeAreaAlgorithm:
     def create_administrative_area_layer(
         self,
         class_type: Literal["base", "class3", "class5"],
-    ) -> Optional[tuple[QgsVectorTileLayer, QgsVectorTileLayer]]:
+    ) -> Optional[tuple[QgsVectorTileLayer, Optional[QgsVectorTileLayer]]]:
         """
         行政区域データのベクタタイルレイヤーを作成
 
         Args:
             class_type: 行政区域のクラスタイプ ("base", "class3" または "class5")
         Returns:
-            tuple[QgsVectorTileLayer, QgsVectorTileLayer] : (ポリゴンレイヤー, ラベルレイヤー)
+            tuple[QgsVectorTileLayer, Optional[QgsVectorTileLayer]] : (ポリゴンレイヤー, ラベルレイヤー)
+                ラベルレイヤーが作成できない場合は None
         """
 
         mbtiles_path = self._get_mbtiles_path()
@@ -142,7 +143,7 @@ class AdministrativeAreaAlgorithm:
             QgsMessageLog.logMessage(
                 f"MBTilesファイルが見つかりません: {mbtiles_path}",
                 PLUGIN_NAME,
-                level=Qgis.Warning,
+                level=Qgis.MessageLevel.Warning,
             )
 
         # MBTilesのURIの作成

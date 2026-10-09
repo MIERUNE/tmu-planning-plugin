@@ -6,8 +6,8 @@
 import json
 from typing import Any, Dict, List, Tuple
 
-from PyQt5.QtCore import QByteArray, QEventLoop, QUrl
-from PyQt5.QtNetwork import QNetworkRequest
+from qgis.PyQt.QtCore import QByteArray, QEventLoop, QUrl
+from qgis.PyQt.QtNetwork import QNetworkRequest
 from qgis.core import QgsNetworkAccessManager
 
 

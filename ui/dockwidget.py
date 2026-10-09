@@ -79,7 +79,7 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
     def open_apikey_dialog(self):
         """鍵の絵文字を押したらダイアログを開く"""
         dialog = ApikeyDialog(self)
-        dialog.exec_()
+        dialog.exec()
 
     def get_selected_basemaps(self) -> dict:
         """地理院ベクトルタイルの選択された地物と色を取得"""

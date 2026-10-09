@@ -44,7 +44,7 @@ class ApikeyDialog(QDialog, ui_dialog):
                 QgsMessageLog.logMessage(
                     f"API_KEY_LISTに不完全なエントリがあります: {api_key_info}",
                     "GreenInfraPlanning",
-                    level=Qgis.Warning,
+                    level=Qgis.MessageLevel.Warning,
                 )
                 continue
 
@@ -56,7 +56,7 @@ class ApikeyDialog(QDialog, ui_dialog):
                 QgsMessageLog.logMessage(
                     f"指定されたUIウィジェットが見つかりませんでした: {api_key_info}",
                     "ApikeyDialog",
-                    Qgis.Warning,
+                    Qgis.MessageLevel.Warning,
                 )
 
     def load_api_key(self):

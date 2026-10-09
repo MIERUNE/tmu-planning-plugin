@@ -9,7 +9,7 @@ import tempfile
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional
 
-from PyQt5.QtGui import QColor
+from qgis.PyQt.QtGui import QColor
 from qgis.core import (
     Qgis,
     QgsCoordinateReferenceSystem,

@@ -10,7 +10,7 @@ import zipfile
 from typing import Optional
 
 import requests
-from PyQt5.QtCore import QUrl, QUrlQuery
+from qgis.PyQt.QtCore import QUrl, QUrlQuery
 from qgis.core import Qgis, QgsMessageLog, QgsVectorLayer
 
 

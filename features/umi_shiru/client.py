@@ -2,8 +2,8 @@
 海しるAPIクライアントとAPI設定
 """
 
-from PyQt5.QtCore import QEventLoop, QUrl, QUrlQuery
-from PyQt5.QtNetwork import QNetworkRequest
+from qgis.PyQt.QtCore import QEventLoop, QUrl, QUrlQuery
+from qgis.PyQt.QtNetwork import QNetworkRequest
 from qgis.core import Qgis, QgsMessageLog, QgsNetworkAccessManager
 
 from ...utils.settings import PLUGIN_NAME

@@ -41,12 +41,12 @@ class AdministrativeAreaWorkflow:
             QgsMessageLog.logMessage(
                 "行政区域レイヤーの取得に失敗しました。",
                 PLUGIN_NAME,
-                level=Qgis.Warning,
+                level=Qgis.MessageLevel.Warning,
             )
             self.iface.messageBar().pushMessage(
                 "警告",
                 "行政区域レイヤーの取得に失敗しました。",
-                level=Qgis.Warning,
+                level=Qgis.MessageLevel.Warning,
             )
             return False
 
@@ -62,12 +62,12 @@ class AdministrativeAreaWorkflow:
                 QgsMessageLog.logMessage(
                     f"レイヤーが無効です: {layer.name()}",
                     PLUGIN_NAME,
-                    level=Qgis.Critical,
+                    level=Qgis.MessageLevel.Critical,
                 )
                 self.iface.messageBar().pushMessage(
                     "エラー",
                     f"{layer.name()}レイヤーが無効です。",
-                    level=Qgis.Critical,
+                    level=Qgis.MessageLevel.Critical,
                 )
                 return False
 
@@ -103,12 +103,12 @@ class AdministrativeAreaWorkflow:
         QgsMessageLog.logMessage(
             f"'{polygon_layer.name()}' レイヤーを追加しました。",
             PLUGIN_NAME,
-            level=Qgis.Success,
+            level=Qgis.MessageLevel.Success,
         )
         self.iface.messageBar().pushMessage(
             "成功",
             f"{polygon_layer.name()}を表示しました。",
-            level=Qgis.Success,
+            level=Qgis.MessageLevel.Success,
             duration=3,
         )
 

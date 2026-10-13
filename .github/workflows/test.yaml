@@ -14,8 +14,9 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
-        docker_tags: [release-3_28, release-3_34]
+        docker_tags: ["3.44", "4.2"]
 
     steps:
       - name: Checkout
@@ -29,15 +30,25 @@ jobs:
       - name: Docker pull and create qgis-testing-environment
         run: |
           docker pull "$DOCKER_IMAGE":${{ matrix.docker_tags }}
-          docker run -d --name qgis-testing-environment -v .:/tests_directory/plugin_dir -e DISPLAY=:99 "$DOCKER_IMAGE":${{ matrix.docker_tags }}
+          docker run -dt --name qgis-testing-environment -v .:/tests_directory/plugin_dir -e QT_QPA_PLATFORM=offscreen -e DISPLAY=:99 "$DOCKER_IMAGE":${{ matrix.docker_tags }}
 
       - name: Docker set up QGIS
         run: |
+          # qgis_testrunner.sh が使う unbuffer コマンド（expect パッケージ）がイメージに含まれていないため追加
+          docker exec qgis-testing-environment sh -c "apt-get update && apt-get install -y expect"
           docker exec qgis-testing-environment sh -c "qgis_setup.sh plugin_dir"
           docker exec qgis-testing-environment sh -c "rm -f /root/.local/share/QGIS/QGIS3/profiles/default/python/plugins/plugin_dir"
           docker exec qgis-testing-environment sh -c "ln -s /tests_directory/plugin_dir /root/.local/share/QGIS/QGIS3/profiles/default/python/plugins/plugin_dir"
-          docker exec qgis-testing-environment sh -c "pip3 install -r /tests_directory/plugin_dir/requirements.txt"
+          # qgis_setup.sh はプロファイルを QGIS3 に決め打ちで作るため、QGIS 4 用に QGIS4 へも複製する
+          docker exec qgis-testing-environment sh -c "mkdir -p /root/.local/share/QGIS/QGIS4 && cp -a /root/.local/share/QGIS/QGIS3/. /root/.local/share/QGIS/QGIS4/"
+          docker exec qgis-testing-environment sh -c "pip3 install --break-system-packages coverage -r /tests_directory/plugin_dir/requirements.txt"
 
       - name: Docker run plugin tests
         run: |
           docker exec qgis-testing-environment sh -c "qgis_testrunner.sh plugin_dir.test_suite.test_package"
+
+      # qgis_testrunner.sh は QGIS の標準エラー出力を捨てるため、失敗時のみエラー内容を表示する
+      - name: Show QGIS error output on failure
+        if: failure()
+        run: |
+          docker exec qgis-testing-environment sh -c "QGIS_TEST_MODULE=plugin_dir.test_suite.test_package timeout 300 qgis --version-migration --nologo --code /usr/bin/qgis_testrunner.py plugin_dir.test_suite.test_package" || true

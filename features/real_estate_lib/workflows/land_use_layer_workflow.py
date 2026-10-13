@@ -22,7 +22,9 @@ class LayerWorkflow:
             if not added_layer:
                 # メッセージを汎用的に変更
                 QgsMessageLog.logMessage(
-                    "レイヤーの取得に失敗しました。", PLUGIN_NAME, level=Qgis.Warning
+                    "レイヤーの取得に失敗しました。",
+                    PLUGIN_NAME,
+                    level=Qgis.MessageLevel.Warning,
                 )
                 return False
 
@@ -30,7 +32,7 @@ class LayerWorkflow:
             QgsMessageLog.logMessage(
                 f"'{added_layer.name()}' レイヤーを追加しました。",
                 PLUGIN_NAME,
-                level=Qgis.Success,
+                level=Qgis.MessageLevel.Success,
             )
             return True
 
@@ -38,6 +40,6 @@ class LayerWorkflow:
             QgsMessageLog.logMessage(
                 f"レイヤーの可視化中にエラーが発生: {str(e)}",
                 PLUGIN_NAME,
-                level=Qgis.Critical,
+                level=Qgis.MessageLevel.Critical,
             )
             return False

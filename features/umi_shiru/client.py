@@ -2,8 +2,8 @@
 海しるAPIクライアントとAPI設定
 """
 
-from PyQt5.QtCore import QEventLoop, QUrl, QUrlQuery
-from PyQt5.QtNetwork import QNetworkRequest
+from qgis.PyQt.QtCore import QEventLoop, QUrl, QUrlQuery
+from qgis.PyQt.QtNetwork import QNetworkReply, QNetworkRequest
 from qgis.core import Qgis, QgsMessageLog, QgsNetworkAccessManager
 
 from ...utils.settings import PLUGIN_NAME
@@ -91,19 +91,21 @@ class UmiShiruApiClient:
         reply = nam.get(request)
         loop = QEventLoop()
         reply.finished.connect(loop.quit)
-        loop.exec_()
+        loop.exec()
 
         try:
             # エラーチェック
-            if reply.error():
-                http_status = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
+            if reply.error() != QNetworkReply.NetworkError.NoError:
+                http_status = reply.attribute(
+                    QNetworkRequest.Attribute.HttpStatusCodeAttribute
+                )
                 error_response = reply.readAll().data().decode("utf-8", errors="ignore")
                 error_message = f"APIリクエスト失敗: {reply.errorString()} (HTTP {http_status or 'Unknown'})"
 
                 QgsMessageLog.logMessage(
                     f"{error_message}\nレスポンス詳細: {error_response}",
                     PLUGIN_NAME,
-                    level=Qgis.Critical,
+                    level=Qgis.MessageLevel.Critical,
                 )
                 raise Exception(error_message)
 
@@ -112,7 +114,9 @@ class UmiShiruApiClient:
                 raise Exception(f"APIからのレスポンスが空です。URL: {full_url}")
 
             QgsMessageLog.logMessage(
-                f"海しるAPIリクエスト成功: {full_url}", PLUGIN_NAME, level=Qgis.Info
+                f"海しるAPIリクエスト成功: {full_url}",
+                PLUGIN_NAME,
+                level=Qgis.MessageLevel.Info,
             )
 
             return response_data.data().decode("utf-8-sig")

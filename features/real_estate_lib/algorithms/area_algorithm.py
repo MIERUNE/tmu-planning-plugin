@@ -6,8 +6,8 @@
 import json
 from typing import Any, Dict, List, Tuple
 
-from PyQt5.QtCore import QByteArray, QEventLoop, QUrl
-from PyQt5.QtNetwork import QNetworkRequest
+from qgis.PyQt.QtCore import QByteArray, QEventLoop, QUrl
+from qgis.PyQt.QtNetwork import QNetworkReply, QNetworkRequest
 from qgis.core import QgsNetworkAccessManager
 
 
@@ -63,11 +63,13 @@ class AreaAlgorithm:
         reply = nam.get(request)
         loop = QEventLoop()
         reply.finished.connect(loop.quit)
-        loop.exec_()
+        loop.exec()
 
         try:
-            if reply.error():
-                http_status = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
+            if reply.error() != QNetworkReply.NetworkError.NoError:
+                http_status = reply.attribute(
+                    QNetworkRequest.Attribute.HttpStatusCodeAttribute
+                )
                 raise Exception(
                     f"APIリクエスト失敗: {reply.errorString()} (HTTP {http_status})"
                 )

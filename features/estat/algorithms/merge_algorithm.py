@@ -3,6 +3,7 @@ from typing import Literal, Optional
 import processing
 from qgis.core import (
     Qgis,
+    QgsClassificationJenks,
     QgsGraduatedSymbolRenderer,
     QgsMessageLog,
     QgsProject,
@@ -41,7 +42,8 @@ class MergePopulationMeshLayers:
         color_ramp = QgsStyle.defaultStyle().colorRamp("Viridis")
         renderer.setSourceColorRamp(color_ramp)
 
-        renderer.updateClasses(layer, QgsGraduatedSymbolRenderer.Jenks, class_count)
+        renderer.setClassificationMethod(QgsClassificationJenks())
+        renderer.updateClasses(layer, class_count)
 
         layer.setRenderer(renderer)
         layer.triggerRepaint()  # 地図を再描画
@@ -49,7 +51,7 @@ class MergePopulationMeshLayers:
         QgsMessageLog.logMessage(
             f"レイヤー '{layer.name()}' に可視化を適用しました。",
             PLUGIN_NAME,
-            level=Qgis.Info,
+            level=Qgis.MessageLevel.Info,
         )
 
     def merge_population_mesh_layers(
@@ -68,7 +70,7 @@ class MergePopulationMeshLayers:
             QgsMessageLog.logMessage(
                 "統合するレイヤーがありません。",
                 PLUGIN_NAME,
-                level=Qgis.Warning,
+                level=Qgis.MessageLevel.Warning,
             )
             return None
 
@@ -91,7 +93,7 @@ class MergePopulationMeshLayers:
         QgsMessageLog.logMessage(
             f"{len(layer_objects)}個のレイヤーを統合中...",
             PLUGIN_NAME,
-            level=Qgis.Info,
+            level=Qgis.MessageLevel.Info,
         )
 
         # プロセシングツールで統合
@@ -115,7 +117,7 @@ class MergePopulationMeshLayers:
         QgsMessageLog.logMessage(
             f"統合レイヤー '{merged_layer.name()}' を作成しました。",
             PLUGIN_NAME,
-            level=Qgis.Success,
+            level=Qgis.MessageLevel.Success,
         )
 
         # 可視化を適用
@@ -128,7 +130,7 @@ class MergePopulationMeshLayers:
             QgsMessageLog.logMessage(
                 f"{len(layer_objects)}個の個別レイヤーを削除しました。",
                 PLUGIN_NAME,
-                level=Qgis.Info,
+                level=Qgis.MessageLevel.Info,
             )
 
         return merged_layer

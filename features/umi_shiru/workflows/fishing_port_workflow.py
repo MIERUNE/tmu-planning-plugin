@@ -62,21 +62,29 @@ class FishingPortWorkflow(BaseWorkflow):
 
             if not features:
                 message = f"市区町村「{display_name}」の範囲には漁港区域データが存在しません。"
-                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Info)
-                self.iface.messageBar().pushMessage("情報", message, level=Qgis.Info)
+                QgsMessageLog.logMessage(
+                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Info
+                )
+                self.iface.messageBar().pushMessage(
+                    "情報", message, level=Qgis.MessageLevel.Info
+                )
                 return False
 
             QgsMessageLog.logMessage(
                 f"漁港区域データを取得しました（{len(features)} features）",
                 PLUGIN_NAME,
-                level=Qgis.Info,
+                level=Qgis.MessageLevel.Info,
             )
             return True
 
         except json.JSONDecodeError:
             message = "取得したデータの形式が正しくありません。"
-            QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-            self.iface.messageBar().pushMessage("エラー", message, level=Qgis.Warning)
+            QgsMessageLog.logMessage(
+                message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+            )
+            self.iface.messageBar().pushMessage(
+                "エラー", message, level=Qgis.MessageLevel.Warning
+            )
             return False
 
     def _calculate_municipality_bounds(
@@ -104,9 +112,11 @@ class FishingPortWorkflow(BaseWorkflow):
                 calculated_bbox = CITY_DEFAULT_BOUNDS[municipality_code]
             else:
                 message = f"市区町村「{display_name}」のbbox計算に失敗しました。デフォルト境界範囲も設定されていません。"
-                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                QgsMessageLog.logMessage(
+                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+                )
                 self.iface.messageBar().pushMessage(
-                    "エラー", message, level=Qgis.Warning
+                    "エラー", message, level=Qgis.MessageLevel.Warning
                 )
                 return None
 
@@ -139,14 +149,22 @@ class FishingPortWorkflow(BaseWorkflow):
             # 1. パラメータの準備とバリデーション
             if not api_key:
                 message = "海しるAPIキーが未設定のため、漁港区域データの処理をスキップします。"
-                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+                QgsMessageLog.logMessage(
+                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+                )
+                self.iface.messageBar().pushMessage(
+                    "警告", message, level=Qgis.MessageLevel.Warning
+                )
                 return False
 
             if not municipality_code:
                 message = "漁港区域を表示するには市区町村を選択してください。"
-                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
-                self.iface.messageBar().pushMessage("警告", message, level=Qgis.Warning)
+                QgsMessageLog.logMessage(
+                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+                )
+                self.iface.messageBar().pushMessage(
+                    "警告", message, level=Qgis.MessageLevel.Warning
+                )
                 return False
 
             display_name = self._get_display_name(municipality_code, municipality_name)
@@ -172,9 +190,11 @@ class FishingPortWorkflow(BaseWorkflow):
 
             if not geojson_data:
                 message = "海しるAPIからのデータ取得に失敗しました。"
-                QgsMessageLog.logMessage(message, PLUGIN_NAME, level=Qgis.Warning)
+                QgsMessageLog.logMessage(
+                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+                )
                 self.iface.messageBar().pushMessage(
-                    "エラー", message, level=Qgis.Warning
+                    "エラー", message, level=Qgis.MessageLevel.Warning
                 )
                 return False
 
@@ -193,16 +213,20 @@ class FishingPortWorkflow(BaseWorkflow):
             self.iface.mapCanvas().refresh()
 
             success_message = f"漁港区域レイヤー '{layer_name}' が正常に追加されました"
-            QgsMessageLog.logMessage(success_message, PLUGIN_NAME, level=Qgis.Success)
+            QgsMessageLog.logMessage(
+                success_message, PLUGIN_NAME, level=Qgis.MessageLevel.Success
+            )
             self.iface.messageBar().pushMessage(
-                "成功", success_message, level=Qgis.Success
+                "成功", success_message, level=Qgis.MessageLevel.Success
             )
             return True
 
         except Exception as e:
             error_message = f"漁港区域の可視化中にエラーが発生: {str(e)}"
-            QgsMessageLog.logMessage(error_message, PLUGIN_NAME, level=Qgis.Critical)
+            QgsMessageLog.logMessage(
+                error_message, PLUGIN_NAME, level=Qgis.MessageLevel.Critical
+            )
             self.iface.messageBar().pushMessage(
-                "エラー", error_message, level=Qgis.Critical
+                "エラー", error_message, level=Qgis.MessageLevel.Critical
             )
             return False

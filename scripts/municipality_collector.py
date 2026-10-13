@@ -6,8 +6,8 @@ import json
 from pathlib import Path
 from typing import List, Tuple, Dict, Any
 
-from PyQt5.QtCore import QEventLoop, QUrl, QByteArray
-from PyQt5.QtNetwork import QNetworkRequest
+from qgis.PyQt.QtCore import QEventLoop, QUrl, QByteArray
+from qgis.PyQt.QtNetwork import QNetworkReply, QNetworkRequest
 from qgis.core import QgsNetworkAccessManager
 
 # =============================================================================
@@ -121,11 +121,13 @@ class NationwideCollector:
         reply = nam.get(request)
         loop = QEventLoop()
         reply.finished.connect(loop.quit)
-        loop.exec_()
+        loop.exec()
 
         try:
-            if reply.error():
-                http_status = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
+            if reply.error() != QNetworkReply.NetworkError.NoError:
+                http_status = reply.attribute(
+                    QNetworkRequest.Attribute.HttpStatusCodeAttribute
+                )
                 raise Exception(f"HTTP {http_status}: {reply.errorString()}")
             return reply.readAll()
         finally:

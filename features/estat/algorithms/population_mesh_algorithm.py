@@ -18,7 +18,7 @@ from qgis.core import (
     QgsMessageLog,
     QgsVectorLayer,
 )
-from qgis.PyQt.QtCore import QVariant
+from qgis.PyQt.QtCore import QMetaType
 
 from ....utils.settings import PLUGIN_NAME
 from ..connect import (
@@ -54,7 +54,7 @@ class PopulationMeshAlgorithm:
         QgsMessageLog.logMessage(
             f"メッシュ形状データのダウンロードURL: {mesh_request_url}",
             PLUGIN_NAME,
-            level=Qgis.Info,
+            level=Qgis.MessageLevel.Info,
         )
 
         # メッシュ形状データのダウンロード
@@ -79,7 +79,7 @@ class PopulationMeshAlgorithm:
             QgsMessageLog.logMessage(
                 "展開されたZIPファイル内にシェープファイルが見つかりませんでした。",
                 PLUGIN_NAME,
-                level=Qgis.Critical,
+                level=Qgis.MessageLevel.Critical,
             )
             return None
 
@@ -87,7 +87,7 @@ class PopulationMeshAlgorithm:
         QgsMessageLog.logMessage(
             f"シェープファイルのパス: {shapefiles[0]}",
             PLUGIN_NAME,
-            level=Qgis.Info,
+            level=Qgis.MessageLevel.Info,
         )
         return str(shapefiles[0])
 
@@ -120,7 +120,7 @@ class PopulationMeshAlgorithm:
             QgsMessageLog.logMessage(
                 "シェープファイルからレイヤーを作成できませんでした。",
                 PLUGIN_NAME,
-                level=Qgis.Critical,
+                level=Qgis.MessageLevel.Critical,
             )
             return None
 
@@ -156,8 +156,8 @@ class PopulationMeshAlgorithm:
         provider = temp_layer.dataProvider()
         provider.addAttributes(
             [
-                QgsField("mesh_code", QVariant.String),
-                QgsField("population", QVariant.Int),
+                QgsField("mesh_code", QMetaType.Type.QString),
+                QgsField("population", QMetaType.Type.Int),
             ]
         )
         temp_layer.updateFields()
@@ -198,7 +198,7 @@ class PopulationMeshAlgorithm:
         QgsMessageLog.logMessage(
             f"結合完了: {joined_count}件成功, {unjoinable_count}件不一致",
             PLUGIN_NAME,
-            level=Qgis.Info,
+            level=Qgis.MessageLevel.Info,
         )
 
         return population_mesh_layer

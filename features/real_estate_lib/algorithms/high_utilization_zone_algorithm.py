@@ -15,7 +15,7 @@ from qgis.core import (
     QgsVectorTileLayer,
 )
 from qgis.PyQt.QtCore import QEventLoop, QUrl
-from qgis.PyQt.QtNetwork import QNetworkRequest
+from qgis.PyQt.QtNetwork import QNetworkReply, QNetworkRequest
 
 from ....utils.settings import PLUGIN_NAME
 from ..connect import (
@@ -52,15 +52,15 @@ class HighUtilizationZoneAlgorithm:
 
         loop = QEventLoop()
         reply.finished.connect(loop.quit)
-        loop.exec_()
+        loop.exec()
 
-        http_status = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
+        http_status = reply.attribute(QNetworkRequest.Attribute.HttpStatusCodeAttribute)
 
-        if reply.error():
+        if reply.error() != QNetworkReply.NetworkError.NoError:
             QgsMessageLog.logMessage(
                 f"API接続に失敗しました: {reply.errorString()} (HTTPステータス: {http_status})",
                 PLUGIN_NAME,
-                level=Qgis.Critical,
+                level=Qgis.MessageLevel.Critical,
             )
             reply.deleteLater()
             return False, http_status
@@ -83,7 +83,7 @@ class HighUtilizationZoneAlgorithm:
             self.iface.messageBar().pushMessage(
                 "API接続エラー",
                 f"{user_message} (HTTP Status: {status_code})",
-                level=Qgis.Critical,
+                level=Qgis.MessageLevel.Critical,
             )
             return None
 

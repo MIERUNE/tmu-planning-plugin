@@ -9,13 +9,12 @@ import tempfile
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional
 
-from PyQt5.QtGui import QColor
+from qgis.PyQt.QtGui import QColor
 from qgis.core import (
     Qgis,
     QgsCoordinateReferenceSystem,
     QgsMessageLog,
     QgsVectorLayer,
-    QgsWkbTypes,
 )
 
 from ....utils.settings import PLUGIN_NAME
@@ -263,14 +262,14 @@ class UmiShiruBaseAlgorithm(ABC):
                     QgsMessageLog.logMessage(
                         f"GeoJSON パース失敗 ({i + 1}/{len(geojson_list)}): {str(e)}",
                         PLUGIN_NAME,
-                        level=Qgis.Warning,
+                        level=Qgis.MessageLevel.Warning,
                     )
 
         if failed_count > 0:
             QgsMessageLog.logMessage(
                 f"マージ処理: {failed_count}/{len(geojson_list)} 件の GeoJSON 処理に失敗しましたが、処理を継続します",
                 PLUGIN_NAME,
-                level=Qgis.Warning,
+                level=Qgis.MessageLevel.Warning,
             )
 
         merged_geojson = {"type": "FeatureCollection", "features": all_features}
@@ -291,7 +290,7 @@ class UmiShiruBaseAlgorithm(ABC):
             QgsMessageLog.logMessage(
                 f"重複削除処理: GeoJSON パースに失敗しました: {str(e)}",
                 PLUGIN_NAME,
-                level=Qgis.Critical,
+                level=Qgis.MessageLevel.Critical,
             )
             return json.dumps({"type": "FeatureCollection", "features": []})
 
@@ -322,14 +321,14 @@ class UmiShiruBaseAlgorithm(ABC):
                 QgsMessageLog.logMessage(
                     f"地物の座標処理でエラー: {str(e)}",
                     PLUGIN_NAME,
-                    level=Qgis.Warning,
+                    level=Qgis.MessageLevel.Warning,
                 )
 
         if failed_features > 0:
             QgsMessageLog.logMessage(
                 f"重複削除: {failed_features} 件の地物で座標処理に失敗しましたが、処理を継続します",
                 PLUGIN_NAME,
-                level=Qgis.Warning,
+                level=Qgis.MessageLevel.Warning,
             )
 
         deduplicated_geojson = {
@@ -358,7 +357,7 @@ class UmiShiruBaseAlgorithm(ABC):
             # ジオメトリタイプに応じて適切なスタイルを適用
             geometry_type = layer.geometryType()
 
-            if geometry_type == QgsWkbTypes.PolygonGeometry:
+            if geometry_type == Qgis.GeometryType.Polygon:
                 # 面（Polygon）の場合
                 symbol_layer = symbol.symbolLayer(0)
                 if symbol_layer:
@@ -379,5 +378,5 @@ class UmiShiruBaseAlgorithm(ABC):
             QgsMessageLog.logMessage(
                 f"{data_type}スタイル適用エラー: {str(e)}",
                 PLUGIN_NAME,
-                level=Qgis.Warning,
+                level=Qgis.MessageLevel.Warning,
             )

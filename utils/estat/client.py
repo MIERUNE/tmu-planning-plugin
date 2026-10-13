@@ -10,7 +10,7 @@ import zipfile
 from typing import Optional
 
 import requests
-from PyQt5.QtCore import QUrl, QUrlQuery
+from qgis.PyQt.QtCore import QUrl, QUrlQuery
 from qgis.core import Qgis, QgsMessageLog, QgsVectorLayer
 
 
@@ -62,7 +62,9 @@ class AdministrativeAreaClient:
 
         except Exception as e:
             error_msg = f"行政区域データ取得エラー: {str(e)}"
-            QgsMessageLog.logMessage(error_msg, self.plugin_name, level=Qgis.Critical)
+            QgsMessageLog.logMessage(
+                error_msg, self.plugin_name, level=Qgis.MessageLevel.Critical
+            )
             return None
         finally:
             shutil.rmtree(temp_dir, ignore_errors=True)
@@ -102,7 +104,7 @@ class AdministrativeAreaClient:
             QgsMessageLog.logMessage(
                 f"行政区域データのダウンロードに失敗しました: {str(e)}",
                 self.plugin_name,
-                level=Qgis.Critical,
+                level=Qgis.MessageLevel.Critical,
             )
             return None
 
@@ -133,7 +135,7 @@ class AdministrativeAreaClient:
             QgsMessageLog.logMessage(
                 "シェープファイルが見つかりません",
                 self.plugin_name,
-                level=Qgis.Critical,
+                level=Qgis.MessageLevel.Critical,
             )
             return None
 
@@ -147,7 +149,7 @@ class AdministrativeAreaClient:
             QgsMessageLog.logMessage(
                 "シェープファイルの読み込みに失敗",
                 self.plugin_name,
-                level=Qgis.Critical,
+                level=Qgis.MessageLevel.Critical,
             )
             return None
 

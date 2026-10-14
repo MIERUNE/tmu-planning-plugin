@@ -91,7 +91,7 @@ class AdministrativeAreaAlgorithm:
 
         mbtiles_path = self._get_mbtiles_path()
         QgsMessageLog.logMessage(
-            f"国交DPFから行政区域データを取得できなかったため、ローカルデータを使用します: {mbtiles_path}",
+            f"国土交通データプラットフォームから行政区域データを取得できなかったため、ローカルデータを使用します: {mbtiles_path}",
             PLUGIN_NAME,
             level=Qgis.MessageLevel.Warning,
         )

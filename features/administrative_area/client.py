@@ -1,5 +1,5 @@
 """
-国土交通データプラットフォーム（国交DPF）APIクライアント
+国土交通データプラットフォームAPIクライアント
 """
 
 import json
@@ -45,7 +45,7 @@ class MlitDpfClient:
             return source["tiles"][0]
         except (KeyError, IndexError, TypeError, ValueError, StopIteration) as e:
             QgsMessageLog.logMessage(
-                f"国交DPFのレスポンスからタイルURLを取得できませんでした（dataID: {data_id}）"
+                f"国土交通データプラットフォームのレスポンスからタイルURLを取得できませんでした（dataID: {data_id}）"
                 f" {type(e).__name__}: {e}\nレスポンス: {response}",
                 PLUGIN_NAME,
                 level=Qgis.MessageLevel.Warning,
@@ -71,7 +71,7 @@ class MlitDpfClient:
                 QNetworkRequest.Attribute.HttpStatusCodeAttribute
             )
             QgsMessageLog.logMessage(
-                f"国交DPF APIリクエスト失敗: {blocking_request.errorMessage()} (HTTP {http_status or 'Unknown'})",
+                f"国土交通データプラットフォーム APIリクエスト失敗: {blocking_request.errorMessage()} (HTTP {http_status or 'Unknown'})",
                 PLUGIN_NAME,
                 level=Qgis.MessageLevel.Warning,
             )
@@ -80,7 +80,7 @@ class MlitDpfClient:
         content = bytes(reply.content())
         if not content:
             QgsMessageLog.logMessage(
-                "国交DPF APIのレスポンスが空です。",
+                "国土交通データプラットフォーム APIのレスポンスが空です。",
                 PLUGIN_NAME,
                 level=Qgis.MessageLevel.Warning,
             )
@@ -90,7 +90,7 @@ class MlitDpfClient:
             response = json.loads(content.decode("utf-8-sig"))
         except ValueError as e:
             QgsMessageLog.logMessage(
-                f"国交DPF APIのレスポンスがJSONではありません。{type(e).__name__}: {e}",
+                f"国土交通データプラットフォーム APIのレスポンスがJSONではありません。{type(e).__name__}: {e}",
                 PLUGIN_NAME,
                 level=Qgis.MessageLevel.Warning,
             )
@@ -98,7 +98,7 @@ class MlitDpfClient:
 
         if response.get("errors"):
             QgsMessageLog.logMessage(
-                f"国交DPF APIがエラーを返しました: {response['errors']}",
+                f"国土交通データプラットフォーム APIがエラーを返しました: {response['errors']}",
                 PLUGIN_NAME,
                 level=Qgis.MessageLevel.Warning,
             )

@@ -33,6 +33,12 @@ CLASS3_STYLES: dict[str, dict[str, str]] = {
     },
 }
 
+CLASS3_LABELS: dict[str, str] = {
+    "1": "1：都市型",
+    "2": "2：農地緑地型",
+    "3": "3：森林型",
+}
+
 # 5クラス分類
 CLASS5_STYLES: dict[str, dict[str, str]] = {
     "1": {
@@ -60,6 +66,14 @@ CLASS5_STYLES: dict[str, dict[str, str]] = {
         "outline_color": "120,120,120,255",
         "outline_width": "0.7",
     },
+}
+
+CLASS5_LABELS: dict[str, str] = {
+    "1": "1：森林型",
+    "2": "2：都市型",
+    "3": "3：農地緑地型",
+    "4": "4：森林型やや都市より",
+    "5": "5：農地緑地型やや都市より",
 }
 
 # 6クラス分類（国交DPF API利用ガイドの配色）

@@ -33,6 +33,7 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
         self.comboBox_municipality: QComboBox = self.comboBox_municipality
         self.checkBox_class3: QCheckBox = self.checkBox_class3
         self.checkBox_class5: QCheckBox = self.checkBox_class5
+        self.checkBox_class6: QCheckBox = self.checkBox_class6
         self.toolButton_basemap_info: QToolButton = self.toolButton_basemap_info
         self.checkBox_water: QCheckBox = self.checkBox_water
         self.checkBox_highway: QCheckBox = self.checkBox_highway
@@ -131,24 +132,32 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
         # 未選択状態に設定
         self.comboBox_municipality.setCurrentIndex(0)
 
-    def create_legends(self, class3: dict, class5: dict):
+    def create_legends(
+        self,
+        class3: dict,
+        class3_labels: dict,
+        class5: dict,
+        class5_labels: dict,
+        class6: dict,
+        class6_labels: dict,
+    ):
         """全凡例を生成"""
         self._create_legend(
             layout=self.horizontalLayout_class3_legend,
             styles=class3,
-            labels={"1": "1：都市型", "2": "2：農地緑地型", "3": "3：森林型"},
+            labels=class3_labels,
         )
         self._create_legend(
             layout=self.verticalLayout_class5_legend_container,
             styles=class5,
-            labels={
-                "1": "1：森林型",
-                "2": "2：都市型",
-                "3": "3：農地緑地型",
-                "4": "4：森林型やや都市より",
-                "5": "5：農地緑地型やや都市より",
-            },
+            labels=class5_labels,
             items_per_row=3,
+        )
+        self._create_legend(
+            layout=self.verticalLayout_class6_legend_container,
+            styles=class6,
+            labels=class6_labels,
+            items_per_row=1,
         )
 
     def _create_legend(

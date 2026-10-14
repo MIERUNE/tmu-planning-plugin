@@ -49,23 +49,28 @@ class AdministrativeAreaAlgorithm:
 
     def __init__(self, iface):
         self.iface = iface
-        # 国交DPFから取得したタイルURL（dataIDごと）
-        self._tile_url_cache: dict[str, str] = {}
+        # 国交DPFから取得したタイルURL（dataIDごと、取得失敗時は None）
+        self._tile_url_cache: dict[str, Optional[str]] = {}
+
+    def clear_tile_url_cache(self):
+        """タイルURLのキャッシュをクリア（可視化の実行ごとに呼び出す）"""
+        self._tile_url_cache.clear()
 
     def _fetch_tile_url(self, data_id: str, api_key: str) -> Optional[str]:
-        """国交DPFからベクトルタイルURLを取得（取得済みならキャッシュを返す）"""
+        """国交DPFからベクトルタイルURLを取得
+        取得時、取得失敗共にキャッシュし、同じ実行中に同じdataIDへ再リクエストしない
+        """
         if data_id in self._tile_url_cache:
             return self._tile_url_cache[data_id]
 
+        tile_url = None
         authcfg = get_api_header_authcfg(
             MLIT_DPF_AUTHCFG_NAME, MLIT_DPF_API_KEY_HEADER, api_key
         )
-        if not authcfg:
-            return None
+        if authcfg:
+            tile_url = MlitDpfClient(authcfg).fetch_tile_url(data_id)
 
-        tile_url = MlitDpfClient(authcfg).fetch_tile_url(data_id)
-        if tile_url:
-            self._tile_url_cache[data_id] = tile_url
+        self._tile_url_cache[data_id] = tile_url
         return tile_url
 
     def _get_source_uri(self, class_type: ClassType, api_key: str) -> Optional[str]:

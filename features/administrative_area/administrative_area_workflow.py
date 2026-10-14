@@ -18,6 +18,10 @@ class AdministrativeAreaWorkflow:
         self.iface = iface
         self.algorithm = AdministrativeAreaAlgorithm(iface)
 
+    def reset(self):
+        """国交DPFへの問い合わせ結果をクリアする（可視化の実行開始時に呼び出す）"""
+        self.algorithm.clear_tile_url_cache()
+
     def execute(
         self,
         class_type: ClassType,

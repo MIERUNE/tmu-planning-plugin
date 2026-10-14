@@ -210,6 +210,9 @@ class GreenInfraPlugin:
         basemap_group = self.basemap_workflow.create_group()
         mlit_dpf_api_key = ApikeyDialog.get_mlit_dpf_api_key()
         if mlit_dpf_api_key:
+            # 国交DPFへの問い合わせは実行ごとに1回にする
+            self.administrative_area_workflow.reset()
+
             # 行政区域class3レイヤーの可視化
             if self.dockwidget.checkBox_class3.isChecked():
                 self.administrative_area_workflow.execute(

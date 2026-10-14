@@ -17,18 +17,31 @@ from qgis.core import (
     QgsVectorTileBasicLabelingStyle,
     QgsVectorTileBasicRenderer,
     QgsVectorTileBasicRendererStyle,
+    QgsDataSourceUri,
     QgsVectorTileLayer,
 )
 from qgis.PyQt.QtGui import QColor, QFont
 
+from ...utils.auth import get_api_header_authcfg
 from ...utils.settings import PLUGIN_NAME, ZOOM10_SCALE_THRESHOLD
+from .client import MlitDpfClient
+from .connect import (
+    DATA_IDS,
+    MLIT_DPF_API_KEY_HEADER,
+    MLIT_DPF_AUTHCFG_NAME,
+    TILE_ZOOM_MAX,
+    TILE_ZOOM_MIN,
+)
 from .settings import (
     BASE_STYLE,
     CLASS3_STYLES,
     CLASS5_STYLES,
+    CLASS6_STYLES,
     LABEL_LAYER_NAME,
     LAYER_NAME,
 )
+
+ClassType = Literal["base", "class3", "class5", "class6"]
 
 
 class AdministrativeAreaAlgorithm:
@@ -36,9 +49,62 @@ class AdministrativeAreaAlgorithm:
 
     def __init__(self, iface):
         self.iface = iface
+        # 国交DPFから取得したタイルURL（dataIDごと）
+        self._tile_url_cache: dict[str, str] = {}
+
+    def _fetch_tile_url(self, data_id: str, api_key: str) -> Optional[str]:
+        """国交DPFからベクトルタイルURLを取得（取得済みならキャッシュを返す）"""
+        if data_id in self._tile_url_cache:
+            return self._tile_url_cache[data_id]
+
+        authcfg = get_api_header_authcfg(
+            MLIT_DPF_AUTHCFG_NAME, MLIT_DPF_API_KEY_HEADER, api_key
+        )
+        if not authcfg:
+            return None
+
+        tile_url = MlitDpfClient(authcfg).fetch_tile_url(data_id)
+        if tile_url:
+            self._tile_url_cache[data_id] = tile_url
+        return tile_url
+
+    def _get_source_uri(self, class_type: ClassType, api_key: str) -> Optional[str]:
+        """
+        行政区域ポリゴンのデータソースURIを取得
+
+        国交DPFのベクトルタイルを優先し、取得できない場合はローカルのMBTilesを使う。
+        6クラス分類はローカルデータがないため、取得できない場合は None を返す。
+        """
+        data_id = DATA_IDS["class6" if class_type == "class6" else "class3_5"]
+        tile_url = self._fetch_tile_url(data_id, api_key)
+
+        if tile_url:
+            uri = QgsDataSourceUri()
+            uri.setParam("type", "xyz")
+            uri.setParam("url", tile_url)
+            uri.setParam("zmin", str(TILE_ZOOM_MIN))
+            uri.setParam("zmax", str(TILE_ZOOM_MAX))
+            return bytes(uri.encodedUri()).decode()
+
+        if class_type == "class6":
+            return None
+
+        mbtiles_path = self._get_mbtiles_path()
+        QgsMessageLog.logMessage(
+            f"国交DPFから行政区域データを取得できなかったため、ローカルデータを使用します: {mbtiles_path}",
+            PLUGIN_NAME,
+            level=Qgis.MessageLevel.Warning,
+        )
+        if not os.path.exists(mbtiles_path):
+            QgsMessageLog.logMessage(
+                f"MBTilesファイルが見つかりません: {mbtiles_path}",
+                PLUGIN_NAME,
+                level=Qgis.MessageLevel.Warning,
+            )
+        return f"type=mbtiles&url={mbtiles_path}"
 
     def _get_mbtiles_path(self) -> str:
-        """MBTilesファイルのパスを取得（将来的にはここの関数をAPIからデータを取得する形に変更）"""
+        """MBTilesファイルのパスを取得（国交DPFから取得できない場合のフォールバック用）"""
         plugin_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
         return os.path.join(
@@ -124,30 +190,24 @@ class AdministrativeAreaAlgorithm:
 
     def create_administrative_area_layer(
         self,
-        class_type: Literal["base", "class3", "class5"],
+        class_type: ClassType,
+        api_key: str,
     ) -> Optional[tuple[QgsVectorTileLayer, Optional[QgsVectorTileLayer]]]:
         """
         行政区域データのベクタタイルレイヤーを作成
 
         Args:
-            class_type: 行政区域のクラスタイプ ("base", "class3" または "class5")
+            class_type: 行政区域のクラスタイプ ("base", "class3", "class5" または "class6")
+            api_key: 国土交通データプラットフォームのAPIキー
         Returns:
             tuple[QgsVectorTileLayer, Optional[QgsVectorTileLayer]] : (ポリゴンレイヤー, ラベルレイヤー)
                 ラベルレイヤーが作成できない場合は None
         """
 
-        mbtiles_path = self._get_mbtiles_path()
+        uri = self._get_source_uri(class_type, api_key)
+        if not uri:
+            return None
 
-        # MBTilesファイルの存在確認
-        if not os.path.exists(mbtiles_path):
-            QgsMessageLog.logMessage(
-                f"MBTilesファイルが見つかりません: {mbtiles_path}",
-                PLUGIN_NAME,
-                level=Qgis.MessageLevel.Warning,
-            )
-
-        # MBTilesのURIの作成
-        uri = f"type=mbtiles&url={mbtiles_path}"
         layer_name = f"{LAYER_NAME}_{class_type}"
         administrative_area_layer = QgsVectorTileLayer(uri, layer_name)
 
@@ -162,6 +222,7 @@ class AdministrativeAreaAlgorithm:
         CLASS_TYPE_MAP = {
             "class3": ("class3info", CLASS3_STYLES),
             "class5": ("class5nofo", CLASS5_STYLES),
+            "class6": ("class", CLASS6_STYLES),
             "base": ("base", BASE_STYLE),
         }
 

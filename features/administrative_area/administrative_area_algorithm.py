@@ -103,7 +103,7 @@ class AdministrativeAreaAlgorithm:
 
         mbtiles_path = self._get_mbtiles_path()
         if not self._fallback_notified:
-            message = "国土交通データプラットフォームから行政区域データを取得できなかったため、ローカルデータを使用します。"
+            message = "国土交通データプラットフォームから行政区域データを取得できなかったため、ローカルデータを使用しました。"
             QgsMessageLog.logMessage(
                 f"{message} {mbtiles_path}",
                 PLUGIN_NAME,

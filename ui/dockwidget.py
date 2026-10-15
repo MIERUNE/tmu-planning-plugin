@@ -64,6 +64,7 @@ class GreenInfraPlanningDockwidget(QDockWidget, ui_dockwidget):
             self.radioButton_population_mesh_4th
         )
         self.checkBox_hazard: QCheckBox = self.checkBox_hazard
+        self.checkBox_vegetation_map: QCheckBox = self.checkBox_vegetation_map
 
         self._set_population_mesh_controls()
 

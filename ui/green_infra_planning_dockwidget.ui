@@ -864,7 +864,7 @@
       </widget>
       <widget class="QWidget" name="tab_sea">
        <attribute name="title">
-        <string>海洋状況</string>
+        <string>自然環境</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_env">
         <item>
@@ -973,6 +973,90 @@
             </item>
             <item>
              <widget class="Line" name="line_env">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_vegetation">
+              <item>
+               <widget class="QLabel" name="label_vegetation">
+                <property name="font">
+                 <font>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>環境ジオポータル</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="toolButton_vegetation_info">
+                <property name="maximumSize">
+                 <size>
+                  <width>20</width>
+                  <height>20</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>
+                                    &lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span
+                                    style=&quot; font-size:10pt;
+                                    font-weight:600;&quot;&gt;【APIの提供元】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span
+                                    style=&quot; font-size:10pt;&quot;&gt;環境省 生物多様性センター（環境ジオポータル）
+                                    &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;
+                                    font-weight:600;&quot;&gt;【APIサイト】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span
+                                    style=&quot; font-size:10pt;&quot;&gt;https://geoportal.env.go.jp/
+                                    &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;
+                                    font-weight:600;&quot;&gt;【出典・クレジット】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span
+                                    style=&quot;
+                                    font-size:10pt;&quot;&gt;出典：環境省生物多様性センター「現存植生図2024（1/25,000植生図）」（https://geoportal.env.go.jp/）&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span
+                                    style=&quot;
+                                    font-size:10pt;&quot;&gt;このサービスは、環境ジオポータルのデータを加工して作成しています。&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="styleSheet">
+                 <string>QToolButton {
+                                    border: none;
+                                    background-color: transparent;
+                                    color: #2196F3;
+                                    font-weight: bold;
+                                    }
+                                    QToolButton:hover {
+                                    color: #1976D2;
+                                    }</string>
+                </property>
+                <property name="text">
+                 <string>ⓘ</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_vegetation">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_vegetation_map">
+              <property name="text">
+               <string>現存植生図2024</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="Line" name="line_vegetation">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>

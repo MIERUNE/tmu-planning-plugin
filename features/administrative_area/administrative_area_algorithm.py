@@ -51,10 +51,13 @@ class AdministrativeAreaAlgorithm:
         self.iface = iface
         # 国交DPFから取得したタイルURL（dataIDごと、取得失敗時は None）
         self._tile_url_cache: dict[str, Optional[str]] = {}
+        # ローカルデータを使用した旨を通知済みか
+        self._fallback_notified = False
 
     def clear_tile_url_cache(self):
         """タイルURLのキャッシュをクリア（可視化の実行ごとに呼び出す）"""
         self._tile_url_cache.clear()
+        self._fallback_notified = False
 
     def _fetch_tile_url(self, data_id: str, api_key: str) -> Optional[str]:
         """国交DPFからベクトルタイルURLを取得
@@ -68,7 +71,11 @@ class AdministrativeAreaAlgorithm:
             MLIT_DPF_AUTHCFG_NAME, MLIT_DPF_API_KEY_HEADER, api_key
         )
         if authcfg:
-            tile_url = MlitDpfClient(authcfg).fetch_tile_url(data_id)
+            client = MlitDpfClient(authcfg)
+            tile_url = client.fetch_tile_url(data_id)
+            # タイルの配信元（S3）だけ通信を遮断されている場合も取得失敗として扱う
+            if tile_url and not client.can_access_tiles(tile_url):
+                tile_url = None
 
         self._tile_url_cache[data_id] = tile_url
         return tile_url
@@ -95,11 +102,17 @@ class AdministrativeAreaAlgorithm:
             return None
 
         mbtiles_path = self._get_mbtiles_path()
-        QgsMessageLog.logMessage(
-            f"国土交通データプラットフォームから行政区域データを取得できなかったため、ローカルデータを使用します: {mbtiles_path}",
-            PLUGIN_NAME,
-            level=Qgis.MessageLevel.Warning,
-        )
+        if not self._fallback_notified:
+            message = "国土交通データプラットフォームから行政区域データを取得できなかったため、ローカルデータを使用します。"
+            QgsMessageLog.logMessage(
+                f"{message} {mbtiles_path}",
+                PLUGIN_NAME,
+                level=Qgis.MessageLevel.Warning,
+            )
+            self.iface.messageBar().pushMessage(
+                "警告", message, level=Qgis.MessageLevel.Warning
+            )
+            self._fallback_notified = True
         if not os.path.exists(mbtiles_path):
             QgsMessageLog.logMessage(
                 f"MBTilesファイルが見つかりません: {mbtiles_path}",

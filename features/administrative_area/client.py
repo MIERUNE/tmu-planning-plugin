@@ -10,7 +10,12 @@ from qgis.PyQt.QtCore import QByteArray, QUrl
 from qgis.PyQt.QtNetwork import QNetworkRequest
 
 from ...utils.settings import PLUGIN_NAME
-from .connect import DATASET_ID, MLIT_DPF_API_ENDPOINT, VECTOR_TILES_QUERY
+from .connect import (
+    CHECK_TILE_ZXY,
+    DATASET_ID,
+    MLIT_DPF_API_ENDPOINT,
+    VECTOR_TILES_QUERY,
+)
 
 
 class MlitDpfClient:
@@ -51,6 +56,35 @@ class MlitDpfClient:
                 level=Qgis.MessageLevel.Warning,
             )
             return None
+
+    def can_access_tiles(self, tile_url: str) -> bool:
+        """タイルの配信元にアクセスできるか、陸域のタイルを1枚取得して確認
+        Args:
+            tile_url (str): タイルURL（{z}/{x}/{y}を含む）
+        Returns:
+            bool: タイルを取得できた場合は True
+        """
+        check_url = (
+            tile_url.replace("{z}", str(CHECK_TILE_ZXY["z"]))
+            .replace("{x}", str(CHECK_TILE_ZXY["x"]))
+            .replace("{y}", str(CHECK_TILE_ZXY["y"]))
+        )
+
+        # タイルは公開URLのため認証は付与しない
+        blocking_request = QgsBlockingNetworkRequest()
+        error_code = blocking_request.get(QNetworkRequest(QUrl(check_url)))
+        if error_code == QgsBlockingNetworkRequest.ErrorCode.NoError:
+            return True
+
+        http_status = blocking_request.reply().attribute(
+            QNetworkRequest.Attribute.HttpStatusCodeAttribute
+        )
+        QgsMessageLog.logMessage(
+            f"行政区域タイルの配信元にアクセスできません: {blocking_request.errorMessage()} (HTTP {http_status or 'Unknown'}) URL: {check_url}",
+            PLUGIN_NAME,
+            level=Qgis.MessageLevel.Warning,
+        )
+        return False
 
     def _post(self, body: dict) -> Optional[dict]:
         """GraphQLリクエストを送信してJSONを返す"""

@@ -1015,7 +1015,12 @@
                                     style=&quot;
                                     font-size:10pt;&quot;&gt;出典：環境省生物多様性センター「現存植生図2024（1/25,000植生図）」（https://geoportal.env.go.jp/）&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span
                                     style=&quot;
-                                    font-size:10pt;&quot;&gt;このサービスは、環境ジオポータルのデータを加工して作成しています。&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                                    font-size:10pt;&quot;&gt;このサービスは、環境ジオポータルのデータを加工して作成しています。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;
+                                    font-weight:600;&quot;&gt;【スタイル設定ファイル】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span
+                                    style=&quot;
+                                    font-size:10pt;&quot;&gt;出典：環境省生物多様性センター「現存植生図2024スタイル設定ファイル」（CC BY 4.0）&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span
+                                    style=&quot;
+                                    font-size:10pt;&quot;&gt;https://geoportal.env.go.jp/datasets/368329d069ab4e70a0b1938eb050ad07&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="styleSheet">
                  <string>QToolButton {

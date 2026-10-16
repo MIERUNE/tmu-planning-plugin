@@ -46,6 +46,7 @@ from .features.real_estate_lib.workflows.land_use_layer_workflow import LayerWor
 from .features.umi_shiru.workflows.coastline_workflow import CoastlineWorkflow
 from .features.umi_shiru.workflows.fishing_port_workflow import FishingPortWorkflow
 from .features.umi_shiru.workflows.port_area_workflow import PortAreaWorkflow
+from .features.vegetation_map.vegetation_map_workflow import VegetationMapWorkflow
 from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .utils.estat.client import AdministrativeAreaClient
@@ -86,6 +87,7 @@ class GreenInfraPlugin:
         self.fishing_port_workflow = FishingPortWorkflow(iface)
         self.port_area_workflow = PortAreaWorkflow(iface)
         self.hazard_map_workflow = HazardMapWorkflow(iface)
+        self.vegetation_map_workflow = VegetationMapWorkflow(iface)
 
     def add_action(
         self,
@@ -188,6 +190,11 @@ class GreenInfraPlugin:
 
         self.iface.messageBar().pushItem(waiting_item)
         QCoreApplication.processEvents()
+
+        def update_waiting_text(text: str) -> None:
+            """読み込み中メッセージの文言を進捗に合わせて更新する"""
+            waiting_item.setText(text)
+            QCoreApplication.processEvents()
 
         # Phase 1: ベースマップレイヤーの可視化
         self.basemap_workflow.execute(self.dockwidget.get_selected_basemaps())
@@ -360,6 +367,16 @@ class GreenInfraPlugin:
                 municipality_code=self.dockwidget.comboBox_municipality.currentData(),
                 municipality_name=self.dockwidget.comboBox_municipality.currentText(),
             )
+
+        # 現存植生図2024（環境ジオポータル）の可視化
+        if self.dockwidget.checkBox_vegetation_map.isChecked():
+            self.vegetation_map_workflow.execute(
+                prefecture_code=self.dockwidget.comboBox_prefecture.currentData(),
+                municipality_code=self.dockwidget.comboBox_municipality.currentData(),
+                municipality_name=self.dockwidget.comboBox_municipality.currentText(),
+                progress_callback=update_waiting_text,
+            )
+            update_waiting_text("処理中です...")
 
         # Phase 5: 人口メッシュデータの可視化
         if self.dockwidget.checkBox_population_mesh.isChecked():

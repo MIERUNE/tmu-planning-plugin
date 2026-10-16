@@ -10,9 +10,6 @@ QML_FILE_PATH = os.path.join(os.path.dirname(__file__), "data", "veg2024style.qm
 # レイヤー名の接頭辞
 LAYER_NAME_PREFIX = "現存植生図2024"
 
-# 1回の取得で読み込む地物数の上限（暴走防止）
-MAX_FEATURES = 20000
-
 # 市区町村bboxに付与するバッファ（約1km）
 BBOX_BUFFER_DEGREES = 0.01
 

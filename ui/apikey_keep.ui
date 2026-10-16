@@ -19,81 +19,65 @@
      <property name="title">
       <string/>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_3">
-      <item>
-       <layout class="QGridLayout" name="apikeyGrid_1">
-        <property name="topMargin">
-         <number>5</number>
+     <layout class="QGridLayout" name="apikeyGrid">
+      <property name="verticalSpacing">
+       <number>10</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="apikeyLabel_1">
+        <property name="text">
+         <string>不動産情報ライブラリ</string>
         </property>
-        <property name="bottomMargin">
-         <number>5</number>
-        </property>
-        <property name="spacing">
-         <number>-1</number>
-        </property>
-        <item row="0" column="0">
-         <widget class="QLabel" name="apikeyLabel_1">
-          <property name="text">
-           <string>不動産情報ライブラリ</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLineEdit" name="apikeyLineEdit_1">
-          <property name="placeholderText">
-           <string>不動産情報ライブラリのAPIキーを入力してください</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
+       </widget>
       </item>
-      <item>
-       <layout class="QGridLayout" name="apikeyGrid_2">
-        <property name="topMargin">
-         <number>5</number>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="apikeyLineEdit_1">
+        <property name="placeholderText">
+         <string>不動産情報ライブラリのAPIキーを入力してください</string>
         </property>
-        <property name="bottomMargin">
-         <number>5</number>
-        </property>
-        <item row="0" column="0">
-         <widget class="QLabel" name="apikeyLabel_2">
-          <property name="text">
-           <string>海しるAPI</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLineEdit" name="apikeyLineEdit_2">
-          <property name="placeholderText">
-           <string>海しるAPIのAPIキーを入力してください</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
+       </widget>
       </item>
-      <item>
-       <layout class="QGridLayout" name="apikeyGrid_3">
-        <property name="topMargin">
-         <number>5</number>
+      <item row="1" column="0">
+       <widget class="QLabel" name="apikeyLabel_2">
+        <property name="text">
+         <string>海しるAPI</string>
         </property>
-        <property name="bottomMargin">
-         <number>5</number>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="apikeyLineEdit_2">
+        <property name="placeholderText">
+         <string>海しるAPIのAPIキーを入力してください</string>
         </property>
-        <item row="0" column="0">
-         <widget class="QLabel" name="apikeyLabel_3">
-          <property name="text">
-           <string>e-Stat</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLineEdit" name="apikeyLineEdit_3">
-          <property name="placeholderText">
-           <string>e-StatのAPIキーを入力してください</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="apikeyLabel_3">
+        <property name="text">
+         <string>e-Stat</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="apikeyLineEdit_3">
+        <property name="placeholderText">
+         <string>e-StatのAPIキーを入力してください</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="apikeyLabel_4">
+        <property name="text">
+         <string>国土交通データプラットフォーム</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLineEdit" name="apikeyLineEdit_4">
+        <property name="placeholderText">
+         <string>国土交通データプラットフォームのAPIキーを入力してください</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

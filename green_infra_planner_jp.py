@@ -50,7 +50,14 @@ from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .utils.estat.client import AdministrativeAreaClient
 from .utils.settings import CITY_DEFAULT_BOUNDS
-from .features.administrative_area.settings import CLASS3_STYLES, CLASS5_STYLES
+from .features.administrative_area.settings import (
+    CLASS3_LABELS,
+    CLASS3_STYLES,
+    CLASS5_LABELS,
+    CLASS5_STYLES,
+    CLASS6_LABELS,
+    CLASS6_STYLES,
+)
 
 PLUGIN_NAME = "GreenInfraPlannerJP"
 
@@ -155,7 +162,14 @@ class GreenInfraPlugin:
                 self.execute_data_visualization
             )
 
-        self.dockwidget.create_legends(CLASS3_STYLES, CLASS5_STYLES)
+        self.dockwidget.create_legends(
+            CLASS3_STYLES,
+            CLASS3_LABELS,
+            CLASS5_STYLES,
+            CLASS5_LABELS,
+            CLASS6_STYLES,
+            CLASS6_LABELS,
+        )
         self.dockwidget.show()
 
     def execute_data_visualization(self):
@@ -194,25 +208,49 @@ class GreenInfraPlugin:
 
         # Phase 2: 行政区域ポリゴンレイヤーの可視化（ベースマップグループ内に追加）
         basemap_group = self.basemap_workflow.create_group()
-        # 行政区域class3レイヤーの可視化
-        if self.dockwidget.checkBox_class3.isChecked():
-            self.administrative_area_workflow.execute(
-                class_type="class3",
-                group=basemap_group,
-            )
+        mlit_dpf_api_key = ApikeyDialog.get_mlit_dpf_api_key()
+        if mlit_dpf_api_key:
+            # 国交DPFへの問い合わせは実行ごとに1回にする
+            self.administrative_area_workflow.reset()
 
-        # 行政区域class5レイヤーの可視化
-        if self.dockwidget.checkBox_class5.isChecked():
-            self.administrative_area_workflow.execute(
-                class_type="class5",
-                group=basemap_group,
-            )
+            # 行政区域class3レイヤーの可視化
+            if self.dockwidget.checkBox_class3.isChecked():
+                self.administrative_area_workflow.execute(
+                    class_type="class3",
+                    group=basemap_group,
+                    api_key=mlit_dpf_api_key,
+                )
 
-        # 行政区域ベースレイヤー（白）の可視化
-        self.administrative_area_workflow.execute(
-            class_type="base",
-            group=basemap_group,
-        )
+            # 行政区域class5レイヤーの可視化
+            if self.dockwidget.checkBox_class5.isChecked():
+                self.administrative_area_workflow.execute(
+                    class_type="class5",
+                    group=basemap_group,
+                    api_key=mlit_dpf_api_key,
+                )
+
+            # 行政区域class6レイヤーの可視化
+            if self.dockwidget.checkBox_class6.isChecked():
+                self.administrative_area_workflow.execute(
+                    class_type="class6",
+                    group=basemap_group,
+                    api_key=mlit_dpf_api_key,
+                )
+
+            # 行政区域ベースレイヤー（白）の可視化
+            self.administrative_area_workflow.execute(
+                class_type="base",
+                group=basemap_group,
+                api_key=mlit_dpf_api_key,
+            )
+        else:
+            message = "国土交通データプラットフォームAPIキーが未設定のため、行政区域の取得をスキップします。"
+            QgsMessageLog.logMessage(
+                message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+            )
+            self.iface.messageBar().pushMessage(
+                "警告", message, level=Qgis.MessageLevel.Warning
+            )
 
         # Phase 3: 不動産情報ライブラリの各種レイヤー可視化
         # 都市計画区域の可視化

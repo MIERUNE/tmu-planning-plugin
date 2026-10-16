@@ -19,6 +19,13 @@ API_KEY_LIST = [
         "line_edit_name": "apikeyLineEdit_3",
         "setting_key": "service_3",
     },
+    {
+        "id": 4,
+        "label_name": "apikeyLabel_4",
+        "line_edit_name": "apikeyLineEdit_4",
+        "setting_key": "mlit_dpf_api_key",
+        "display_name": "国土交通データプラットフォームAPIキー",
+    },
 ]
 
 BASE_SETTING_PATH = "tmu_planning_plugin/api_keys"

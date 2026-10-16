@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Optional
 
 from qgis.core import (
     Qgis,
@@ -8,7 +8,7 @@ from qgis.core import (
 )
 
 from ...utils.settings import PLUGIN_NAME
-from .administrative_area_algorithm import AdministrativeAreaAlgorithm
+from .administrative_area_algorithm import AdministrativeAreaAlgorithm, ClassType
 
 
 class AdministrativeAreaWorkflow:
@@ -18,23 +18,29 @@ class AdministrativeAreaWorkflow:
         self.iface = iface
         self.algorithm = AdministrativeAreaAlgorithm(iface)
 
+    def reset(self):
+        """国交DPFへの問い合わせ結果をクリアする（可視化の実行開始時に呼び出す）"""
+        self.algorithm.clear_tile_url_cache()
+
     def execute(
         self,
-        class_type: Literal["base", "class3", "class5"],
+        class_type: ClassType,
+        api_key: str,
         group: Optional[QgsLayerTreeGroup] = None,
     ) -> bool:
         """
         指定されたアルゴリズムを実行し、レイヤーをQGISに追加する
 
         Args:
-            class_type: 行政区域のクラスタイプ ("base", "class3" または "class5")
+            class_type: 行政区域のクラスタイプ ("base", "class3", "class5" または "class6")
+            api_key: 国土交通データプラットフォームのAPIキー
             group: 行政区域を表示するグループ（ベースマップグループに追加）
 
         Returns:
             bool: 成功した場合はTrue、失敗した場合はFalse
         """
         add_layers = self.algorithm.create_administrative_area_layer(
-            class_type=class_type
+            class_type=class_type, api_key=api_key
         )
 
         if not add_layers:

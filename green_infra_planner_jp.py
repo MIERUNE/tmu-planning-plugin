@@ -191,11 +191,6 @@ class GreenInfraPlugin:
         self.iface.messageBar().pushItem(waiting_item)
         QCoreApplication.processEvents()
 
-        def update_waiting_text(text: str) -> None:
-            """読み込み中メッセージの文言を進捗に合わせて更新する"""
-            waiting_item.setText(text)
-            QCoreApplication.processEvents()
-
         # Phase 1: ベースマップレイヤーの可視化
         self.basemap_workflow.execute(self.dockwidget.get_selected_basemaps())
 
@@ -374,9 +369,7 @@ class GreenInfraPlugin:
                 prefecture_code=self.dockwidget.comboBox_prefecture.currentData(),
                 municipality_code=self.dockwidget.comboBox_municipality.currentData(),
                 municipality_name=self.dockwidget.comboBox_municipality.currentText(),
-                progress_callback=update_waiting_text,
             )
-            update_waiting_text("処理中です...")
 
         # Phase 5: 人口メッシュデータの可視化
         if self.dockwidget.checkBox_population_mesh.isChecked():

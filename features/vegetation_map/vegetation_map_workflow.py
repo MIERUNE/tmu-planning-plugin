@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Optional
 
 from qgis.core import (
     Qgis,
@@ -20,18 +20,15 @@ class VegetationMapWorkflow:
     def execute(
         self,
         prefecture_code: Optional[str],
-        municipality_code: Optional[str],
+        municipality_code: str,
         municipality_name: Optional[str],
-        progress_callback: Optional[Callable[[str], None]] = None,
     ) -> bool:
         """
         現存植生図2024 を取得し、レイヤーをQGISに追加する
         Args:
             prefecture_code (str, optional): 都道府県コード（2桁）
-            municipality_code (str, optional): 市区町村コード（5桁）
+            municipality_code (str): 市区町村コード（5桁）
             municipality_name (str, optional): 市区町村名
-            progress_callback (Callable[[str], None], optional):
-                進捗文字列を受け取るコールバック（読み込み中メッセージの更新用）
         Returns:
             bool: 成功した場合はTrue、失敗した場合はFalse
         """
@@ -40,9 +37,8 @@ class VegetationMapWorkflow:
                 prefecture_code=prefecture_code,
                 municipality_code=municipality_code,
                 municipality_name=municipality_name,
-                progress_callback=progress_callback,
             )
-            if not added_layer:
+            if added_layer is None:
                 QgsMessageLog.logMessage(
                     "現存植生図2024レイヤーの取得に失敗しました。",
                     PLUGIN_NAME,

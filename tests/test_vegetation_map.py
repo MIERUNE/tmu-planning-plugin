@@ -5,11 +5,19 @@
 前半はロジックのテスト、後半は QGIS の機能（QgsJsonUtils、メモリレイヤー、QML 適用）を使うテスト。
 """
 
+import io
 import json
 import unittest
+import zipfile
 from unittest import mock
 
-from qgis.core import QgsVectorLayer
+from qgis.core import (
+    QgsCategorizedSymbolRenderer,
+    QgsFillSymbol,
+    QgsRendererCategory,
+    QgsVectorLayer,
+)
+from qgis.PyQt.QtXml import QDomDocument
 
 from .utilities import get_qgis_app, import_plugin_module
 
@@ -302,19 +310,17 @@ class TestLogicFetch(unittest.TestCase):
         fields = fetch_sample_fields(self.algorithm)
         total = 4010
         pages = [make_page(2000, 0), make_page(2000, 2000), make_page(10, 4000)]
-        progress = []
         with mock.patch.object(
             self.algorithm, "_request", side_effect=pages
         ) as request_mock:
             features = self.algorithm._fetch_all_features(
-                "http://svc/0", BOUNDS, fields, total, progress.append
+                "http://svc/0", BOUNDS, fields, total
             )
 
         self.assertEqual(len(features), total)
         self.assertEqual(request_mock.call_count, 3)
         offsets = [call.args[1]["resultOffset"] for call in request_mock.call_args_list]
         self.assertEqual(offsets, [0, 2000, 4000])
-        self.assertEqual(progress[-1], "現存植生図2024: 4,010 / 4,010 件 (100%)")
 
     def test_pagination_does_not_loop_when_offset_is_ignored(self):
         # サーバが常に同じ1ページ目を返しても、総件数に達した時点で終了する
@@ -323,7 +329,7 @@ class TestLogicFetch(unittest.TestCase):
             self.algorithm, "_request", return_value=make_page(2000)
         ) as request_mock:
             features = self.algorithm._fetch_all_features(
-                "http://svc/0", BOUNDS, fields, 5000, None
+                "http://svc/0", BOUNDS, fields, 5000
             )
         self.assertEqual(request_mock.call_count, 3)
         self.assertEqual(len(features), 6000)
@@ -333,9 +339,7 @@ class TestLogicFetch(unittest.TestCase):
         error = json.dumps({"error": {"message": "boom"}}).encode("utf-8")
         with mock.patch.object(self.algorithm, "_request", return_value=error):
             with self.assertRaises(Exception):
-                self.algorithm._fetch_all_features(
-                    "http://svc/0", BOUNDS, fields, 10, None
-                )
+                self.algorithm._fetch_all_features("http://svc/0", BOUNDS, fields, 10)
 
 
 # ========================================
@@ -378,23 +382,90 @@ class TestQgisParseFeatures(unittest.TestCase):
         )
 
 
+def make_qml_bytes() -> bytes:
+    """凡例コードで分類するカテゴリ値レンダラーを持つ QML を生成する"""
+    source = QgsVectorLayer("MultiPolygon?crs=EPSG:4326", "src", "memory")
+    category = QgsRendererCategory(
+        "010000", QgsFillSymbol.createSimple({"color": "0,128,0,255"}), "高山低木群落"
+    )
+    source.setRenderer(
+        QgsCategorizedSymbolRenderer(settings.FIELD_LEGEND_CODE, [category])
+    )
+    document = QDomDocument()
+    source.exportNamedStyle(document)
+    return bytes(document.toByteArray())
+
+
+def make_style_zip(qml_bytes: bytes) -> bytes:
+    """QML を含むスタイル zip を生成する"""
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as zf:
+        zf.writestr("veg2024style.qml", qml_bytes)
+    return buffer.getvalue()
+
+
+class TestQgisStyle(unittest.TestCase):
+    """公式 QML の取得と適用"""
+
+    def setUp(self):
+        self.algorithm, _ = make_algorithm()
+        self.layer = QgsVectorLayer("MultiPolygon?crs=EPSG:4326", "veg", "memory")
+
+    def test_qml_in_zip_is_applied(self):
+        zip_bytes = make_style_zip(make_qml_bytes())
+        with mock.patch.object(
+            self.algorithm, "_request", return_value=zip_bytes
+        ) as request_mock:
+            self.assertTrue(self.algorithm.style.apply(self.layer))
+
+        request_mock.assert_called_once()
+        self.assertEqual(self.layer.renderer().type(), "categorizedSymbol")
+
+    def test_zip_without_qml_fails(self):
+        buffer = io.BytesIO()
+        with zipfile.ZipFile(buffer, "w") as zf:
+            zf.writestr("readme.txt", "x")
+
+        with mock.patch.object(
+            self.algorithm, "_request", return_value=buffer.getvalue()
+        ):
+            self.assertFalse(self.algorithm.style.apply(self.layer))
+        self.assertEqual(self.layer.renderer().type(), "singleSymbol")
+
+    def test_invalid_qml_content_fails(self):
+        with mock.patch.object(
+            self.algorithm, "_request", return_value=make_style_zip(b"this is not xml")
+        ):
+            self.assertFalse(self.algorithm.style.apply(self.layer))
+
+    def test_download_failure_returns_false(self):
+        with mock.patch.object(
+            self.algorithm, "_request", side_effect=Exception("API接続に失敗しました")
+        ):
+            self.assertFalse(self.algorithm.style.apply(self.layer))
+
+
 class TestQgisCreateLayer(unittest.TestCase):
-    """create_layer の一連の流れ（メモリレイヤー生成と同梱 QML の適用）"""
+    """create_layer の一連の流れ（メモリレイヤー生成と公式 QML の適用）"""
 
     def test_create_layer_success(self):
         algorithm, iface = make_algorithm()
-        responses = [b'{"count": 2}', SAMPLE_LAYER_INFO_BYTES, SAMPLE_GEOJSON_BYTES]
-        progress = []
+        # 件数 → レイヤー情報 → GeoJSON → スタイル zip の順に応答する
+        responses = [
+            b'{"count": 2}',
+            SAMPLE_LAYER_INFO_BYTES,
+            SAMPLE_GEOJSON_BYTES,
+            make_style_zip(make_qml_bytes()),
+        ]
         with mock.patch.object(algorithm, "_request", side_effect=responses):
-            layer = algorithm.create_layer("01", "01100", "札幌市", progress.append)
+            layer = algorithm.create_layer("01", "01100", "札幌市")
 
         self.assertIsNotNone(layer)
         self.assertEqual(layer.name(), "現存植生図2024_札幌市（01100）")
         self.assertEqual(layer.featureCount(), 2)
         self.assertEqual(layer.crs().authid(), "EPSG:4326")
         self.assertGreaterEqual(layer.fields().indexOf(settings.FIELD_LEGEND_CODE), 0)
-        self.assertEqual(layer.renderer().type(), "RuleRenderer")
-        self.assertTrue(any("2 / 2" in text for text in progress))
+        self.assertEqual(layer.renderer().type(), "categorizedSymbol")
         self.assertEqual(iface.message_bar.messages, [])
 
     def test_create_layer_returns_none_when_no_features(self):
@@ -419,11 +490,6 @@ class TestQgisCreateLayer(unittest.TestCase):
         with mock.patch.object(algorithm, "_request") as request_mock:
             self.assertIsNone(algorithm.create_layer("99", "99999", "不明"))
         request_mock.assert_not_called()
-        self.assertEqual(iface.message_bar.messages[0][0], "警告")
-
-    def test_create_layer_returns_none_without_municipality(self):
-        algorithm, iface = make_algorithm()
-        self.assertIsNone(algorithm.create_layer("13", "", ""))
         self.assertEqual(iface.message_bar.messages[0][0], "警告")
 
 

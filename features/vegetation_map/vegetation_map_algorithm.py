@@ -4,7 +4,7 @@
 
 import json
 import traceback
-from typing import Callable, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from qgis.core import (
     Qgis,
@@ -13,7 +13,6 @@ from qgis.core import (
     QgsField,
     QgsFields,
     QgsJsonUtils,
-    QgsMapLayer,
     QgsMessageLog,
     QgsVariantUtils,
     QgsVectorLayer,
@@ -28,6 +27,7 @@ from .connect import (
     PAGE_SIZE,
     QUERY_PATH,
     RESPONSE_ENCODING,
+    STYLE_ZIP_URL,
     VEGETATION_MAP_API_ENDPOINTS,
 )
 from .settings import (
@@ -35,8 +35,8 @@ from .settings import (
     BLOCK_NAMES,
     LAYER_NAME_PREFIX,
     PREFECTURE_BLOCK_MAP,
-    QML_FILE_PATH,
 )
+from .style import VegetationMapStyle
 
 # ArcGIS のフィールド型 → QMetaType（未定義の型は文字列として扱う）
 ESRI_TYPE_TO_QMETATYPE = {
@@ -59,6 +59,7 @@ class VegetationMapAlgorithm:
     def __init__(self, iface):
         self.iface = iface
         self.estat_client = AdministrativeAreaClient(PLUGIN_NAME)
+        self.style = VegetationMapStyle(self._download_style_zip)
 
     # ========================================
     # 取得条件の決定
@@ -240,6 +241,14 @@ class VegetationMapAlgorithm:
         )
         return int(payload.get("count", 0))
 
+    def _download_style_zip(self) -> bytes:
+        """
+        公式スタイル設定ファイル（QML を含む zip）をダウンロードする
+        Returns:
+            bytes: zip の内容
+        """
+        return self._request(STYLE_ZIP_URL, {})
+
     # ========================================
     # レイヤー構築
     # ========================================
@@ -288,7 +297,6 @@ class VegetationMapAlgorithm:
         bounds: Dict[str, float],
         fields: QgsFields,
         total: int,
-        progress_callback: Optional[Callable[[str], None]],
     ) -> List[QgsFeature]:
         """
         範囲クエリをページングして全地物を取得する
@@ -298,7 +306,6 @@ class VegetationMapAlgorithm:
             bounds (dict): 取得範囲
             fields (QgsFields): レイヤーのフィールド定義
             total (int): 総件数
-            progress_callback (Callable, optional): 進捗文字列を受け取るコールバック
         Returns:
             List[QgsFeature]: 取得した地物
         """
@@ -321,46 +328,10 @@ class VegetationMapAlgorithm:
             features.extend(self._parse_features(geojson_text, fields))
             offset += page_count
 
-            self._report_progress(
-                progress_callback,
-                f"{LAYER_NAME_PREFIX}: {min(offset, total):,} / {total:,} 件 "
-                f"({min(100, int(offset * 100 / total))}%)",
-            )
-
             if page_count < PAGE_SIZE:
                 break
 
         return features
-
-    def _apply_style(self, layer: QgsVectorLayer) -> bool:
-        """
-        同梱の公式 QML（シンボル設定のみ）を適用する
-        Args:
-            layer (QgsVectorLayer): 対象レイヤー
-        Returns:
-            bool: 適用できた場合 True
-        """
-        message, ok = layer.loadNamedStyle(
-            QML_FILE_PATH, QgsMapLayer.StyleCategory.Symbology
-        )
-        if not ok:
-            QgsMessageLog.logMessage(
-                f"スタイルの適用に失敗しました: {QML_FILE_PATH} ({message})",
-                PLUGIN_NAME,
-                level=Qgis.MessageLevel.Warning,
-            )
-            return False
-        layer.triggerRepaint()
-        return True
-
-    @staticmethod
-    def _report_progress(
-        progress_callback: Optional[Callable[[str], None]], text: str
-    ) -> None:
-        """進捗をログとコールバックに通知する"""
-        QgsMessageLog.logMessage(text, PLUGIN_NAME, level=Qgis.MessageLevel.Info)
-        if progress_callback is not None:
-            progress_callback(text)
 
     # ========================================
     # workflow から呼び出されるパブリックメソッド
@@ -369,29 +340,18 @@ class VegetationMapAlgorithm:
     def create_layer(
         self,
         prefecture_code: Optional[str],
-        municipality_code: Optional[str],
+        municipality_code: str,
         municipality_name: Optional[str],
-        progress_callback: Optional[Callable[[str], None]] = None,
     ) -> Optional[QgsVectorLayer]:
         """
         現存植生図2024 を市区町村の範囲で取得し、スタイルを適用したメモリレイヤーを返す
         Args:
             prefecture_code (str, optional): 都道府県コード（2桁）
-            municipality_code (str, optional): 市区町村コード（5桁）
+            municipality_code (str): 市区町村コード（5桁）
             municipality_name (str, optional): 市区町村名
-            progress_callback (Callable[[str], None], optional):
-                進捗文字列を受け取るコールバック（読み込み中メッセージの更新用）
         Returns:
             QgsVectorLayer: 取得に成功した場合はレイヤーオブジェクト。失敗時は None
         """
-        if not municipality_code:
-            self.iface.messageBar().pushMessage(
-                "警告",
-                f"{LAYER_NAME_PREFIX}を表示するには市区町村を選択してください。",
-                level=Qgis.MessageLevel.Warning,
-            )
-            return None
-
         endpoint = self._get_endpoint(prefecture_code)
         if endpoint is None:
             self.iface.messageBar().pushMessage(
@@ -420,13 +380,11 @@ class VegetationMapAlgorithm:
 
         try:
             # 件数の確認
-            self._report_progress(progress_callback, f"{LAYER_NAME_PREFIX}: 接続中...")
             total = self._fetch_feature_count(endpoint, bounds)
             if total == 0:
                 self.iface.messageBar().pushMessage(
                     "情報",
-                    f"市区町村「{display_name}」の範囲"
-                    f"（ブロック: {self._get_block_name(prefecture_code)}）には"
+                    f"市区町村「{display_name}」の範囲には"
                     f"{LAYER_NAME_PREFIX}のデータが存在しません。",
                     level=Qgis.MessageLevel.Info,
                 )
@@ -434,9 +392,7 @@ class VegetationMapAlgorithm:
 
             # フィールド定義と地物の取得
             fields = self._fetch_fields(endpoint)
-            features = self._fetch_all_features(
-                endpoint, bounds, fields, total, progress_callback
-            )
+            features = self._fetch_all_features(endpoint, bounds, fields, total)
         except Exception as e:
             QgsMessageLog.logMessage(
                 f"{e}\n{traceback.format_exc()}",
@@ -476,10 +432,7 @@ class VegetationMapAlgorithm:
         layer.updateExtents()
 
         # スタイルの設定
-        self._report_progress(
-            progress_callback, f"{LAYER_NAME_PREFIX}: スタイルを適用中..."
-        )
-        if not self._apply_style(layer):
+        if not self.style.apply(layer):
             self.iface.messageBar().pushMessage(
                 "警告",
                 f"{LAYER_NAME_PREFIX}のスタイル適用に失敗したため、既定のシンボルで表示します。",

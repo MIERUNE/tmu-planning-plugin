@@ -363,7 +363,7 @@ class GreenInfraPlugin:
                 municipality_name=self.dockwidget.comboBox_municipality.currentText(),
             )
 
-        # 現存植生図2024（環境ジオポータル）の可視化
+        # Phase 5:現存植生図2024（環境ジオポータル）の可視化
         if self.dockwidget.checkBox_vegetation_map.isChecked():
             self.vegetation_map_workflow.execute(
                 prefecture_code=self.dockwidget.comboBox_prefecture.currentData(),
@@ -371,7 +371,7 @@ class GreenInfraPlugin:
                 municipality_name=self.dockwidget.comboBox_municipality.currentText(),
             )
 
-        # Phase 5: 人口メッシュデータの可視化
+        # Phase 6: 人口メッシュデータの可視化
         if self.dockwidget.checkBox_population_mesh.isChecked():
             estat_api_key = ApikeyDialog.get_estat_api_key()
             # 3次メッシュ（1km）の処理
@@ -416,7 +416,7 @@ class GreenInfraPlugin:
                 self.hazard_map_algorithm,
             )
 
-        # Phase 6: 全てのレイヤー読み込み完了後、自治体領域にズームイン
+        # Phase 7: 全てのレイヤー読み込み完了後、自治体領域にズームイン
         self.zoom_to_municipality(self.dockwidget.comboBox_municipality.currentData())
 
         self.iface.messageBar().popWidget(waiting_item)

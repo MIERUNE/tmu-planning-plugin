@@ -17,6 +17,9 @@ VEGETATION_MAP_API_ENDPOINTS = {
 # 範囲クエリのエンドポイント（レイヤーURLに付加）
 QUERY_PATH = "/query"
 
+# 現存植生図2024スタイル設定ファイルのダウンロードURL
+STYLE_ZIP_URL = "https://www.arcgis.com/sharing/rest/content/items/368329d069ab4e70a0b1938eb050ad07/data"
+
 # FeatureServer の maxRecordCount（1リクエストで返る最大件数）
 PAGE_SIZE = 2000
 

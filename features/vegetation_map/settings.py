@@ -2,11 +2,6 @@
 現存植生図2024（環境ジオポータル）の設定情報
 """
 
-import os
-
-# 同梱している公式スタイル（環境省 生物多様性センター「現存植生図2024スタイル設定ファイル」CC-BY-4.0）
-QML_FILE_PATH = os.path.join(os.path.dirname(__file__), "data", "veg2024style.qml")
-
 # レイヤー名の接頭辞
 LAYER_NAME_PREFIX = "現存植生図2024"
 

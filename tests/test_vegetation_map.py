@@ -105,6 +105,14 @@ SAMPLE_LAYER_INFO = {
 }
 SAMPLE_LAYER_INFO_BYTES = json.dumps(SAMPLE_LAYER_INFO).encode("utf-8")
 
+# Hub API（データセットのメタデータ）の応答の例
+HUB_DATASET_BYTES = json.dumps(
+    {"data": {"attributes": {"name": "北海道", "url": "http://svc/0"}}}
+).encode("utf-8")
+HUB_STYLE_BYTES = json.dumps(
+    {"data": {"attributes": {"name": "スタイル", "itemId": "item123"}}}
+).encode("utf-8")
+
 
 def make_page(count: int, start: int = 0) -> bytes:
     """ページング確認用に、指定件数の地物を持つ GeoJSON ページを生成する"""
@@ -166,21 +174,19 @@ def fetch_sample_fields(algorithm):
 
 
 class TestLogicSettings(unittest.TestCase):
-    """設定（都道府県→ブロック→エンドポイント）の整合性"""
+    """設定（都道府県→ブロック→データセット ID）の整合性"""
 
-    def test_all_prefectures_have_endpoint(self):
+    def test_all_prefectures_have_dataset_id(self):
         algorithm, _ = make_algorithm()
         for code, _name in real_estate_settings.PREFECTURE_LIST:
             self.assertIn(
                 code, settings.PREFECTURE_BLOCK_MAP, f"ブロック未定義: {code}"
             )
-            endpoint = algorithm._get_endpoint(code)
-            self.assertTrue(endpoint, f"エンドポイント未定義: {code}")
-            self.assertTrue(endpoint.endswith("/FeatureServer/0"))
+            self.assertTrue(algorithm._get_dataset_id(code), f"ID未定義: {code}")
 
-    def test_every_block_has_endpoint_and_name(self):
+    def test_every_block_has_dataset_id_and_name(self):
         for block in set(settings.PREFECTURE_BLOCK_MAP.values()):
-            self.assertIn(block, connect.VEGETATION_MAP_API_ENDPOINTS)
+            self.assertIn(block, connect.VEGETATION_MAP_DATASET_IDS)
             self.assertIn(block, settings.BLOCK_NAMES)
 
     def test_verified_block_assignments(self):
@@ -191,14 +197,14 @@ class TestLogicSettings(unittest.TestCase):
         self.assertEqual(settings.PREFECTURE_BLOCK_MAP["18"], "hokuriku")  # 福井
         self.assertEqual(settings.PREFECTURE_BLOCK_MAP["24"], "kinki")  # 三重
 
-    def test_get_endpoint_handles_unpadded_and_unknown_codes(self):
+    def test_get_dataset_id_handles_unpadded_and_unknown_codes(self):
         algorithm, _ = make_algorithm()
         self.assertEqual(
-            algorithm._get_endpoint("1"),
-            connect.VEGETATION_MAP_API_ENDPOINTS["hokkaido"],
+            algorithm._get_dataset_id("1"),
+            connect.VEGETATION_MAP_DATASET_IDS["hokkaido"],
         )
-        self.assertIsNone(algorithm._get_endpoint("99"))
-        self.assertIsNone(algorithm._get_endpoint(None))
+        self.assertIsNone(algorithm._get_dataset_id("99"))
+        self.assertIsNone(algorithm._get_dataset_id(None))
         self.assertEqual(algorithm._get_block_name("13"), "関東")
         self.assertEqual(algorithm._get_block_name("99"), "不明")
 
@@ -287,6 +293,19 @@ class TestLogicFetch(unittest.TestCase):
         with mock.patch.object(self.algorithm, "_request", return_value=b"<html>"):
             with self.assertRaises(Exception):
                 self.algorithm._request_json("http://svc/0", {})
+
+    def test_resolve_endpoint_from_hub_api(self):
+        with mock.patch.object(
+            self.algorithm, "_request", return_value=HUB_DATASET_BYTES
+        ) as request_mock:
+            self.assertEqual(self.algorithm._resolve_endpoint("abc_0"), "http://svc/0")
+        self.assertIn("abc_0", request_mock.call_args.args[0])
+
+    def test_resolve_endpoint_raises_when_url_missing(self):
+        payload = json.dumps({"data": {"attributes": {"name": "x"}}}).encode("utf-8")
+        with mock.patch.object(self.algorithm, "_request", return_value=payload):
+            with self.assertRaises(Exception):
+                self.algorithm._resolve_endpoint("abc_0")
 
     def test_fetch_feature_count(self):
         with mock.patch.object(
@@ -412,13 +431,15 @@ class TestQgisStyle(unittest.TestCase):
         self.layer = QgsVectorLayer("MultiPolygon?crs=EPSG:4326", "veg", "memory")
 
     def test_qml_in_zip_is_applied(self):
+        # Hub API で itemId を解決 → arcgis.com から zip を取得
         zip_bytes = make_style_zip(make_qml_bytes())
         with mock.patch.object(
-            self.algorithm, "_request", return_value=zip_bytes
+            self.algorithm, "_request", side_effect=[HUB_STYLE_BYTES, zip_bytes]
         ) as request_mock:
             self.assertTrue(self.algorithm.style.apply(self.layer))
 
-        request_mock.assert_called_once()
+        self.assertEqual(request_mock.call_count, 2)
+        self.assertIn("item123", request_mock.call_args_list[1].args[0])
         self.assertEqual(self.layer.renderer().type(), "categorizedSymbol")
 
     def test_zip_without_qml_fails(self):
@@ -427,14 +448,16 @@ class TestQgisStyle(unittest.TestCase):
             zf.writestr("readme.txt", "x")
 
         with mock.patch.object(
-            self.algorithm, "_request", return_value=buffer.getvalue()
+            self.algorithm, "_request", side_effect=[HUB_STYLE_BYTES, buffer.getvalue()]
         ):
             self.assertFalse(self.algorithm.style.apply(self.layer))
         self.assertEqual(self.layer.renderer().type(), "singleSymbol")
 
     def test_invalid_qml_content_fails(self):
         with mock.patch.object(
-            self.algorithm, "_request", return_value=make_style_zip(b"this is not xml")
+            self.algorithm,
+            "_request",
+            side_effect=[HUB_STYLE_BYTES, make_style_zip(b"this is not xml")],
         ):
             self.assertFalse(self.algorithm.style.apply(self.layer))
 
@@ -450,11 +473,13 @@ class TestQgisCreateLayer(unittest.TestCase):
 
     def test_create_layer_success(self):
         algorithm, iface = make_algorithm()
-        # 件数 → レイヤー情報 → GeoJSON → スタイル zip の順に応答する
+        # Hub(URL解決) → 件数 → レイヤー情報 → GeoJSON → Hub(スタイル itemId) → zip の順に応答する
         responses = [
+            HUB_DATASET_BYTES,
             b'{"count": 2}',
             SAMPLE_LAYER_INFO_BYTES,
             SAMPLE_GEOJSON_BYTES,
+            HUB_STYLE_BYTES,
             make_style_zip(make_qml_bytes()),
         ]
         with mock.patch.object(algorithm, "_request", side_effect=responses):
@@ -471,10 +496,10 @@ class TestQgisCreateLayer(unittest.TestCase):
     def test_create_layer_returns_none_when_no_features(self):
         algorithm, iface = make_algorithm()
         with mock.patch.object(
-            algorithm, "_request", return_value=b'{"count": 0}'
+            algorithm, "_request", side_effect=[HUB_DATASET_BYTES, b'{"count": 0}']
         ) as request_mock:
             self.assertIsNone(algorithm.create_layer("01", "01100", "札幌市"))
-        self.assertEqual(request_mock.call_count, 1)
+        self.assertEqual(request_mock.call_count, 2)
         self.assertEqual(iface.message_bar.messages[0][0], "情報")
 
     def test_create_layer_returns_none_on_network_error(self):

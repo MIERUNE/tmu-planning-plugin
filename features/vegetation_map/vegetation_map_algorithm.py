@@ -24,11 +24,13 @@ from ...utils.estat.bbox import calculate_municipality_bbox
 from ...utils.estat.client import AdministrativeAreaClient
 from ...utils.settings import CITY_DEFAULT_BOUNDS, PLUGIN_NAME
 from .connect import (
+    ARCGIS_ITEM_DATA_URL,
+    HUB_DATASET_API_URL,
     PAGE_SIZE,
     QUERY_PATH,
     RESPONSE_ENCODING,
-    STYLE_ZIP_URL,
-    VEGETATION_MAP_API_ENDPOINTS,
+    STYLE_DATASET_ID,
+    VEGETATION_MAP_DATASET_IDS,
 )
 from .settings import (
     BBOX_BUFFER_DEGREES,
@@ -65,20 +67,20 @@ class VegetationMapAlgorithm:
     # 取得条件の決定
     # ========================================
 
-    def _get_endpoint(self, prefecture_code: Optional[str]) -> Optional[str]:
+    def _get_dataset_id(self, prefecture_code: Optional[str]) -> Optional[str]:
         """
-        都道府県コードから地域ブロックの FeatureServer レイヤーURLを取得する
+        都道府県コードから地域ブロックの Hub データセット ID を取得する
         Args:
             prefecture_code (str, optional): 都道府県コード（2桁）
         Returns:
-            str: レイヤーURL。対応するブロックが無い場合は None
+            str: データセット ID。対応するブロックが無い場合は None
         """
         if not prefecture_code:
             return None
         block_key = PREFECTURE_BLOCK_MAP.get(str(prefecture_code).zfill(2))
         if block_key is None:
             return None
-        return VEGETATION_MAP_API_ENDPOINTS.get(block_key)
+        return VEGETATION_MAP_DATASET_IDS.get(block_key)
 
     def _get_block_name(self, prefecture_code: Optional[str]) -> str:
         """都道府県コードから地域ブロックの表示名を取得する"""
@@ -247,7 +249,40 @@ class VegetationMapAlgorithm:
         Returns:
             bytes: zip の内容
         """
-        return self._request(STYLE_ZIP_URL, {})
+        attributes = self._fetch_hub_attributes(STYLE_DATASET_ID)
+        item_id = attributes.get("itemId") or STYLE_DATASET_ID
+        return self._request(ARCGIS_ITEM_DATA_URL.format(item_id=item_id), {})
+
+    def _fetch_hub_attributes(self, dataset_id: str) -> dict:
+        """
+        Hub API からデータセットの attributes を取得する
+        Args:
+            dataset_id (str): Hub データセット ID
+        Returns:
+            dict: data.attributes
+        """
+        payload = self._request_json(
+            HUB_DATASET_API_URL.format(dataset_id=dataset_id), {}
+        )
+        return (payload.get("data") or {}).get("attributes") or {}
+
+    def _resolve_endpoint(self, dataset_id: str) -> str:
+        """
+        Hub API から FeatureServer のレイヤーURLを解決する
+        Args:
+            dataset_id (str): Hub データセット ID
+        Returns:
+            str: レイヤーURL（.../FeatureServer/0）
+        Raises:
+            Exception: URL が取得できない場合
+        """
+        attributes = self._fetch_hub_attributes(dataset_id)
+        url = attributes.get("url")
+        if not url:
+            raise Exception(
+                f"Hub API のレスポンスに FeatureServer URL が含まれていません: {dataset_id}"
+            )
+        return url
 
     # ========================================
     # レイヤー構築
@@ -352,8 +387,8 @@ class VegetationMapAlgorithm:
         Returns:
             QgsVectorLayer: 取得に成功した場合はレイヤーオブジェクト。失敗時は None
         """
-        endpoint = self._get_endpoint(prefecture_code)
-        if endpoint is None:
+        dataset_id = self._get_dataset_id(prefecture_code)
+        if dataset_id is None:
             self.iface.messageBar().pushMessage(
                 "警告",
                 f"都道府県コード「{prefecture_code}」に対応する"
@@ -379,6 +414,9 @@ class VegetationMapAlgorithm:
             return None
 
         try:
+            # FeatureServer URL の解決
+            endpoint = self._resolve_endpoint(dataset_id)
+
             # 件数の確認
             total = self._fetch_feature_count(endpoint, bounds)
             if total == 0:

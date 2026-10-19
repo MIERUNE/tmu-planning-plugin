@@ -184,10 +184,9 @@ class TestLogicSettings(unittest.TestCase):
             )
             self.assertTrue(algorithm._get_dataset_id(code), f"ID未定義: {code}")
 
-    def test_every_block_has_dataset_id_and_name(self):
+    def test_every_block_has_dataset_id(self):
         for block in set(settings.PREFECTURE_BLOCK_MAP.values()):
             self.assertIn(block, connect.VEGETATION_MAP_DATASET_IDS)
-            self.assertIn(block, settings.BLOCK_NAMES)
 
     def test_verified_block_assignments(self):
         # FeatureServer への点クエリで確認済みの所属
@@ -205,8 +204,6 @@ class TestLogicSettings(unittest.TestCase):
         )
         self.assertIsNone(algorithm._get_dataset_id("99"))
         self.assertIsNone(algorithm._get_dataset_id(None))
-        self.assertEqual(algorithm._get_block_name("13"), "関東")
-        self.assertEqual(algorithm._get_block_name("99"), "不明")
 
 
 class TestLogicQueryParams(unittest.TestCase):
@@ -280,19 +277,19 @@ class TestLogicFetch(unittest.TestCase):
     def setUp(self):
         self.algorithm, _ = make_algorithm()
 
-    def test_request_json_raises_on_arcgis_error_payload(self):
+    def test_arcgis_error_payload_raises(self):
         error = json.dumps({"error": {"code": 400, "message": "Invalid query"}})
         with mock.patch.object(
             self.algorithm, "_request", return_value=error.encode("utf-8")
         ):
             with self.assertRaises(Exception) as ctx:
-                self.algorithm._request_json("http://svc/0/query", {})
+                self.algorithm._fetch_feature_count("http://svc/0", BOUNDS)
         self.assertIn("Invalid query", str(ctx.exception))
 
-    def test_request_json_raises_on_invalid_json(self):
+    def test_invalid_json_response_raises(self):
         with mock.patch.object(self.algorithm, "_request", return_value=b"<html>"):
             with self.assertRaises(Exception):
-                self.algorithm._request_json("http://svc/0", {})
+                self.algorithm._fetch_fields("http://svc/0")
 
     def test_resolve_endpoint_from_hub_api(self):
         with mock.patch.object(
@@ -496,10 +493,13 @@ class TestQgisCreateLayer(unittest.TestCase):
     def test_create_layer_returns_none_when_no_features(self):
         algorithm, iface = make_algorithm()
         with mock.patch.object(
-            algorithm, "_request", side_effect=[HUB_DATASET_BYTES, b'{"count": 0}']
+            algorithm,
+            "_request",
+            side_effect=[HUB_DATASET_BYTES, b'{"count": 0}', SAMPLE_LAYER_INFO_BYTES],
         ) as request_mock:
             self.assertIsNone(algorithm.create_layer("01", "01100", "札幌市"))
-        self.assertEqual(request_mock.call_count, 2)
+        # 件数が 0 なので地物取得のリクエストは発生しない
+        self.assertEqual(request_mock.call_count, 3)
         self.assertEqual(iface.message_bar.messages[0][0], "情報")
 
     def test_create_layer_returns_none_on_network_error(self):

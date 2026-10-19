@@ -62,15 +62,3 @@ PREFECTURE_BLOCK_MAP = {
     "46": "kyushu_okinawa",
     "47": "kyushu_okinawa",
 }
-
-# 地域ブロックの表示名
-BLOCK_NAMES = {
-    "hokkaido": "北海道",
-    "tohoku": "東北",
-    "kanto": "関東",
-    "hokuriku": "北陸",
-    "chubu": "中部",
-    "kinki": "近畿",
-    "chushikoku": "中四国",
-    "kyushu_okinawa": "九州沖縄",
-}

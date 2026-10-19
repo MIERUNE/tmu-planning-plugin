@@ -34,7 +34,6 @@ from .connect import (
 )
 from .settings import (
     BBOX_BUFFER_DEGREES,
-    BLOCK_NAMES,
     LAYER_NAME_PREFIX,
     PREFECTURE_BLOCK_MAP,
 )
@@ -81,15 +80,6 @@ class VegetationMapAlgorithm:
         if block_key is None:
             return None
         return VEGETATION_MAP_DATASET_IDS.get(block_key)
-
-    def _get_block_name(self, prefecture_code: Optional[str]) -> str:
-        """都道府県コードから地域ブロックの表示名を取得する"""
-        if not prefecture_code:
-            return "不明"
-        block_key = PREFECTURE_BLOCK_MAP.get(str(prefecture_code).zfill(2))
-        if block_key is None:
-            return "不明"
-        return BLOCK_NAMES.get(block_key, "不明")
 
     def _calculate_bounds(self, municipality_code: str) -> Optional[Dict[str, float]]:
         """
@@ -160,15 +150,15 @@ class VegetationMapAlgorithm:
             raise Exception(f"APIからのレスポンスが空です: {qurl.toString()}")
         return data
 
-    def _request_json(self, url: str, params: Dict[str, object]) -> dict:
+    @staticmethod
+    def _parse_response_json(text: str) -> dict:
         """
-        GETリクエストを実行してJSONとして返す
+        レスポンス文字列をJSONとして解析する
         ArcGIS REST はエラーも HTTP 200 で {"error": ...} として返すため、ここで例外にする
         """
-        raw = self._request(url, params)
         try:
-            payload = json.loads(raw.decode(RESPONSE_ENCODING))
-        except (UnicodeDecodeError, json.JSONDecodeError) as e:
+            payload = json.loads(text)
+        except json.JSONDecodeError as e:
             raise Exception(f"APIレスポンスの解析に失敗しました: {e}") from e
 
         if isinstance(payload, dict) and "error" in payload:
@@ -218,7 +208,8 @@ class VegetationMapAlgorithm:
         Returns:
             QgsFields: フィールド定義
         """
-        layer_info = self._request_json(endpoint, {"f": "json"})
+        raw = self._request(endpoint, {"f": "json"})
+        layer_info = self._parse_response_json(raw.decode(RESPONSE_ENCODING))
         fields = QgsFields()
         for field_def in layer_info.get("fields") or []:
             name = field_def.get("name")
@@ -238,9 +229,10 @@ class VegetationMapAlgorithm:
         Returns:
             int: 地物数
         """
-        payload = self._request_json(
+        raw = self._request(
             endpoint + QUERY_PATH, self._build_query_params(bounds, count_only=True)
         )
+        payload = self._parse_response_json(raw.decode(RESPONSE_ENCODING))
         return int(payload.get("count", 0))
 
     def _download_style_zip(self) -> bytes:
@@ -261,9 +253,8 @@ class VegetationMapAlgorithm:
         Returns:
             dict: data.attributes
         """
-        payload = self._request_json(
-            HUB_DATASET_API_URL.format(dataset_id=dataset_id), {}
-        )
+        raw = self._request(HUB_DATASET_API_URL.format(dataset_id=dataset_id), {})
+        payload = self._parse_response_json(raw.decode(RESPONSE_ENCODING))
         return (payload.get("data") or {}).get("attributes") or {}
 
     def _resolve_endpoint(self, dataset_id: str) -> str:
@@ -353,9 +344,7 @@ class VegetationMapAlgorithm:
             )
             geojson_text = raw.decode(RESPONSE_ENCODING)
 
-            payload = json.loads(geojson_text)
-            if isinstance(payload, dict) and "error" in payload:
-                raise Exception(f"APIエラー応答: {payload['error']}")
+            payload = self._parse_response_json(geojson_text)
             page_count = len(payload.get("features") or [])
             if page_count == 0:
                 break
@@ -417,18 +406,8 @@ class VegetationMapAlgorithm:
             # FeatureServer URL の解決
             endpoint = self._resolve_endpoint(dataset_id)
 
-            # 件数の確認
+            # 件数・フィールド定義・地物の取得
             total = self._fetch_feature_count(endpoint, bounds)
-            if total == 0:
-                self.iface.messageBar().pushMessage(
-                    "情報",
-                    f"市区町村「{display_name}」の範囲には"
-                    f"{LAYER_NAME_PREFIX}のデータが存在しません。",
-                    level=Qgis.MessageLevel.Info,
-                )
-                return None
-
-            # フィールド定義と地物の取得
             fields = self._fetch_fields(endpoint)
             features = self._fetch_all_features(endpoint, bounds, fields, total)
         except Exception as e:

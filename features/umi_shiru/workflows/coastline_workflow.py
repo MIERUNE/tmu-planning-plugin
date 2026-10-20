@@ -134,14 +134,14 @@ class CoastlineWorkflow(BaseWorkflow):
 
     def execute(
         self,
-        api_key: Optional[str],
+        authcfg: Optional[str],
         municipality_code: Optional[str],
         municipality_name: Optional[str],
     ) -> bool:
         """
         海岸線ワークフローを実行し、海岸線レイヤーをQGISに追加する
         Args:
-            api_key (str, optional): 海しるAPIキー
+            authcfg (str, optional): APIキーを付与する認証設定ID（APIHeader）
             municipality_code (str, optional): 市区町村コード（5桁）
             municipality_name (str, optional): 市区町村名
         Returns:
@@ -149,7 +149,7 @@ class CoastlineWorkflow(BaseWorkflow):
         """
         try:
             # 1. パラメータの準備とバリデーション
-            if not api_key:
+            if not authcfg:
                 message = (
                     "海しるAPIキーが未設定のため、海岸線データの処理をスキップします。"
                 )
@@ -185,12 +185,12 @@ class CoastlineWorkflow(BaseWorkflow):
                 division_config = CITY_DIVISION_CONFIG[municipality_code]
                 division_count = division_config["division_count"]
                 geojson_data = self.algorithm.fetch_data_divided(
-                    api_key=api_key,
+                    authcfg=authcfg,
                     bounds=bounds,
                     division_count=division_count,
                 )
             else:
-                geojson_data = self.algorithm.fetch_data(api_key=api_key, bounds=bounds)
+                geojson_data = self.algorithm.fetch_data(authcfg=authcfg, bounds=bounds)
 
             if not geojson_data:
                 message = "海しるAPIからのデータ取得に失敗しました。"

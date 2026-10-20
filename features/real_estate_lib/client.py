@@ -31,11 +31,11 @@ class ReinfolibClient:
         self.authcfg = authcfg
 
     def check_connection(self, endpoint: str) -> tuple[bool, Optional[int]]:
-        """APIキーの有効性を確認
+        """APIキーを使ってタイルを取得できるか、タイルを1枚取得して確認
         Args:
-            endpoint (str): 確認対象のAPIエンドポイント
+            endpoint (str): 確認対象のタイル配信APIエンドポイント
         Returns:
-            tuple[bool, Optional[int]]: (接続できたか, HTTPステータスコード)
+            tuple[bool, Optional[int]]: (タイルを取得できたか, HTTPステータスコード)
         """
         blocking_request = QgsBlockingNetworkRequest()
         blocking_request.setAuthCfg(self.authcfg)

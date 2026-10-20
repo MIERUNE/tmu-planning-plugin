@@ -3,6 +3,8 @@
 都道府県の選択や管理を行うワークフローを提供するクラス
 """
 
+from typing import Optional
+
 from qgis.core import QgsMessageLog, Qgis
 
 from ..settings_loader import (
@@ -46,12 +48,13 @@ class AreaWorkflow:
             return False
 
     def load_municipality_dropdown(
-        self, dockwidget, api_key: str, prefecture_code: str
+        self, dockwidget, authcfg: Optional[str], prefecture_code: str
     ) -> bool:
         """市区町村プルダウンを更新
         Args:
             dockwidget: DockWidgetインスタンス
-            api_key (str): APIキー
+            authcfg (Optional[str]): APIキーを付与する認証設定ID（APIHeader）。
+                None の場合は API を使わず、同梱の市区町村一覧（JSON）から読み込む
             prefecture_code (str): 都道府県コード
         Returns:
             bool: 成功した場合はTrue、失敗した場合はFalse
@@ -62,10 +65,10 @@ class AreaWorkflow:
             return True
 
         try:
-            if api_key:
+            if authcfg:
                 municipalities = self.area_algorithm.get_municipalities(
                     prefecture_code=prefecture_code,
-                    api_key=api_key,
+                    authcfg=authcfg,
                     base_url=AREA_LIST_API_ENDPOINT,
                     response_encoding=RESPONSE_ENCODING,
                 )

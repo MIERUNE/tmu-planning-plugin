@@ -4,9 +4,11 @@ Common functionality used by regression tests.
 """
 
 import atexit
+import importlib
 import logging
 import os
 import sys
+import types
 
 from qgis.core import QgsApplication
 from qgis.gui import QgsMapCanvas
@@ -21,6 +23,24 @@ QGIS_APP = None  # Static variable used to hold hand to running QGIS app
 CANVAS = None
 PARENT = None
 IFACE = None
+
+PLUGIN_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+PLUGIN_PKG_NAME = "tmu_planning_plugin_under_test"
+
+
+def import_plugin_module(dotted_path: str):
+    """
+    相対インポートを含むプラグインのモジュールを読み込む
+    Args:
+        dotted_path (str): プラグインルートからのパス（例: "features.vegetation_map.settings"）
+    Returns:
+        module: 読み込んだモジュール
+    """
+    if PLUGIN_PKG_NAME not in sys.modules:
+        package = types.ModuleType(PLUGIN_PKG_NAME)
+        package.__path__ = [PLUGIN_ROOT]
+        sys.modules[PLUGIN_PKG_NAME] = package
+    return importlib.import_module(f"{PLUGIN_PKG_NAME}.{dotted_path}")
 
 
 def get_qgis_app(cleanup=True):

@@ -46,6 +46,7 @@ from .features.real_estate_lib.workflows.land_use_layer_workflow import LayerWor
 from .features.umi_shiru.workflows.coastline_workflow import CoastlineWorkflow
 from .features.umi_shiru.workflows.fishing_port_workflow import FishingPortWorkflow
 from .features.umi_shiru.workflows.port_area_workflow import PortAreaWorkflow
+from .features.vegetation_map.vegetation_map_workflow import VegetationMapWorkflow
 from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .utils.estat.client import AdministrativeAreaClient
@@ -93,6 +94,7 @@ class GreenInfraPlugin:
         self.fishing_port_workflow = FishingPortWorkflow(iface)
         self.port_area_workflow = PortAreaWorkflow(iface)
         self.hazard_map_workflow = HazardMapWorkflow(iface)
+        self.vegetation_map_workflow = VegetationMapWorkflow(iface)
 
     def add_action(
         self,
@@ -399,7 +401,15 @@ class GreenInfraPlugin:
                 municipality_name=self.dockwidget.comboBox_municipality.currentText(),
             )
 
-        # Phase 5: 人口メッシュデータの可視化
+        # Phase 5:現存植生図2024（環境ジオポータル）の可視化
+        if self.dockwidget.checkBox_vegetation_map.isChecked():
+            self.vegetation_map_workflow.execute(
+                prefecture_code=self.dockwidget.comboBox_prefecture.currentData(),
+                municipality_code=self.dockwidget.comboBox_municipality.currentData(),
+                municipality_name=self.dockwidget.comboBox_municipality.currentText(),
+            )
+
+        # Phase 6: 人口メッシュデータの可視化
         if self.dockwidget.checkBox_population_mesh.isChecked():
             estat_api_key = ApikeyDialog.get_estat_api_key()
             # 3次メッシュ（1km）の処理
@@ -444,7 +454,7 @@ class GreenInfraPlugin:
                 self.hazard_map_algorithm,
             )
 
-        # Phase 6: 全てのレイヤー読み込み完了後、自治体領域にズームイン
+        # Phase 7: 全てのレイヤー読み込み完了後、自治体領域にズームイン
         self.zoom_to_municipality(self.dockwidget.comboBox_municipality.currentData())
 
         self.iface.messageBar().popWidget(waiting_item)

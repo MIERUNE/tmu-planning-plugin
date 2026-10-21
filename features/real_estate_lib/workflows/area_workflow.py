@@ -14,6 +14,7 @@ from ...real_estate_lib.connect import (
     AREA_LIST_API_ENDPOINT,
     RESPONSE_ENCODING,
 )
+from ....utils.api_keys import get_real_estate_api_key
 from ....utils.settings import PLUGIN_NAME
 from ..algorithms.area_algorithm import AreaAlgorithm
 
@@ -45,13 +46,10 @@ class AreaWorkflow:
             )
             return False
 
-    def load_municipality_dropdown(
-        self, dockwidget, api_key: str, prefecture_code: str
-    ) -> bool:
+    def load_municipality_dropdown(self, dockwidget, prefecture_code: str) -> bool:
         """市区町村プルダウンを更新
         Args:
             dockwidget: DockWidgetインスタンス
-            api_key (str): APIキー
             prefecture_code (str): 都道府県コード
         Returns:
             bool: 成功した場合はTrue、失敗した場合はFalse
@@ -62,6 +60,8 @@ class AreaWorkflow:
             return True
 
         try:
+            # APIキー未設定時はJSONファイルの市区町村リストにフォールバック
+            api_key = get_real_estate_api_key()
             if api_key:
                 municipalities = self.area_algorithm.get_municipalities(
                     prefecture_code=prefecture_code,

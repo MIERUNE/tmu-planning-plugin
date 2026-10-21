@@ -6,7 +6,9 @@ from qgis.core import (
     QgsMessageLog,
     QgsProject,
 )
+from qgis.gui import QgisInterface
 
+from ...utils.api_keys import get_mlit_dpf_api_key
 from ...utils.settings import PLUGIN_NAME
 from .administrative_area_algorithm import AdministrativeAreaAlgorithm, ClassType
 
@@ -14,18 +16,19 @@ from .administrative_area_algorithm import AdministrativeAreaAlgorithm, ClassTyp
 class AdministrativeAreaWorkflow:
     """行政区域ポリゴンのレイヤー取得・可視化のための汎用ワークフロー"""
 
-    def __init__(self, iface):
+    def __init__(self, iface: QgisInterface):
         self.iface = iface
         self.algorithm = AdministrativeAreaAlgorithm(iface)
+        self._missing_key_warned = False
 
     def reset(self):
         """国交DPFへの問い合わせ結果をクリアする（可視化の実行開始時に呼び出す）"""
         self.algorithm.clear_tile_url_cache()
+        self._missing_key_warned = False
 
     def execute(
         self,
         class_type: ClassType,
-        api_key: str,
         group: Optional[QgsLayerTreeGroup] = None,
     ) -> bool:
         """
@@ -33,12 +36,25 @@ class AdministrativeAreaWorkflow:
 
         Args:
             class_type: 行政区域のクラスタイプ ("base", "class3", "class5" または "class6")
-            api_key: 国土交通データプラットフォームのAPIキー
             group: 行政区域を表示するグループ（ベースマップグループに追加）
 
         Returns:
             bool: 成功した場合はTrue、失敗した場合はFalse
         """
+        api_key = get_mlit_dpf_api_key()
+        if not api_key:
+            # 1回の可視化で複数回呼ばれるため、警告は reset() ごとに1回だけ出す
+            if not self._missing_key_warned:
+                self._missing_key_warned = True
+                message = "国土交通データプラットフォームAPIキーが未設定のため、行政区域の取得をスキップします。"
+                QgsMessageLog.logMessage(
+                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+                )
+                self.iface.messageBar().pushMessage(
+                    "警告", message, level=Qgis.MessageLevel.Warning
+                )
+            return False
+
         add_layers = self.algorithm.create_administrative_area_layer(
             class_type=class_type, api_key=api_key
         )

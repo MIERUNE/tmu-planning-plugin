@@ -3,6 +3,7 @@ from typing import Optional
 
 from qgis.core import Qgis, QgsMessageLog, QgsProject
 
+from ....utils.api_keys import get_umi_shiru_api_key
 from ....utils.estat.bbox import calculate_municipality_bbox
 from ....utils.estat.client import AdministrativeAreaClient
 from ....utils.settings import CITY_DEFAULT_BOUNDS, PLUGIN_NAME
@@ -134,14 +135,12 @@ class CoastlineWorkflow(BaseWorkflow):
 
     def execute(
         self,
-        api_key: Optional[str],
         municipality_code: Optional[str],
         municipality_name: Optional[str],
     ) -> bool:
         """
         海岸線ワークフローを実行し、海岸線レイヤーをQGISに追加する
         Args:
-            api_key (str, optional): 海しるAPIキー
             municipality_code (str, optional): 市区町村コード（5桁）
             municipality_name (str, optional): 市区町村名
         Returns:
@@ -149,6 +148,7 @@ class CoastlineWorkflow(BaseWorkflow):
         """
         try:
             # 1. パラメータの準備とバリデーション
+            api_key = get_umi_shiru_api_key()
             if not api_key:
                 message = (
                     "海しるAPIキーが未設定のため、海岸線データの処理をスキップします。"

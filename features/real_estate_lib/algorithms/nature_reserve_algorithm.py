@@ -28,6 +28,8 @@ from ....utils.settings import ZOOM9_SCALE_THRESHOLD
 class NatureReserveAlgorithm:
     """自然公園地域データ取得クラス"""
 
+    LAYER_DISPLAY_NAME = "自然公園地域"
+
     def __init__(self, iface):
         self.iface = iface
 

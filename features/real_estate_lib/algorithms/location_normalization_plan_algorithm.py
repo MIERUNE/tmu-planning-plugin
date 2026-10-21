@@ -27,6 +27,8 @@ from ....utils.settings import ZOOM9_SCALE_THRESHOLD
 class LocationNormalizationPlanAlgorithm:
     """立地適正化計画データ取得クラス"""
 
+    LAYER_DISPLAY_NAME = "立地適正化計画"
+
     def __init__(self, iface):
         self.iface = iface
 

@@ -27,6 +27,8 @@ from ....utils.settings import ZOOM9_SCALE_THRESHOLD
 class ZoningDistrictAlgorithm:
     """用途地域区域データ取得クラス"""
 
+    LAYER_DISPLAY_NAME = "用途地域"
+
     def __init__(self, iface):
         self.iface = iface
 

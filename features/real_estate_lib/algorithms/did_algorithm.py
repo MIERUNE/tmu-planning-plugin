@@ -28,6 +28,8 @@ from ....utils.settings import ZOOM9_SCALE_THRESHOLD
 class DidAreaAlgorithm:
     """人口集中地区(DID)データ取得クラス"""
 
+    LAYER_DISPLAY_NAME = "人口集中地区(DID)"
+
     def __init__(self, iface):
         self.iface = iface
 

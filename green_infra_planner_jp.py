@@ -47,7 +47,6 @@ from .features.umi_shiru.workflows.coastline_workflow import CoastlineWorkflow
 from .features.umi_shiru.workflows.fishing_port_workflow import FishingPortWorkflow
 from .features.umi_shiru.workflows.port_area_workflow import PortAreaWorkflow
 from .features.vegetation_map.vegetation_map_workflow import VegetationMapWorkflow
-from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .utils.estat.client import AdministrativeAreaClient
 from .utils.settings import CITY_DEFAULT_BOUNDS
@@ -192,8 +191,6 @@ class GreenInfraPlugin:
         # レイヤツリーの選択状態を解除
         self.iface.layerTreeView().setCurrentNode(None)
 
-        real_estate_api_key = ApikeyDialog.get_real_estate_api_key()
-
         # 読み込み中のメッセージを表示
         waiting_item = QgsMessageBarItem(
             "読み込み中",
@@ -210,193 +207,92 @@ class GreenInfraPlugin:
 
         # Phase 2: 行政区域ポリゴンレイヤーの可視化（ベースマップグループ内に追加）
         basemap_group = self.basemap_workflow.create_group()
-        mlit_dpf_api_key = ApikeyDialog.get_mlit_dpf_api_key()
-        if mlit_dpf_api_key:
-            # 国交DPFへの問い合わせは実行ごとに1回にする
-            self.administrative_area_workflow.reset()
+        # 国交DPFへの問い合わせは実行ごとに1回にする
+        self.administrative_area_workflow.reset()
 
-            # 行政区域class3レイヤーの可視化
-            if self.dockwidget.checkBox_class3.isChecked():
-                self.administrative_area_workflow.execute(
-                    class_type="class3",
-                    group=basemap_group,
-                    api_key=mlit_dpf_api_key,
-                )
-
-            # 行政区域class5レイヤーの可視化
-            if self.dockwidget.checkBox_class5.isChecked():
-                self.administrative_area_workflow.execute(
-                    class_type="class5",
-                    group=basemap_group,
-                    api_key=mlit_dpf_api_key,
-                )
-
-            # 行政区域class6レイヤーの可視化
-            if self.dockwidget.checkBox_class6.isChecked():
-                self.administrative_area_workflow.execute(
-                    class_type="class6",
-                    group=basemap_group,
-                    api_key=mlit_dpf_api_key,
-                )
-
-            # 行政区域ベースレイヤー（白）の可視化
+        # 行政区域class3レイヤーの可視化
+        if self.dockwidget.checkBox_class3.isChecked():
             self.administrative_area_workflow.execute(
-                class_type="base",
+                class_type="class3",
                 group=basemap_group,
-                api_key=mlit_dpf_api_key,
             )
-        else:
-            message = "国土交通データプラットフォームAPIキーが未設定のため、行政区域の取得をスキップします。"
-            QgsMessageLog.logMessage(
-                message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+
+        # 行政区域class5レイヤーの可視化
+        if self.dockwidget.checkBox_class5.isChecked():
+            self.administrative_area_workflow.execute(
+                class_type="class5",
+                group=basemap_group,
             )
-            self.iface.messageBar().pushMessage(
-                "警告", message, level=Qgis.MessageLevel.Warning
+
+        # 行政区域class6レイヤーの可視化
+        if self.dockwidget.checkBox_class6.isChecked():
+            self.administrative_area_workflow.execute(
+                class_type="class6",
+                group=basemap_group,
             )
+
+        # 行政区域ベースレイヤー（白）の可視化
+        self.administrative_area_workflow.execute(
+            class_type="base",
+            group=basemap_group,
+        )
 
         # Phase 3: 不動産情報ライブラリの各種レイヤー可視化
         # 都市計画区域の可視化
         if self.dockwidget.checkBox_urban_area.isChecked():
-            if real_estate_api_key:
-                # Workflowを実行
-                self.layer_workflow.execute(
-                    self.urban_planning_algorithm,
-                    api_key=real_estate_api_key,
-                )
-            else:
-                message = "不動産情報ライブラリAPIキーが未設定のため、都市計画区域の取得をスキップします。"
-                QgsMessageLog.logMessage(
-                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
-                )
-                self.iface.messageBar().pushMessage(
-                    "警告", message, level=Qgis.MessageLevel.Warning
-                )
+            self.layer_workflow.execute(self.urban_planning_algorithm)
 
         # 用途地域の可視化
         if self.dockwidget.checkBox_use_district.isChecked():
-            if real_estate_api_key:
-                # Workflowを実行
-                self.layer_workflow.execute(
-                    self.zoning_district_algorithm, api_key=real_estate_api_key
-                )
-            else:
-                message = "不動産情報ライブラリAPIキーが未設定のため、用途地域の取得をスキップします。"
-                QgsMessageLog.logMessage(
-                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
-                )
-                self.iface.messageBar().pushMessage(
-                    "警告", message, level=Qgis.MessageLevel.Warning
-                )
+            self.layer_workflow.execute(self.zoning_district_algorithm)
 
         # 地区計画の可視化
         if self.dockwidget.checkBox_district_planning.isChecked():
-            if real_estate_api_key:
-                # Workflowを実行
-                self.layer_workflow.execute(
-                    self.district_plan_algorithm, api_key=real_estate_api_key
-                )
-            else:
-                message = "不動産情報ライブラリAPIキーが未設定のため、地区計画の取得をスキップします。"
-                QgsMessageLog.logMessage(
-                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
-                )
-                self.iface.messageBar().pushMessage(
-                    "警告", message, level=Qgis.MessageLevel.Warning
-                )
+            self.layer_workflow.execute(self.district_plan_algorithm)
 
         # 立地適正化計画の可視化
         if self.dockwidget.checkBox_location_normalization_plan.isChecked():
-            if real_estate_api_key:
-                # Workflowを実行
-                self.layer_workflow.execute(
-                    self.location_normalization_plan_algorithm,
-                    api_key=real_estate_api_key,
-                )
-            else:
-                message = "不動産情報ライブラリAPIキーが未設定のため、立地適正化計画の取得をスキップします。"
-                QgsMessageLog.logMessage(
-                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
-                )
-                self.iface.messageBar().pushMessage(
-                    "警告", message, level=Qgis.MessageLevel.Warning
-                )
+            self.layer_workflow.execute(self.location_normalization_plan_algorithm)
 
         # 自然公園地域の可視化
         if self.dockwidget.checkBox_nature_reserve.isChecked():
-            if real_estate_api_key:
-                # 都道府県コードが１桁の場合0を削除
-                prefecture_code = self.dockwidget.comboBox_prefecture.currentData()
-                api_prefecture_code = str(int(prefecture_code))
+            # 都道府県コードが１桁の場合0を削除
+            prefecture_code = self.dockwidget.comboBox_prefecture.currentData()
+            api_prefecture_code = str(int(prefecture_code))
 
-                self.layer_workflow.execute(
-                    self.nature_reserve_algorithm,
-                    api_key=real_estate_api_key,
-                    prefecture_code=api_prefecture_code,
-                )
-            else:
-                message = "不動産情報ライブラリAPIキーが未設定のため、自然公園地域の取得をスキップします。"
-                QgsMessageLog.logMessage(
-                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
-                )
-                self.iface.messageBar().pushMessage(
-                    "警告", message, level=Qgis.MessageLevel.Warning
-                )
+            self.layer_workflow.execute(
+                self.nature_reserve_algorithm,
+                prefecture_code=api_prefecture_code,
+            )
 
         # 人口集中地区(DID)の可視化
         if self.dockwidget.checkBox_did.isChecked():
-            if real_estate_api_key:
-                self.layer_workflow.execute(
-                    self.did_area_algorithm,
-                    api_key=real_estate_api_key,
-                    municipality_code=self.dockwidget.comboBox_municipality.currentData(),
-                    municipality_name=self.dockwidget.comboBox_municipality.currentText(),
-                )
-            else:
-                message = "不動産情報ライブラリAPIキーが未設定のため、人口集中地区(DID)の取得をスキップします。"
-                QgsMessageLog.logMessage(
-                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
-                )
-                self.iface.messageBar().pushMessage(
-                    "警告", message, level=Qgis.MessageLevel.Warning
-                )
+            self.layer_workflow.execute(
+                self.did_area_algorithm,
+                municipality_code=self.dockwidget.comboBox_municipality.currentData(),
+                municipality_name=self.dockwidget.comboBox_municipality.currentText(),
+            )
 
         # 高度利用地区の可視化
         if self.dockwidget.checkBox_high_level_use_districts.isChecked():
-            if real_estate_api_key:
-                self.layer_workflow.execute(
-                    self.high_utilization_zone_algorithm,
-                    api_key=real_estate_api_key,
-                )
-            else:
-                message = "不動産情報ライブラリAPIキーが未設定のため、高度利用地区の取得をスキップします。"
-                QgsMessageLog.logMessage(
-                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
-                )
-                self.iface.messageBar().pushMessage(
-                    "警告", message, level=Qgis.MessageLevel.Warning
-                )
+            self.layer_workflow.execute(self.high_utilization_zone_algorithm)
 
         # Phase 4: 海岸線データの可視化
-        umi_shiru_api_key = ApikeyDialog.get_umi_shiru_api_key()
-
         # 海岸線データの可視化
         if self.dockwidget.checkBox_coast_line.isChecked():
             self.coastline_workflow.execute(
-                api_key=umi_shiru_api_key,
                 municipality_code=self.dockwidget.comboBox_municipality.currentData(),
                 municipality_name=self.dockwidget.comboBox_municipality.currentText(),
             )
         # 漁港区域データの可視化
         if self.dockwidget.checkBox_fishing_port_area.isChecked():
             self.fishing_port_workflow.execute(
-                api_key=umi_shiru_api_key,
                 municipality_code=self.dockwidget.comboBox_municipality.currentData(),
                 municipality_name=self.dockwidget.comboBox_municipality.currentText(),
             )
         # 港湾区域データの可視化
         if self.dockwidget.checkBox_port_area.isChecked():
             self.port_area_workflow.execute(
-                api_key=umi_shiru_api_key,
                 municipality_code=self.dockwidget.comboBox_municipality.currentData(),
                 municipality_name=self.dockwidget.comboBox_municipality.currentText(),
             )
@@ -411,43 +307,21 @@ class GreenInfraPlugin:
 
         # Phase 6: 人口メッシュデータの可視化
         if self.dockwidget.checkBox_population_mesh.isChecked():
-            estat_api_key = ApikeyDialog.get_estat_api_key()
             # 3次メッシュ（1km）の処理
             if self.dockwidget.radioButton_population_mesh_3rd.isChecked():
-                if estat_api_key:
-                    self.population_mesh_workflow.execute(
-                        api_key=estat_api_key,
-                        municipality_code=self.dockwidget.comboBox_municipality.currentData(),
-                        municipality_name=self.dockwidget.comboBox_municipality.currentText(),
-                        mesh_type="3rd",  # 3次メッシュ
-                    )
-
-                else:
-                    message = "e-Stat APIキーが未設定のため、人口メッシュ（3次メッシュ）データの取得をスキップします。"
-                    QgsMessageLog.logMessage(
-                        message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
-                    )
-                    self.iface.messageBar().pushMessage(
-                        "警告", message, level=Qgis.MessageLevel.Warning
-                    )
+                self.population_mesh_workflow.execute(
+                    municipality_code=self.dockwidget.comboBox_municipality.currentData(),
+                    municipality_name=self.dockwidget.comboBox_municipality.currentText(),
+                    mesh_type="3rd",  # 3次メッシュ
+                )
 
             # 4次メッシュ（500m）の処理
             if self.dockwidget.radioButton_population_mesh_4th.isChecked():
-                if estat_api_key:
-                    self.population_mesh_workflow.execute(
-                        api_key=estat_api_key,
-                        municipality_code=self.dockwidget.comboBox_municipality.currentData(),
-                        municipality_name=self.dockwidget.comboBox_municipality.currentText(),
-                        mesh_type="4th",  # 4次メッシュ
-                    )
-                else:
-                    message = "e-Stat APIキーが未設定のため、人口メッシュ（4次メッシュ）データの取得をスキップします。"
-                    QgsMessageLog.logMessage(
-                        message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
-                    )
-                    self.iface.messageBar().pushMessage(
-                        "警告", message, level=Qgis.MessageLevel.Warning
-                    )
+                self.population_mesh_workflow.execute(
+                    municipality_code=self.dockwidget.comboBox_municipality.currentData(),
+                    municipality_name=self.dockwidget.comboBox_municipality.currentText(),
+                    mesh_type="4th",  # 4次メッシュ
+                )
 
         if self.dockwidget.checkBox_hazard.isChecked():
             self.hazard_map_workflow.execute(
@@ -464,12 +338,9 @@ class GreenInfraPlugin:
         if not self.dockwidget:
             return
 
-        api_key = ApikeyDialog.get_real_estate_api_key()
         selected_code = self.dockwidget.comboBox_prefecture.currentData()
 
-        self.area_workflow.load_municipality_dropdown(
-            self.dockwidget, api_key, selected_code
-        )
+        self.area_workflow.load_municipality_dropdown(self.dockwidget, selected_code)
 
     def zoom_to_municipality(self, municipality_code):
         """指定された市区町村コードにズーム"""

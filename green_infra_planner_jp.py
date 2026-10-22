@@ -210,43 +210,48 @@ class GreenInfraPlugin:
 
         # Phase 2: 行政区域ポリゴンレイヤーの可視化（ベースマップグループ内に追加）
         basemap_group = self.basemap_workflow.create_group()
+        # APIキー未設定の場合はローカルデータにフォールバックする
         mlit_dpf_api_key = ApikeyDialog.get_mlit_dpf_api_key()
-        if mlit_dpf_api_key:
-            # 国交DPFへの問い合わせは実行ごとに1回にする
-            self.administrative_area_workflow.reset()
 
-            # 行政区域class3レイヤーの可視化
-            if self.dockwidget.checkBox_class3.isChecked():
-                self.administrative_area_workflow.execute(
-                    class_type="class3",
-                    group=basemap_group,
-                    api_key=mlit_dpf_api_key,
-                )
+        # 国交DPFへの問い合わせは実行ごとに1回にする
+        self.administrative_area_workflow.reset()
 
-            # 行政区域class5レイヤーの可視化
-            if self.dockwidget.checkBox_class5.isChecked():
-                self.administrative_area_workflow.execute(
-                    class_type="class5",
-                    group=basemap_group,
-                    api_key=mlit_dpf_api_key,
-                )
-
-            # 行政区域class6レイヤーの可視化
-            if self.dockwidget.checkBox_class6.isChecked():
-                self.administrative_area_workflow.execute(
-                    class_type="class6",
-                    group=basemap_group,
-                    api_key=mlit_dpf_api_key,
-                )
-
-            # 行政区域ベースレイヤー（白）の可視化
+        # 行政区域class3レイヤーの可視化
+        if self.dockwidget.checkBox_class3.isChecked():
             self.administrative_area_workflow.execute(
-                class_type="base",
+                class_type="class3",
                 group=basemap_group,
                 api_key=mlit_dpf_api_key,
             )
-        else:
-            message = "国土交通データプラットフォームAPIキーが未設定のため、行政区域の取得をスキップします。"
+
+        # 行政区域class5レイヤーの可視化
+        if self.dockwidget.checkBox_class5.isChecked():
+            self.administrative_area_workflow.execute(
+                class_type="class5",
+                group=basemap_group,
+                api_key=mlit_dpf_api_key,
+            )
+
+        # 行政区域class6レイヤーの可視化（ローカルデータがないためAPIキーが必要）
+        class6_requested = self.dockwidget.checkBox_class6.isChecked()
+        if class6_requested and mlit_dpf_api_key:
+            self.administrative_area_workflow.execute(
+                class_type="class6",
+                group=basemap_group,
+                api_key=mlit_dpf_api_key,
+            )
+
+        # 行政区域ベースレイヤー（白）の可視化
+        self.administrative_area_workflow.execute(
+            class_type="base",
+            group=basemap_group,
+            api_key=mlit_dpf_api_key,
+        )
+
+        if not mlit_dpf_api_key:
+            message = "国土交通DPFのAPIキーが未設定のため、行政区域はローカルデータを使用しました。"
+            if class6_requested:
+                message += "6クラス分類はAPIキーが必要なためスキップしました。"
             QgsMessageLog.logMessage(
                 message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
             )

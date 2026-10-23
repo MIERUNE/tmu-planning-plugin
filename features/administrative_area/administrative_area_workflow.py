@@ -19,12 +19,13 @@ class AdministrativeAreaWorkflow:
     def __init__(self, iface: QgisInterface):
         self.iface = iface
         self.algorithm = AdministrativeAreaAlgorithm(iface)
-        self._missing_key_warned = False
+        # APIキー未設定で6クラス分類をスキップしたか（base 実行時の警告に含める）
+        self._class6_skipped = False
 
     def reset(self):
         """国交DPFへの問い合わせ結果をクリアする（可視化の実行開始時に呼び出す）"""
         self.algorithm.clear_tile_url_cache()
-        self._missing_key_warned = False
+        self._class6_skipped = False
 
     def execute(
         self,
@@ -41,19 +42,23 @@ class AdministrativeAreaWorkflow:
         Returns:
             bool: 成功した場合はTrue、失敗した場合はFalse
         """
+        # APIキー未設定でもローカルデータにフォールバックする（6クラス分類はローカルデータがないためスキップ）
         api_key = get_mlit_dpf_api_key()
         if not api_key:
-            # 1回の可視化で複数回呼ばれるため、警告は reset() ごとに1回だけ出す
-            if not self._missing_key_warned:
-                self._missing_key_warned = True
-                message = "国土交通データプラットフォームAPIキーが未設定のため、行政区域の取得をスキップします。"
+            if class_type == "class6":
+                self._class6_skipped = True
+                return False
+            # 警告は1回の可視化で最後に呼ばれる base のときにまとめて1件だけ出す
+            if class_type == "base":
+                message = "国土交通DPFのAPIキーが未設定のため、行政区域はローカルデータを使用しました。"
+                if self._class6_skipped:
+                    message += "6クラス分類はAPIキーが必要なためスキップしました。"
                 QgsMessageLog.logMessage(
                     message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
                 )
                 self.iface.messageBar().pushMessage(
                     "警告", message, level=Qgis.MessageLevel.Warning
                 )
-            return False
 
         add_layers = self.algorithm.create_administrative_area_layer(
             class_type=class_type, api_key=api_key

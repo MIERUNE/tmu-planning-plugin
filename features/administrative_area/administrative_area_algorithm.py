@@ -102,7 +102,8 @@ class AdministrativeAreaAlgorithm:
             return None
 
         mbtiles_path = self._get_mbtiles_path()
-        if not self._fallback_notified:
+        # APIキー未設定の場合は呼び出し側でまとめて通知するため、ここでは取得失敗時のみ通知する
+        if api_key and not self._fallback_notified:
             message = "国土交通データプラットフォームから行政区域データを取得できなかったため、ローカルデータを使用しました。"
             QgsMessageLog.logMessage(
                 f"{message} {mbtiles_path}",

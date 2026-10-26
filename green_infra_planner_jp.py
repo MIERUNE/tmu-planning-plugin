@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 from qgis.core import (
     Qgis,
@@ -8,13 +9,21 @@ from qgis.core import (
     QgsProject,
     QgsRectangle,
 )
-from qgis.gui import QgsMessageBarItem
+from qgis.gui import QgisInterface, QgsMessageBarItem
 from qgis.PyQt.QtCore import QCoreApplication, Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
 from .features.administrative_area.administrative_area_workflow import (
     AdministrativeAreaWorkflow,
+)
+from .features.administrative_area.settings import (
+    CLASS3_LABELS,
+    CLASS3_STYLES,
+    CLASS5_LABELS,
+    CLASS5_STYLES,
+    CLASS6_LABELS,
+    CLASS6_STYLES,
 )
 from .features.basemap.basemap_workflow import BasemapWorkflow
 from .features.estat.population_mesh_workflow import PopulationMeshWorkflow
@@ -41,30 +50,31 @@ from .features.real_estate_lib.algorithms.urban_planning_algorithm import (
 from .features.real_estate_lib.algorithms.zoning_district_algorithm import (
     ZoningDistrictAlgorithm,
 )
+from .features.real_estate_lib.connect import (
+    REINFOLIB_API_KEY_HEADER,
+    REINFOLIB_AUTHCFG_NAME,
+)
 from .features.real_estate_lib.workflows.area_workflow import AreaWorkflow
 from .features.real_estate_lib.workflows.land_use_layer_workflow import LayerWorkflow
+from .features.umi_shiru.client import (
+    UMI_SHIRU_API_KEY_HEADER,
+    UMI_SHIRU_AUTHCFG_NAME,
+)
 from .features.umi_shiru.workflows.coastline_workflow import CoastlineWorkflow
 from .features.umi_shiru.workflows.fishing_port_workflow import FishingPortWorkflow
 from .features.umi_shiru.workflows.port_area_workflow import PortAreaWorkflow
 from .features.vegetation_map.vegetation_map_workflow import VegetationMapWorkflow
 from .ui.apikey_dialog import ApikeyDialog
 from .ui.dockwidget import GreenInfraPlanningDockwidget
+from .utils.auth import get_api_header_authcfg
 from .utils.estat.client import AdministrativeAreaClient
 from .utils.settings import CITY_DEFAULT_BOUNDS
-from .features.administrative_area.settings import (
-    CLASS3_LABELS,
-    CLASS3_STYLES,
-    CLASS5_LABELS,
-    CLASS5_STYLES,
-    CLASS6_LABELS,
-    CLASS6_STYLES,
-)
 
 PLUGIN_NAME = "GreenInfraPlannerJP"
 
 
 class GreenInfraPlugin:
-    def __init__(self, iface):
+    def __init__(self, iface: QgisInterface):
         self.iface = iface
         self.win = self.iface.mainWindow()
         self.plugin_dir = os.path.dirname(__file__)
@@ -193,6 +203,7 @@ class GreenInfraPlugin:
         self.iface.layerTreeView().setCurrentNode(None)
 
         real_estate_api_key = ApikeyDialog.get_real_estate_api_key()
+        real_estate_authcfg = self._get_real_estate_authcfg(real_estate_api_key)
 
         # 読み込み中のメッセージを表示
         waiting_item = QgsMessageBarItem(
@@ -262,13 +273,13 @@ class GreenInfraPlugin:
         # Phase 3: 不動産情報ライブラリの各種レイヤー可視化
         # 都市計画区域の可視化
         if self.dockwidget.checkBox_urban_area.isChecked():
-            if real_estate_api_key:
+            if real_estate_authcfg:
                 # Workflowを実行
                 self.layer_workflow.execute(
                     self.urban_planning_algorithm,
-                    api_key=real_estate_api_key,
+                    authcfg=real_estate_authcfg,
                 )
-            else:
+            elif not real_estate_api_key:
                 message = "不動産情報ライブラリAPIキーが未設定のため、都市計画区域の取得をスキップします。"
                 QgsMessageLog.logMessage(
                     message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
@@ -279,12 +290,12 @@ class GreenInfraPlugin:
 
         # 用途地域の可視化
         if self.dockwidget.checkBox_use_district.isChecked():
-            if real_estate_api_key:
+            if real_estate_authcfg:
                 # Workflowを実行
                 self.layer_workflow.execute(
-                    self.zoning_district_algorithm, api_key=real_estate_api_key
+                    self.zoning_district_algorithm, authcfg=real_estate_authcfg
                 )
-            else:
+            elif not real_estate_api_key:
                 message = "不動産情報ライブラリAPIキーが未設定のため、用途地域の取得をスキップします。"
                 QgsMessageLog.logMessage(
                     message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
@@ -295,12 +306,12 @@ class GreenInfraPlugin:
 
         # 地区計画の可視化
         if self.dockwidget.checkBox_district_planning.isChecked():
-            if real_estate_api_key:
+            if real_estate_authcfg:
                 # Workflowを実行
                 self.layer_workflow.execute(
-                    self.district_plan_algorithm, api_key=real_estate_api_key
+                    self.district_plan_algorithm, authcfg=real_estate_authcfg
                 )
-            else:
+            elif not real_estate_api_key:
                 message = "不動産情報ライブラリAPIキーが未設定のため、地区計画の取得をスキップします。"
                 QgsMessageLog.logMessage(
                     message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
@@ -311,13 +322,13 @@ class GreenInfraPlugin:
 
         # 立地適正化計画の可視化
         if self.dockwidget.checkBox_location_normalization_plan.isChecked():
-            if real_estate_api_key:
+            if real_estate_authcfg:
                 # Workflowを実行
                 self.layer_workflow.execute(
                     self.location_normalization_plan_algorithm,
-                    api_key=real_estate_api_key,
+                    authcfg=real_estate_authcfg,
                 )
-            else:
+            elif not real_estate_api_key:
                 message = "不動産情報ライブラリAPIキーが未設定のため、立地適正化計画の取得をスキップします。"
                 QgsMessageLog.logMessage(
                     message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
@@ -328,17 +339,17 @@ class GreenInfraPlugin:
 
         # 自然公園地域の可視化
         if self.dockwidget.checkBox_nature_reserve.isChecked():
-            if real_estate_api_key:
+            if real_estate_authcfg:
                 # 都道府県コードが１桁の場合0を削除
                 prefecture_code = self.dockwidget.comboBox_prefecture.currentData()
                 api_prefecture_code = str(int(prefecture_code))
 
                 self.layer_workflow.execute(
                     self.nature_reserve_algorithm,
-                    api_key=real_estate_api_key,
+                    authcfg=real_estate_authcfg,
                     prefecture_code=api_prefecture_code,
                 )
-            else:
+            elif not real_estate_api_key:
                 message = "不動産情報ライブラリAPIキーが未設定のため、自然公園地域の取得をスキップします。"
                 QgsMessageLog.logMessage(
                     message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
@@ -349,14 +360,14 @@ class GreenInfraPlugin:
 
         # 人口集中地区(DID)の可視化
         if self.dockwidget.checkBox_did.isChecked():
-            if real_estate_api_key:
+            if real_estate_authcfg:
                 self.layer_workflow.execute(
                     self.did_area_algorithm,
-                    api_key=real_estate_api_key,
+                    authcfg=real_estate_authcfg,
                     municipality_code=self.dockwidget.comboBox_municipality.currentData(),
                     municipality_name=self.dockwidget.comboBox_municipality.currentText(),
                 )
-            else:
+            elif not real_estate_api_key:
                 message = "不動産情報ライブラリAPIキーが未設定のため、人口集中地区(DID)の取得をスキップします。"
                 QgsMessageLog.logMessage(
                     message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
@@ -367,12 +378,12 @@ class GreenInfraPlugin:
 
         # 高度利用地区の可視化
         if self.dockwidget.checkBox_high_level_use_districts.isChecked():
-            if real_estate_api_key:
+            if real_estate_authcfg:
                 self.layer_workflow.execute(
                     self.high_utilization_zone_algorithm,
-                    api_key=real_estate_api_key,
+                    authcfg=real_estate_authcfg,
                 )
-            else:
+            elif not real_estate_api_key:
                 message = "不動産情報ライブラリAPIキーが未設定のため、高度利用地区の取得をスキップします。"
                 QgsMessageLog.logMessage(
                     message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
@@ -383,25 +394,31 @@ class GreenInfraPlugin:
 
         # Phase 4: 海岸線データの可視化
         umi_shiru_api_key = ApikeyDialog.get_umi_shiru_api_key()
+        umi_shiru_authcfg = self._resolve_authcfg(
+            UMI_SHIRU_AUTHCFG_NAME,
+            UMI_SHIRU_API_KEY_HEADER,
+            umi_shiru_api_key,
+            "海しる",
+        )
 
         # 海岸線データの可視化
         if self.dockwidget.checkBox_coast_line.isChecked():
             self.coastline_workflow.execute(
-                api_key=umi_shiru_api_key,
+                authcfg=umi_shiru_authcfg,
                 municipality_code=self.dockwidget.comboBox_municipality.currentData(),
                 municipality_name=self.dockwidget.comboBox_municipality.currentText(),
             )
         # 漁港区域データの可視化
         if self.dockwidget.checkBox_fishing_port_area.isChecked():
             self.fishing_port_workflow.execute(
-                api_key=umi_shiru_api_key,
+                authcfg=umi_shiru_authcfg,
                 municipality_code=self.dockwidget.comboBox_municipality.currentData(),
                 municipality_name=self.dockwidget.comboBox_municipality.currentText(),
             )
         # 港湾区域データの可視化
         if self.dockwidget.checkBox_port_area.isChecked():
             self.port_area_workflow.execute(
-                api_key=umi_shiru_api_key,
+                authcfg=umi_shiru_authcfg,
                 municipality_code=self.dockwidget.comboBox_municipality.currentData(),
                 municipality_name=self.dockwidget.comboBox_municipality.currentText(),
             )
@@ -469,11 +486,49 @@ class GreenInfraPlugin:
         if not self.dockwidget:
             return
 
-        api_key = ApikeyDialog.get_real_estate_api_key()
+        authcfg = self._get_real_estate_authcfg(ApikeyDialog.get_real_estate_api_key())
         selected_code = self.dockwidget.comboBox_prefecture.currentData()
 
         self.area_workflow.load_municipality_dropdown(
-            self.dockwidget, api_key, selected_code
+            self.dockwidget, authcfg, selected_code
+        )
+
+    def _resolve_authcfg(
+        self, name: str, header: str, api_key: str, api_label: str
+    ) -> Optional[str]:
+        """APIキーをQGIS認証マネージャーの認証設定（APIHeader）に登録し、認証設定IDを返す
+        Args:
+            name (str): 認証設定の名前
+            header (str): APIキーを入れるヘッダー名
+            api_key (str): APIキー（未設定なら空文字）
+            api_label (str): 警告メッセージに表示するAPI名
+        Returns:
+            Optional[str]: 認証設定ID。APIキー未設定または登録失敗時は None
+        """
+        if not api_key:
+            return None
+
+        authcfg = get_api_header_authcfg(name, header, api_key)
+        if authcfg is None:
+            message = (
+                f"{api_label}APIキーの認証設定を作成できませんでした。"
+                "QGISの認証マネージャー（マスターパスワード）の設定を確認してください。"
+            )
+            QgsMessageLog.logMessage(
+                message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+            )
+            self.iface.messageBar().pushMessage(
+                "警告", message, level=Qgis.MessageLevel.Warning
+            )
+        return authcfg
+
+    def _get_real_estate_authcfg(self, api_key: str) -> Optional[str]:
+        """不動産情報ライブラリAPIキーの認証設定IDを取得"""
+        return self._resolve_authcfg(
+            REINFOLIB_AUTHCFG_NAME,
+            REINFOLIB_API_KEY_HEADER,
+            api_key,
+            "不動産情報ライブラリ",
         )
 
     def zoom_to_municipality(self, municipality_code):

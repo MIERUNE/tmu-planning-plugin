@@ -2,80 +2,40 @@
 地区計画区域データの取得機能モジュール
 """
 
-import urllib.parse
 from typing import Optional
 
 from qgis.core import (
     Qgis,
     QgsFillSymbol,
-    QgsMessageLog,
-    QgsNetworkAccessManager,
     QgsVectorTileBasicRenderer,
     QgsVectorTileBasicRendererStyle,
     QgsVectorTileLayer,
 )
-from qgis.PyQt.QtCore import QEventLoop, QUrl
-from qgis.PyQt.QtNetwork import QNetworkReply, QNetworkRequest
+from qgis.gui import QgisInterface
 
-from ....utils.settings import PLUGIN_NAME
+from ....utils.settings import ZOOM9_SCALE_THRESHOLD
+from ..client import ReinfolibClient
 from ..connect import (
     DISTRICT_PLAN_AREA_API_ENDPOINT,
 )
-from ....utils.settings import ZOOM9_SCALE_THRESHOLD
 
 
 class DistrictPlanAlgorithm:
     """地区計画区域データ取得クラス"""
 
-    def __init__(self, iface):
+    def __init__(self, iface: QgisInterface):
         self.iface = iface
 
-    def _check_api_connection(self, api_key: str) -> tuple[bool, Optional[int]]:
-        """APIキーの有効性を確認するための事前接続チェック"""
-        # 接続テストとして一部のタイルをリクエスト
-        test_url = (
-            DISTRICT_PLAN_AREA_API_ENDPOINT
-            + "?response_format=geojson&z=13&x=7272&y=3225"
-        )
-
-        request = QNetworkRequest(QUrl(test_url))
-        request.setRawHeader(b"Ocp-Apim-Subscription-Key", api_key.encode("utf-8"))
-
-        nam = QgsNetworkAccessManager.instance()
-        reply = nam.get(request)
-
-        loop = QEventLoop()
-        reply.finished.connect(loop.quit)
-        loop.exec()
-
-        http_status = reply.attribute(QNetworkRequest.Attribute.HttpStatusCodeAttribute)
-
-        if reply.error() != QNetworkReply.NetworkError.NoError:
-            QgsMessageLog.logMessage(
-                f"API接続に失敗しました: {reply.errorString()} (HTTPステータス: {http_status})",
-                PLUGIN_NAME,
-                level=Qgis.MessageLevel.Critical,
-            )
-            reply.deleteLater()
-            return False, http_status
-
-        QgsMessageLog.logMessage(
-            "APIキーの有効性を確認しました (HTTP 200)",
-            PLUGIN_NAME,
-            level=Qgis.MessageLevel.Info,
-        )
-        reply.deleteLater()
-        return True, http_status
-
-    def create_layer(self, api_key: str) -> Optional[QgsVectorTileLayer]:
+    def create_layer(self, authcfg: str) -> Optional[QgsVectorTileLayer]:
         """
         地区計画区域データをAPIから取得する
         Args:
-            api_key (str): APIキー
+            authcfg (str): APIキーを付与する認証設定ID（APIHeader）
         Returns:
             QgsVectorTileLayer : 追加に成功した場合はレイヤーオブジェクト
         """
-        success, status_code = self._check_api_connection(api_key)
+        client = ReinfolibClient(authcfg)
+        success, status_code = client.check_connection(DISTRICT_PLAN_AREA_API_ENDPOINT)
         # 接続チェック
         if not success:
             user_message = "APIサーバーへの接続に失敗しました。"
@@ -86,21 +46,10 @@ class DistrictPlanAlgorithm:
             )
             return None
 
-        # パラメーターをエンコード
+        # ベクトルタイルレイヤーのデータソースURIを作成
         params = {"response_format": "pbf", "z": "{z}", "x": "{x}", "y": "{y}"}
-        encoded_params = urllib.parse.urlencode(params, safe="{}")
-
-        # QGIS用にエンコード
-        encoded_for_qgis = encoded_params.replace("=", "%3D").replace("&", "%26")
-        encoded_tile_url = f"{DISTRICT_PLAN_AREA_API_ENDPOINT}?{encoded_for_qgis}"
-
-        # ベクトルタイルレイヤーのURLを作成
-        get_real_estate_url = (
-            f"type=xyz"
-            f"&url={encoded_tile_url}"
-            f"&zmax=15"
-            f"&zmin=11"
-            f"&http-header:Ocp-Apim-Subscription-Key={api_key}"
+        get_real_estate_url = client.build_vector_tile_uri(
+            DISTRICT_PLAN_AREA_API_ENDPOINT, params, zmin=11, zmax=15
         )
 
         layer_name = "地区計画区域"

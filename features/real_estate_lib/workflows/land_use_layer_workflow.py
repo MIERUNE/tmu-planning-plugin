@@ -13,12 +13,15 @@ class LayerWorkflow:
     def __init__(self, iface):
         self.iface = iface
 
-    def execute(self, algorithm, api_key: str, **kwargs) -> bool:
+    def execute(self, algorithm, authcfg: str, **kwargs) -> bool:
         """
         指定されたアルゴリズムを実行し、レイヤーをQGISに追加する
+        Args:
+            algorithm: create_layer(authcfg, **kwargs) を持つアルゴリズム
+            authcfg (str): APIキーを付与する認証設定ID（APIHeader）
         """
         try:
-            added_layer = algorithm.create_layer(api_key, **kwargs)
+            added_layer = algorithm.create_layer(authcfg, **kwargs)
             if not added_layer:
                 # メッセージを汎用的に変更
                 QgsMessageLog.logMessage(

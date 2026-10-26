@@ -49,17 +49,17 @@ class UmiShiruBaseAlgorithm(ABC):
     # workflowから呼び出されるパブリックメソッド
     # ========================================
 
-    def fetch_data(self, api_key: str, bounds: Dict[str, float]) -> Optional[str]:
+    def fetch_data(self, authcfg: str, bounds: Dict[str, float]) -> Optional[str]:
         """
         APIからデータを取得（単一取得）
         Args:
-            api_key (str): 海しるAPIキー
+            authcfg (str): APIキーを付与する認証設定ID（APIHeader）
             bounds (dict): 取得範囲の境界
         Returns:
             str: GeoJSON文字列（取得失敗時はNone）
         """
         # APIクライアントを作成
-        client = UmiShiruApiClient(api_key)
+        client = UmiShiruApiClient(authcfg)
 
         # APIパラメータ設定
         params = {
@@ -70,12 +70,12 @@ class UmiShiruBaseAlgorithm(ABC):
         return client.request(self.get_data_type_key(), params)
 
     def fetch_data_divided(
-        self, api_key: str, bounds: dict, division_count: int
+        self, authcfg: str, bounds: dict, division_count: int
     ) -> str:
         """
         APIからデータを取得（分割取得）
         Args:
-            api_key (str): 海しるAPIキー
+            authcfg (str): APIキーを付与する認証設定ID（APIHeader）
             bounds (dict): 境界範囲
             division_count (int): 分割数
         Returns:
@@ -87,7 +87,7 @@ class UmiShiruBaseAlgorithm(ABC):
         # 各分割範囲からデータを取得
         geojson_list = []
         for i, bbox in enumerate(bbox_list):
-            geojson_data = self.fetch_data(api_key=api_key, bounds=bbox)
+            geojson_data = self.fetch_data(authcfg=authcfg, bounds=bbox)
 
             if geojson_data:
                 geojson_list.append(geojson_data)

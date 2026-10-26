@@ -23,6 +23,8 @@ from ..connect import (
 class DistrictPlanAlgorithm:
     """地区計画区域データ取得クラス"""
 
+    LAYER_DISPLAY_NAME = "地区計画"
+
     def __init__(self, iface: QgisInterface):
         self.iface = iface
 

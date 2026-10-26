@@ -23,6 +23,8 @@ from ..connect import (
 class LocationNormalizationPlanAlgorithm:
     """立地適正化計画データ取得クラス"""
 
+    LAYER_DISPLAY_NAME = "立地適正化計画"
+
     def __init__(self, iface: QgisInterface):
         self.iface = iface
 

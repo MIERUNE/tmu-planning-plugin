@@ -23,6 +23,8 @@ from ..connect import (
 class HighUtilizationZoneAlgorithm:
     """高度利用地区データ取得クラス"""
 
+    LAYER_DISPLAY_NAME = "高度利用地区"
+
     def __init__(self, iface: QgisInterface):
         self.iface = iface
 

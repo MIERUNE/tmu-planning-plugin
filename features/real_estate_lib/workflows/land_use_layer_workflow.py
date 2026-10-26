@@ -6,7 +6,9 @@ from qgis.core import (
 from qgis.gui import QgisInterface
 
 from ....utils.api_keys import get_real_estate_api_key
+from ....utils.auth import resolve_api_header_authcfg
 from ....utils.settings import PLUGIN_NAME
+from ..connect import REINFOLIB_API_KEY_HEADER, REINFOLIB_AUTHCFG_NAME
 
 
 class LayerWorkflow:
@@ -18,6 +20,8 @@ class LayerWorkflow:
     def execute(self, algorithm, **kwargs) -> bool:
         """
         指定されたアルゴリズムを実行し、レイヤーをQGISに追加する
+        Args:
+            algorithm: create_layer(authcfg, **kwargs) を持つアルゴリズム
         """
         api_key = get_real_estate_api_key()
         if not api_key:
@@ -30,8 +34,19 @@ class LayerWorkflow:
             )
             return False
 
+        # APIキーをQGIS認証マネージャーの認証設定（APIHeader）に登録して送信時に使う
+        authcfg = resolve_api_header_authcfg(
+            self.iface,
+            REINFOLIB_AUTHCFG_NAME,
+            REINFOLIB_API_KEY_HEADER,
+            api_key,
+            "不動産情報ライブラリ",
+        )
+        if not authcfg:
+            return False
+
         try:
-            added_layer = algorithm.create_layer(api_key, **kwargs)
+            added_layer = algorithm.create_layer(authcfg, **kwargs)
             if not added_layer:
                 # メッセージを汎用的に変更
                 QgsMessageLog.logMessage(

@@ -4,6 +4,7 @@ from typing import Optional
 from qgis.core import Qgis, QgsMessageLog, QgsProject
 
 from ....utils.api_keys import get_umi_shiru_api_key
+from ....utils.auth import resolve_api_header_authcfg
 from ....utils.estat.bbox import calculate_municipality_bbox
 from ....utils.estat.client import AdministrativeAreaClient
 from ....utils.settings import CITY_DEFAULT_BOUNDS, PLUGIN_NAME
@@ -12,6 +13,8 @@ from ..algorithms.fishing_port_algorithm import FishingPortAlgorithm
 from ..client import (
     BBOX_BUFFER_DEGREES,
     CITY_DIVISION_CONFIG,
+    UMI_SHIRU_API_KEY_HEADER,
+    UMI_SHIRU_AUTHCFG_NAME,
 )
 
 
@@ -157,6 +160,17 @@ class FishingPortWorkflow(BaseWorkflow):
                 )
                 return False
 
+            # APIキーをQGIS認証マネージャーの認証設定（APIHeader）に登録して送信時に使う
+            authcfg = resolve_api_header_authcfg(
+                self.iface,
+                UMI_SHIRU_AUTHCFG_NAME,
+                UMI_SHIRU_API_KEY_HEADER,
+                api_key,
+                "海しる",
+            )
+            if not authcfg:
+                return False
+
             if not municipality_code:
                 message = "漁港区域を表示するには市区町村を選択してください。"
                 QgsMessageLog.logMessage(
@@ -181,12 +195,12 @@ class FishingPortWorkflow(BaseWorkflow):
                 division_config = CITY_DIVISION_CONFIG[municipality_code]
                 division_count = division_config["division_count"]
                 geojson_data = self.algorithm.fetch_data_divided(
-                    api_key=api_key,
+                    authcfg=authcfg,
                     bounds=bounds,
                     division_count=division_count,
                 )
             else:
-                geojson_data = self.algorithm.fetch_data(api_key=api_key, bounds=bounds)
+                geojson_data = self.algorithm.fetch_data(authcfg=authcfg, bounds=bounds)
 
             if not geojson_data:
                 message = "海しるAPIからのデータ取得に失敗しました。"

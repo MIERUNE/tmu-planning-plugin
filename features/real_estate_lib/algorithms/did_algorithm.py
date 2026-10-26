@@ -2,27 +2,24 @@
 人口集中地区(DID)データの取得機能モジュール
 """
 
-import urllib.parse
 from typing import Optional
 
 from qgis.core import (
     Qgis,
     QgsFillSymbol,
     QgsMessageLog,
-    QgsNetworkAccessManager,
     QgsVectorTileBasicRenderer,
     QgsVectorTileBasicRendererStyle,
     QgsVectorTileLayer,
 )
-from qgis.PyQt.QtCore import QEventLoop, QUrl
-from qgis.PyQt.QtNetwork import QNetworkReply, QNetworkRequest
+from qgis.gui import QgisInterface
 
-from ....utils.settings import PLUGIN_NAME
+from ....utils.settings import PLUGIN_NAME, ZOOM9_SCALE_THRESHOLD
+from ..client import ReinfolibClient
 from ..connect import (
     DID_AREA_API_ENDPOINT,
 )
 from ..settings import DESIGNATED_CITIES_CODES
-from ....utils.settings import ZOOM9_SCALE_THRESHOLD
 
 
 class DidAreaAlgorithm:
@@ -30,37 +27,8 @@ class DidAreaAlgorithm:
 
     LAYER_DISPLAY_NAME = "人口集中地区(DID)"
 
-    def __init__(self, iface):
+    def __init__(self, iface: QgisInterface):
         self.iface = iface
-
-    def _check_api_connection(self, api_key: str) -> tuple[bool, Optional[int]]:
-        """APIキーの有効性を確認するための事前接続チェック"""
-        # 接続テストのため一部タイルをリクエスト
-        test_url = DID_AREA_API_ENDPOINT + "?response_format=geojson&z=13&x=7272&y=3225"
-
-        request = QNetworkRequest(QUrl(test_url))
-        request.setRawHeader(b"Ocp-Apim-Subscription-Key", api_key.encode("utf-8"))
-
-        nam = QgsNetworkAccessManager.instance()
-        reply = nam.get(request)
-
-        loop = QEventLoop()
-        reply.finished.connect(loop.quit)
-        loop.exec()
-
-        http_status = reply.attribute(QNetworkRequest.Attribute.HttpStatusCodeAttribute)
-
-        if reply.error() != QNetworkReply.NetworkError.NoError:
-            QgsMessageLog.logMessage(
-                f"API接続に失敗しました: {reply.errorString()} (HTTPステータス: {http_status})",
-                PLUGIN_NAME,
-                level=Qgis.MessageLevel.Critical,
-            )
-            reply.deleteLater()
-            return False, http_status
-
-        reply.deleteLater()
-        return True, http_status
 
     def _get_administrative_area_code(
         self, municipality_code: Optional[str]
@@ -99,20 +67,21 @@ class DidAreaAlgorithm:
 
     def create_layer(
         self,
-        api_key: str,
+        authcfg: str,
         municipality_code: str,
         municipality_name: str,
     ) -> Optional[QgsVectorTileLayer]:
         """
         人口集中地区(DID)データをAPIから取得する
         Args:
-            api_key (str): APIキー
+            authcfg (str): APIキーを付与する認証設定ID（APIHeader）
             municipality_code (str): 市区町村コード。
             municipality_name (str): 市区町村名。
         Returns:
             QgsVectorTileLayer : 追加に成功した場合はレイヤーオブジェクト
         """
-        success, status_code = self._check_api_connection(api_key)
+        client = ReinfolibClient(authcfg)
+        success, status_code = client.check_connection(DID_AREA_API_ENDPOINT)
         # 接続チェック
         if not success:
             user_message = "APIサーバーへの接続に失敗しました。"
@@ -126,7 +95,7 @@ class DidAreaAlgorithm:
         # 行政区域コードを取得（政令指定都市の場合は全区のコードを取得）
         administrative_area_code = self._get_administrative_area_code(municipality_code)
 
-        # パラメーターをエンコード
+        # ベクトルタイルレイヤーのデータソースURIを作成
         params = {
             "response_format": "pbf",
             "z": "{z}",
@@ -134,20 +103,8 @@ class DidAreaAlgorithm:
             "y": "{y}",
             "administrativeAreaCode": administrative_area_code,
         }
-
-        encoded_params = urllib.parse.urlencode(params, safe="{}")
-
-        # QGIS用にエンコード
-        encoded_for_qgis = encoded_params.replace("=", "%3D").replace("&", "%26")
-        encoded_tile_url = f"{DID_AREA_API_ENDPOINT}?{encoded_for_qgis}"
-
-        # ベクトルタイルレイヤーのURLを作成
-        get_real_estate_url = (
-            f"type=xyz"
-            f"&url={encoded_tile_url}"
-            f"&zmax=15"
-            f"&zmin=9"
-            f"&http-header:Ocp-Apim-Subscription-Key={api_key}"
+        get_real_estate_url = client.build_vector_tile_uri(
+            DID_AREA_API_ENDPOINT, params, zmin=9, zmax=15
         )
 
         # 都道府県名が取得できた場合はレイヤー名に付加する

@@ -2,6 +2,15 @@
 不動産情報ライブラリAPIの接続情報
 """
 
+# APIキーを付与するヘッダー名
+REINFOLIB_API_KEY_HEADER = "Ocp-Apim-Subscription-Key"
+
+# QGIS認証マネージャーに登録する認証設定の名前
+REINFOLIB_AUTHCFG_NAME = "GreenInfraPlannerJP_Reinfolib"
+
+# APIキーの有効性を確認するために取得するタイル（geojson、ズーム13の関東付近）
+CHECK_TILE_QUERY = "?response_format=geojson&z=13&x=7272&y=3225"
+
 # 都道府県市区町村一覧取得APIエンドポイント
 AREA_LIST_API_ENDPOINT = "https://www.reinfolib.mlit.go.jp/ex-api/external/XIT002"
 

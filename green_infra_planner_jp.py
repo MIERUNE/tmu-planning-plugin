@@ -8,13 +8,21 @@ from qgis.core import (
     QgsProject,
     QgsRectangle,
 )
-from qgis.gui import QgsMessageBarItem
+from qgis.gui import QgisInterface, QgsMessageBarItem
 from qgis.PyQt.QtCore import QCoreApplication, Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
 from .features.administrative_area.administrative_area_workflow import (
     AdministrativeAreaWorkflow,
+)
+from .features.administrative_area.settings import (
+    CLASS3_LABELS,
+    CLASS3_STYLES,
+    CLASS5_LABELS,
+    CLASS5_STYLES,
+    CLASS6_LABELS,
+    CLASS6_STYLES,
 )
 from .features.basemap.basemap_workflow import BasemapWorkflow
 from .features.estat.population_mesh_workflow import PopulationMeshWorkflow
@@ -50,20 +58,12 @@ from .features.vegetation_map.vegetation_map_workflow import VegetationMapWorkfl
 from .ui.dockwidget import GreenInfraPlanningDockwidget
 from .utils.estat.client import AdministrativeAreaClient
 from .utils.settings import CITY_DEFAULT_BOUNDS
-from .features.administrative_area.settings import (
-    CLASS3_LABELS,
-    CLASS3_STYLES,
-    CLASS5_LABELS,
-    CLASS5_STYLES,
-    CLASS6_LABELS,
-    CLASS6_STYLES,
-)
 
 PLUGIN_NAME = "GreenInfraPlannerJP"
 
 
 class GreenInfraPlugin:
-    def __init__(self, iface):
+    def __init__(self, iface: QgisInterface):
         self.iface = iface
         self.win = self.iface.mainWindow()
         self.plugin_dir = os.path.dirname(__file__)

@@ -2,14 +2,20 @@
 海しるAPIクライアントとAPI設定
 """
 
-from qgis.PyQt.QtCore import QEventLoop, QUrl, QUrlQuery
-from qgis.PyQt.QtNetwork import QNetworkReply, QNetworkRequest
-from qgis.core import Qgis, QgsMessageLog, QgsNetworkAccessManager
+from qgis.PyQt.QtCore import QUrl, QUrlQuery
+from qgis.PyQt.QtNetwork import QNetworkRequest
+from qgis.core import Qgis, QgsBlockingNetworkRequest, QgsMessageLog
 
 from ...utils.settings import PLUGIN_NAME
 
 # 海しるAPI ベースURL
 UMI_SHIRU_BASE_URL = "https://api.msil.go.jp"
+
+# APIキーを付与するヘッダー名
+UMI_SHIRU_API_KEY_HEADER = "Ocp-Apim-Subscription-Key"
+
+# QGIS認証マネージャーに登録する認証設定の名前
+UMI_SHIRU_AUTHCFG_NAME = "GreenInfraPlannerJP_UmiShiru"
 
 # 海しるAPI 定義（エンドポイントとレイヤー情報）
 UMI_SHIRU_API_CONFIG = {
@@ -46,12 +52,12 @@ class UmiShiruApiClient:
     海しるAPI共通クライアント
     """
 
-    def __init__(self, api_key: str):
+    def __init__(self, authcfg: str):
         """
         Args:
-            api_key (str): 海しるAPIキー
+            authcfg (str): APIキーを付与する認証設定ID（APIHeader）
         """
-        self.api_key = api_key
+        self.authcfg = authcfg
         self.base_url = UMI_SHIRU_BASE_URL
 
     def request(self, data_type: str, params: dict) -> str:
@@ -84,42 +90,35 @@ class UmiShiruApiClient:
         full_url = url.toString()
 
         # ネットワークリクエスト実行
-        request = QNetworkRequest(QUrl(full_url))
-        request.setRawHeader(b"Ocp-Apim-Subscription-Key", self.api_key.encode("utf-8"))
+        blocking_request = QgsBlockingNetworkRequest()
+        blocking_request.setAuthCfg(self.authcfg)
+        error_code = blocking_request.get(QNetworkRequest(QUrl(full_url)))
+        # reply() は QgsNetworkReplyContent。本文は content() で QByteArray として取り出す
+        reply = blocking_request.reply()
 
-        nam = QgsNetworkAccessManager.instance()
-        reply = nam.get(request)
-        loop = QEventLoop()
-        reply.finished.connect(loop.quit)
-        loop.exec()
-
-        try:
-            # エラーチェック
-            if reply.error() != QNetworkReply.NetworkError.NoError:
-                http_status = reply.attribute(
-                    QNetworkRequest.Attribute.HttpStatusCodeAttribute
-                )
-                error_response = reply.readAll().data().decode("utf-8", errors="ignore")
-                error_message = f"APIリクエスト失敗: {reply.errorString()} (HTTP {http_status or 'Unknown'})"
-
-                QgsMessageLog.logMessage(
-                    f"{error_message}\nレスポンス詳細: {error_response}",
-                    PLUGIN_NAME,
-                    level=Qgis.MessageLevel.Critical,
-                )
-                raise Exception(error_message)
-
-            response_data = reply.readAll()
-            if not response_data:
-                raise Exception(f"APIからのレスポンスが空です。URL: {full_url}")
+        # エラーチェック
+        if error_code != QgsBlockingNetworkRequest.ErrorCode.NoError:
+            http_status = reply.attribute(
+                QNetworkRequest.Attribute.HttpStatusCodeAttribute
+            )
+            error_response = bytes(reply.content()).decode("utf-8", errors="ignore")
+            error_message = f"APIリクエスト失敗: {blocking_request.errorMessage()} (HTTP {http_status or 'Unknown'})"
 
             QgsMessageLog.logMessage(
-                f"海しるAPIリクエスト成功: {full_url}",
+                f"{error_message}\nレスポンス詳細: {error_response}",
                 PLUGIN_NAME,
-                level=Qgis.MessageLevel.Info,
+                level=Qgis.MessageLevel.Critical,
             )
+            raise Exception(error_message)
 
-            return response_data.data().decode("utf-8-sig")
+        response_data = bytes(reply.content())
+        if not response_data:
+            raise Exception(f"APIからのレスポンスが空です。URL: {full_url}")
 
-        finally:
-            reply.deleteLater()
+        QgsMessageLog.logMessage(
+            f"海しるAPIリクエスト成功: {full_url}",
+            PLUGIN_NAME,
+            level=Qgis.MessageLevel.Info,
+        )
+
+        return response_data.decode("utf-8-sig")

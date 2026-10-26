@@ -434,7 +434,9 @@ class VegetationMapAlgorithm:
 
         # メモリレイヤーの作成
         layer_name = f"{LAYER_NAME_PREFIX}_{display_name}"
-        layer = QgsVectorLayer("MultiPolygon?crs=EPSG:4326", layer_name, "memory")
+        layer = QgsVectorLayer(
+            "MultiPolygon?crs=EPSG:4326&index=yes", layer_name, "memory"
+        )
         provider = layer.dataProvider()
         if provider is None:
             self.iface.messageBar().pushMessage(

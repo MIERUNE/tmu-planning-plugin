@@ -12,9 +12,11 @@ import zipfile
 from unittest import mock
 
 from qgis.core import (
+    Qgis,
     QgsCategorizedSymbolRenderer,
     QgsFillSymbol,
     QgsRendererCategory,
+    QgsRuleBasedRenderer,
     QgsVectorLayer,
 )
 from qgis.PyQt.QtXml import QDomDocument
@@ -412,6 +414,51 @@ def make_qml_bytes() -> bytes:
     return bytes(document.toByteArray())
 
 
+RULE_STYLE_ENTRIES = [
+    ("010000", "高山低木群落", "0,128,0,255"),
+    ("020100", "ハイマツ群落", "0,0,255,255"),
+    ("030000", "コケモモ群落", "255,0,0,255"),
+]
+
+
+def make_rule_qml_bytes(extra_rules=()) -> bytes:
+    """
+    公式 QML と同じ構造（親ルール1つの下に凡例コードごとの葉ルール）の
+    ルールベースレンダラーを持つ QML を生成する
+    Args:
+        extra_rules: 追加する (filter, label) のタプル。ELSE は filter="ELSE"
+    """
+    source = QgsVectorLayer("MultiPolygon?crs=EPSG:4326", "src", "memory")
+    root = QgsRuleBasedRenderer.Rule(None)
+    group = QgsRuleBasedRenderer.Rule(None, 0, 0, "", "凡例コード 凡例名")
+    for code, label, color in RULE_STYLE_ENTRIES:
+        group.appendChild(
+            QgsRuleBasedRenderer.Rule(
+                QgsFillSymbol.createSimple({"color": color}),
+                0,
+                0,
+                f"\"{settings.FIELD_LEGEND_CODE}\" = '{code}'",
+                f"{code}{label}",
+            )
+        )
+    for filter_expression, label in extra_rules:
+        rule = QgsRuleBasedRenderer.Rule(
+            QgsFillSymbol.createSimple({"color": "0,0,0,255"}),
+            0,
+            0,
+            "" if filter_expression == "ELSE" else filter_expression,
+            label,
+        )
+        if filter_expression == "ELSE":
+            rule.setIsElse(True)
+        group.appendChild(rule)
+    root.appendChild(group)
+    source.setRenderer(QgsRuleBasedRenderer(root))
+    document = QDomDocument()
+    source.exportNamedStyle(document)
+    return bytes(document.toByteArray())
+
+
 def make_style_zip(qml_bytes: bytes) -> bytes:
     """QML を含むスタイル zip を生成する"""
     buffer = io.BytesIO()
@@ -438,6 +485,39 @@ class TestQgisStyle(unittest.TestCase):
         self.assertEqual(request_mock.call_count, 2)
         self.assertIn("item123", request_mock.call_args_list[1].args[0])
         self.assertEqual(self.layer.renderer().type(), "categorizedSymbol")
+
+    def test_rule_based_qml_is_converted_to_categorized(self):
+        # 公式 QML のルールベースは、描画負荷を下げるためカテゴリ値に変換される
+        zip_bytes = make_style_zip(make_rule_qml_bytes())
+        with mock.patch.object(
+            self.algorithm, "_request", side_effect=[HUB_STYLE_BYTES, zip_bytes]
+        ):
+            self.assertTrue(self.algorithm.style.apply(self.layer))
+
+        renderer = self.layer.renderer()
+        self.assertEqual(renderer.type(), "categorizedSymbol")
+        self.assertEqual(renderer.classAttribute(), settings.FIELD_LEGEND_CODE)
+        categories = renderer.categories()
+        self.assertEqual(len(categories), len(RULE_STYLE_ENTRIES))
+        for category, (code, label, color) in zip(categories, RULE_STYLE_ENTRIES):
+            self.assertEqual(category.value(), code)
+            self.assertEqual(category.label(), f"{code}{label}")
+            r, g, b, a = (int(v) for v in color.split(","))
+            self.assertEqual(category.symbol().color().getRgb(), (r, g, b, a))
+
+    def test_rule_based_qml_with_unsupported_rule_stays_rule_based(self):
+        # ELSE ルールや別フィールドのフィルタがあれば変換せずルールベースのまま使う
+        for extra in (("ELSE", "その他"), ("\"大区分\" = '1'", "別フィールド")):
+            with self.subTest(extra=extra):
+                layer = QgsVectorLayer("MultiPolygon?crs=EPSG:4326", "veg", "memory")
+                zip_bytes = make_style_zip(make_rule_qml_bytes([extra]))
+                with mock.patch.object(
+                    self.algorithm,
+                    "_request",
+                    side_effect=[HUB_STYLE_BYTES, zip_bytes],
+                ):
+                    self.assertTrue(self.algorithm.style.apply(layer))
+                self.assertEqual(layer.renderer().type(), "RuleRenderer")
 
     def test_zip_without_qml_fails(self):
         buffer = io.BytesIO()
@@ -488,6 +568,10 @@ class TestQgisCreateLayer(unittest.TestCase):
         self.assertEqual(layer.crs().authid(), "EPSG:4326")
         self.assertGreaterEqual(layer.fields().indexOf(settings.FIELD_LEGEND_CODE), 0)
         self.assertEqual(layer.renderer().type(), "categorizedSymbol")
+        self.assertEqual(
+            layer.dataProvider().hasSpatialIndex(),
+            Qgis.SpatialIndexPresence.SpatialIndexPresent,
+        )
         self.assertEqual(iface.message_bar.messages, [])
 
     def test_create_layer_returns_none_when_no_features(self):

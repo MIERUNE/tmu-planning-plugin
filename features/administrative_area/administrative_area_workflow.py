@@ -6,7 +6,9 @@ from qgis.core import (
     QgsMessageLog,
     QgsProject,
 )
+from qgis.gui import QgisInterface
 
+from ...utils.api_keys import get_mlit_dpf_api_key
 from ...utils.settings import PLUGIN_NAME
 from .administrative_area_algorithm import AdministrativeAreaAlgorithm, ClassType
 
@@ -14,18 +16,20 @@ from .administrative_area_algorithm import AdministrativeAreaAlgorithm, ClassTyp
 class AdministrativeAreaWorkflow:
     """行政区域ポリゴンのレイヤー取得・可視化のための汎用ワークフロー"""
 
-    def __init__(self, iface):
+    def __init__(self, iface: QgisInterface):
         self.iface = iface
         self.algorithm = AdministrativeAreaAlgorithm(iface)
+        # APIキー未設定で6クラス分類をスキップしたか（base 実行時の警告に含める）
+        self._class6_skipped = False
 
     def reset(self):
         """国交DPFへの問い合わせ結果をクリアする（可視化の実行開始時に呼び出す）"""
         self.algorithm.clear_tile_url_cache()
+        self._class6_skipped = False
 
     def execute(
         self,
         class_type: ClassType,
-        api_key: str,
         group: Optional[QgsLayerTreeGroup] = None,
     ) -> bool:
         """
@@ -33,12 +37,29 @@ class AdministrativeAreaWorkflow:
 
         Args:
             class_type: 行政区域のクラスタイプ ("base", "class3", "class5" または "class6")
-            api_key: 国土交通データプラットフォームのAPIキー
             group: 行政区域を表示するグループ（ベースマップグループに追加）
 
         Returns:
             bool: 成功した場合はTrue、失敗した場合はFalse
         """
+        # APIキー未設定でもローカルデータにフォールバックする（6クラス分類はローカルデータがないためスキップ）
+        api_key = get_mlit_dpf_api_key()
+        if not api_key:
+            if class_type == "class6":
+                self._class6_skipped = True
+                return False
+            # 警告は1回の可視化で最後に呼ばれる base のときにまとめて1件だけ出す
+            if class_type == "base":
+                message = "国土交通DPFのAPIキーが未設定のため、行政区域はローカルデータを使用しました。"
+                if self._class6_skipped:
+                    message += "6クラス分類はAPIキーが必要なためスキップしました。"
+                QgsMessageLog.logMessage(
+                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+                )
+                self.iface.messageBar().pushMessage(
+                    "警告", message, level=Qgis.MessageLevel.Warning
+                )
+
         add_layers = self.algorithm.create_administrative_area_layer(
             class_type=class_type, api_key=api_key
         )

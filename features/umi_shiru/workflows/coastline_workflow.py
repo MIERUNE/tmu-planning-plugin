@@ -3,6 +3,8 @@ from typing import Optional
 
 from qgis.core import Qgis, QgsMessageLog, QgsProject
 
+from ....utils.api_keys import get_umi_shiru_api_key
+from ....utils.auth import resolve_api_header_authcfg
 from ....utils.estat.bbox import calculate_municipality_bbox
 from ....utils.estat.client import AdministrativeAreaClient
 from ....utils.settings import CITY_DEFAULT_BOUNDS, PLUGIN_NAME
@@ -11,6 +13,8 @@ from ..algorithms.coastline_algorithm import CoastlineAlgorithm
 from ..client import (
     BBOX_BUFFER_DEGREES,
     CITY_DIVISION_CONFIG,
+    UMI_SHIRU_API_KEY_HEADER,
+    UMI_SHIRU_AUTHCFG_NAME,
 )
 
 
@@ -134,14 +138,12 @@ class CoastlineWorkflow(BaseWorkflow):
 
     def execute(
         self,
-        authcfg: Optional[str],
         municipality_code: Optional[str],
         municipality_name: Optional[str],
     ) -> bool:
         """
         海岸線ワークフローを実行し、海岸線レイヤーをQGISに追加する
         Args:
-            authcfg (str, optional): APIキーを付与する認証設定ID（APIHeader）
             municipality_code (str, optional): 市区町村コード（5桁）
             municipality_name (str, optional): 市区町村名
         Returns:
@@ -149,7 +151,8 @@ class CoastlineWorkflow(BaseWorkflow):
         """
         try:
             # 1. パラメータの準備とバリデーション
-            if not authcfg:
+            api_key = get_umi_shiru_api_key()
+            if not api_key:
                 message = (
                     "海しるAPIキーが未設定のため、海岸線データの処理をスキップします。"
                 )
@@ -159,6 +162,17 @@ class CoastlineWorkflow(BaseWorkflow):
                 self.iface.messageBar().pushMessage(
                     "警告", message, level=Qgis.MessageLevel.Warning
                 )
+                return False
+
+            # APIキーをQGIS認証マネージャーの認証設定（APIHeader）に登録して送信時に使う
+            authcfg = resolve_api_header_authcfg(
+                self.iface,
+                UMI_SHIRU_AUTHCFG_NAME,
+                UMI_SHIRU_API_KEY_HEADER,
+                api_key,
+                "海しる",
+            )
+            if not authcfg:
                 return False
 
             if not municipality_code:

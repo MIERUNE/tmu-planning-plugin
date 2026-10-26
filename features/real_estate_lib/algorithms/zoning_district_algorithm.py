@@ -23,6 +23,8 @@ from ..connect import (
 class ZoningDistrictAlgorithm:
     """用途地域区域データ取得クラス"""
 
+    LAYER_DISPLAY_NAME = "用途地域"
+
     def __init__(self, iface: QgisInterface):
         self.iface = iface
 

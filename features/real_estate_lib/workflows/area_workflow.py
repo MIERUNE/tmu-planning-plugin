@@ -3,8 +3,6 @@
 都道府県の選択や管理を行うワークフローを提供するクラス
 """
 
-from typing import Optional
-
 from qgis.core import QgsMessageLog, Qgis
 
 from ..settings_loader import (
@@ -14,8 +12,12 @@ from ..settings import PREFECTURE_LIST
 
 from ...real_estate_lib.connect import (
     AREA_LIST_API_ENDPOINT,
+    REINFOLIB_API_KEY_HEADER,
+    REINFOLIB_AUTHCFG_NAME,
     RESPONSE_ENCODING,
 )
+from ....utils.api_keys import get_real_estate_api_key
+from ....utils.auth import resolve_api_header_authcfg
 from ....utils.settings import PLUGIN_NAME
 from ..algorithms.area_algorithm import AreaAlgorithm
 
@@ -47,14 +49,12 @@ class AreaWorkflow:
             )
             return False
 
-    def load_municipality_dropdown(
-        self, dockwidget, authcfg: Optional[str], prefecture_code: str
-    ) -> bool:
+    def load_municipality_dropdown(self, dockwidget, prefecture_code: str) -> bool:
         """市区町村プルダウンを更新
+        不動産情報ライブラリのAPIキーが未設定（または認証設定を作成できない）場合は
+        API を使わず、同梱の市区町村一覧（JSON）から読み込む
         Args:
             dockwidget: DockWidgetインスタンス
-            authcfg (Optional[str]): APIキーを付与する認証設定ID（APIHeader）。
-                None の場合は API を使わず、同梱の市区町村一覧（JSON）から読み込む
             prefecture_code (str): 都道府県コード
         Returns:
             bool: 成功した場合はTrue、失敗した場合はFalse
@@ -65,6 +65,13 @@ class AreaWorkflow:
             return True
 
         try:
+            authcfg = resolve_api_header_authcfg(
+                self.iface,
+                REINFOLIB_AUTHCFG_NAME,
+                REINFOLIB_API_KEY_HEADER,
+                get_real_estate_api_key(),
+                "不動産情報ライブラリ",
+            )
             if authcfg:
                 municipalities = self.area_algorithm.get_municipalities(
                     prefecture_code=prefecture_code,

@@ -426,8 +426,15 @@ class TestQgisWorkflow(unittest.TestCase):
         self.iface = FakeIface()
         self.workflow = AdministrativeAreaWorkflow(self.iface)
         self.workflow.algorithm = mock.Mock()
+        # ワークフロー内で QgsSettings から読む APIキーを固定値に差し替える
+        # （テスト実行環境の保存キーに依存させない。未設定テストでは return_value を "" にする）
+        self.api_key_patch = mock.patch.object(
+            workflow_module, "get_mlit_dpf_api_key", return_value=API_KEY
+        )
+        self.get_api_key = self.api_key_patch.start()
 
     def tearDown(self):
+        self.api_key_patch.stop()
         QgsProject.instance().clear()
 
     @staticmethod
@@ -454,8 +461,12 @@ class TestQgisWorkflow(unittest.TestCase):
             self.make_layers()
         )
 
-        self.assertTrue(self.workflow.execute("class3", API_KEY, self.group))
+        self.assertTrue(self.workflow.execute("class3", self.group))
 
+        # ワークフロー内で取得したAPIキーをアルゴリズムに渡す
+        self.workflow.algorithm.create_administrative_area_layer.assert_called_once_with(
+            class_type="class3", api_key=API_KEY
+        )
         self.assertEqual(
             self.layer_names_in_sub_group(),
             ["行政区域_class3", settings.LABEL_LAYER_NAME],
@@ -468,7 +479,7 @@ class TestQgisWorkflow(unittest.TestCase):
             self.workflow.algorithm.create_administrative_area_layer.return_value = (
                 self.make_layers()
             )
-            self.workflow.execute("class3", API_KEY, self.group)
+            self.workflow.execute("class3", self.group)
 
         # 2 回実行しても同名レイヤーは重複しない
         self.assertEqual(
@@ -481,20 +492,20 @@ class TestQgisWorkflow(unittest.TestCase):
         self.workflow.algorithm.create_administrative_area_layer.return_value = (
             self.make_layers(with_label=False)
         )
-        self.assertTrue(self.workflow.execute("base", API_KEY, self.group))
+        self.assertTrue(self.workflow.execute("base", self.group))
         self.assertEqual(self.layer_names_in_sub_group(), ["行政区域_class3"])
 
     def test_execute_without_group_adds_to_root(self):
         self.workflow.algorithm.create_administrative_area_layer.return_value = (
             self.make_layers()
         )
-        self.assertTrue(self.workflow.execute("class3", API_KEY))
+        self.assertTrue(self.workflow.execute("class3"))
         self.assertIsNone(self.group.findGroup("行政区域"))
         self.assertEqual(len(QgsProject.instance().mapLayers()), 2)
 
     def test_execute_returns_false_when_algorithm_fails(self):
         self.workflow.algorithm.create_administrative_area_layer.return_value = None
-        self.assertFalse(self.workflow.execute("class6", API_KEY, self.group))
+        self.assertFalse(self.workflow.execute("class6", self.group))
         self.assertIsNone(self.group.findGroup("行政区域"))
         self.assertEqual(self.iface.message_bar.messages[0][0], "警告")
 
@@ -504,12 +515,77 @@ class TestQgisWorkflow(unittest.TestCase):
             invalid,
             None,
         )
-        self.assertFalse(self.workflow.execute("class3", API_KEY, self.group))
+        self.assertFalse(self.workflow.execute("class3", self.group))
         self.assertEqual(self.iface.message_bar.messages[0][0], "エラー")
 
     def test_reset_clears_algorithm_cache(self):
         self.workflow.reset()
         self.workflow.algorithm.clear_tile_url_cache.assert_called_once_with()
+
+    # --- APIキー未設定時（ローカルデータへのフォールバック） ---
+
+    def warnings(self):
+        return [m[1] for m in self.iface.message_bar.messages if m[0] == "警告"]
+
+    def test_without_api_key_falls_back_with_single_warning(self):
+        self.get_api_key.return_value = ""
+        # 同名レイヤーは置き換えられるため、呼び出しごとに新しいレイヤーを返す
+        self.workflow.algorithm.create_administrative_area_layer.side_effect = (
+            lambda **kwargs: self.make_layers()
+        )
+
+        self.workflow.reset()
+        for class_type in ("class3", "class5", "base"):
+            self.assertTrue(self.workflow.execute(class_type, self.group))
+
+        # キー空のままアルゴリズムを呼び、アルゴリズム側でローカルデータにフォールバックする
+        calls = self.workflow.algorithm.create_administrative_area_layer.call_args_list
+        self.assertEqual(len(calls), 3)
+        for call in calls:
+            self.assertEqual(call.kwargs["api_key"], "")
+
+        # 警告は最後の base のときに1件だけ
+        self.assertEqual(
+            self.warnings(),
+            [
+                "国土交通DPFのAPIキーが未設定のため、行政区域はローカルデータを使用しました。"
+            ],
+        )
+
+    def test_without_api_key_skips_class6_and_warns_once_at_base(self):
+        self.get_api_key.return_value = ""
+        self.workflow.algorithm.create_administrative_area_layer.side_effect = (
+            lambda **kwargs: self.make_layers()
+        )
+
+        self.workflow.reset()
+        self.assertFalse(self.workflow.execute("class6", self.group))
+        # class6 の時点では警告を出さず、アルゴリズムも呼ばない
+        self.workflow.algorithm.create_administrative_area_layer.assert_not_called()
+        self.assertEqual(self.iface.message_bar.messages, [])
+
+        self.assertTrue(self.workflow.execute("base", self.group))
+        self.assertEqual(
+            self.warnings(),
+            [
+                "国土交通DPFのAPIキーが未設定のため、行政区域はローカルデータを使用しました。"
+                "6クラス分類はAPIキーが必要なためスキップしました。"
+            ],
+        )
+
+    def test_reset_clears_class6_skipped(self):
+        self.get_api_key.return_value = ""
+        self.workflow.algorithm.create_administrative_area_layer.side_effect = (
+            lambda **kwargs: self.make_layers()
+        )
+
+        self.workflow.reset()
+        self.workflow.execute("class6", self.group)
+        self.workflow.reset()
+        self.workflow.execute("base", self.group)
+
+        self.assertEqual(len(self.warnings()), 1)
+        self.assertNotIn("6クラス分類", self.warnings()[0])
 
 
 if __name__ == "__main__":

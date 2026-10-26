@@ -4,17 +4,21 @@ from qgis.core import (
     Qgis,
     QgsMessageLog,
 )
+from qgis.gui import QgisInterface
 
+from ...utils.api_keys import get_estat_api_key
+from ...utils.settings import PLUGIN_NAME
 from .algorithms.get_dataset_id import GetDatasetId
 from .algorithms.merge_algorithm import MergePopulationMeshLayers
 from .algorithms.population_mesh_algorithm import PopulationMeshAlgorithm
-from ...utils.settings import PLUGIN_NAME
+
+MESH_TYPE_LABELS = {"3rd": "3次メッシュ", "4th": "4次メッシュ"}
 
 
 class PopulationMeshWorkflow:
     """人口メッシュデータの取得・可視化のためのワークフロー"""
 
-    def __init__(self, iface):
+    def __init__(self, iface: QgisInterface):
         self.iface = iface
         self.algorithm = PopulationMeshAlgorithm(iface)
         self.merge_algorithm = MergePopulationMeshLayers(iface)
@@ -97,7 +101,6 @@ class PopulationMeshWorkflow:
 
     def execute(
         self,
-        api_key: str,
         municipality_code: str,
         municipality_name: str,
         mesh_type: Literal["3rd", "4th"],
@@ -105,13 +108,22 @@ class PopulationMeshWorkflow:
         """
         指定されたアルゴリズムを実行し、レイヤーをQGISに追加する
         Args:
-            api_key (str): e-Stat APIキー
             municipality_code (str): 自治体コード（例: "01100" 札幌市）
             municipality_name (str): 自治体名（例: "札幌市"）
             mesh_type (Literal["3rd", "4th"]): メッシュタイプ
         Returns:
             bool: 成功した場合はTrue、失敗した場合はFalse
         """
+        api_key = get_estat_api_key()
+        if not api_key:
+            message = f"e-Stat APIキーが未設定のため、人口メッシュ（{MESH_TYPE_LABELS[mesh_type]}）データの取得をスキップします。"
+            QgsMessageLog.logMessage(
+                message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
+            )
+            self.iface.messageBar().pushMessage(
+                "警告", message, level=Qgis.MessageLevel.Warning
+            )
+            return False
 
         # 1. 自治体コードからデータセットIDを取得
         dataset_id_dict = self._fetch_dataset_ids(municipality_code, api_key, mesh_type)

@@ -85,7 +85,7 @@ class AdministrativeAreaAlgorithm:
         行政区域ポリゴンのデータソースURIを取得
 
         国交DPFのベクトルタイルを優先し、取得できない場合はローカルのMBTilesを使う。
-        6クラス分類はローカルデータがないため、取得できない場合は None を返す。
+        6クラス分類、またはローカルのMBTilesを同梱していない場合は None を返す。
         """
         data_id = DATA_IDS["class6" if class_type == "class6" else "class3_5"]
         tile_url = self._fetch_tile_url(data_id, api_key)
@@ -98,7 +98,7 @@ class AdministrativeAreaAlgorithm:
             uri.setParam("zmax", str(TILE_ZOOM_MAX))
             return bytes(uri.encodedUri()).decode()
 
-        if class_type == "class6":
+        if class_type == "class6" or not self.has_local_fallback():
             return None
 
         mbtiles_path = self._get_mbtiles_path()
@@ -114,13 +114,13 @@ class AdministrativeAreaAlgorithm:
                 "警告", message, level=Qgis.MessageLevel.Warning
             )
             self._fallback_notified = True
-        if not os.path.exists(mbtiles_path):
-            QgsMessageLog.logMessage(
-                f"MBTilesファイルが見つかりません: {mbtiles_path}",
-                PLUGIN_NAME,
-                level=Qgis.MessageLevel.Warning,
-            )
         return f"type=mbtiles&url={mbtiles_path}"
+
+    def has_local_fallback(self) -> bool:
+        """
+        ローカルの行政区域データ（class.mbtiles）を同梱しているか
+        """
+        return os.path.isfile(self._get_mbtiles_path())
 
     def _get_mbtiles_path(self) -> str:
         """MBTilesファイルのパスを取得（国交DPFから取得できない場合のフォールバック用）"""

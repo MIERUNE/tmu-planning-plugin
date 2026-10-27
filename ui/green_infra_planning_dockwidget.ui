@@ -142,7 +142,31 @@
                </widget>
               </item>
               <item>
-               <widget class="QToolButton" name="toolButton_administrative_area_info">
+               <spacer name="horizontalSpacer_administrative_area">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_class3">
+              <item>
+               <widget class="QCheckBox" name="checkBox_class3">
+                <property name="text">
+                 <string>3クラス</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="toolButton_class3_info">
                 <property name="maximumSize">
                  <size>
                   <width>20</width>
@@ -165,30 +189,6 @@
                 </property>
                 <property name="text">
                  <string>ⓘ</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_administrative_area">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_class3">
-              <item>
-               <widget class="QCheckBox" name="checkBox_class3">
-                <property name="text">
-                 <string>3クラス</string>
                 </property>
                </widget>
               </item>
@@ -239,6 +239,33 @@
                </widget>
               </item>
               <item>
+               <widget class="QToolButton" name="toolButton_class5_info">
+                <property name="maximumSize">
+                 <size>
+                  <width>20</width>
+                  <height>20</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;【データの出典】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;土地利用基本計画から推進しやすいグリーンインフラのタイプを検討する&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;【著者】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;大澤 剛士, 山野 博哉, 小笠原 奨悟&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;【DOI】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;https://doi.org/10.3825/ece.24-00022&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="styleSheet">
+                 <string>QToolButton {
+                                    border: none;
+                                    background-color: transparent;
+                                    color: #2196F3;
+                                    font-weight: bold;
+                                    }
+                                    QToolButton:hover {
+                                    color: #1976D2;
+                                    }</string>
+                </property>
+                <property name="text">
+                 <string>ⓘ</string>
+                </property>
+               </widget>
+              </item>
+              <item>
                <spacer name="horizontalSpacer_class5">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
@@ -281,6 +308,33 @@
                <widget class="QCheckBox" name="checkBox_class6">
                 <property name="text">
                  <string>6クラス</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="toolButton_class6_info">
+                <property name="maximumSize">
+                 <size>
+                  <width>20</width>
+                  <height>20</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;【データの出典】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Developing national-scale basic guideline on flood-adaptation strategies under climate change using probabilistic and deterministic factors. Water Research 282: 123723 (2025)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;【著者】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Osawa T, Sakurai G, Wakai A&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;【DOI】&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;https://doi.org/10.1016/j.watres.2025.123723&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="styleSheet">
+                 <string>QToolButton {
+                                    border: none;
+                                    background-color: transparent;
+                                    color: #2196F3;
+                                    font-weight: bold;
+                                    }
+                                    QToolButton:hover {
+                                    color: #1976D2;
+                                    }</string>
+                </property>
+                <property name="text">
+                 <string>ⓘ</string>
                 </property>
                </widget>
               </item>

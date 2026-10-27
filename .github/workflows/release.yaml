@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          # labels.mbtiles は Git LFS 管理のため、実体を取得する
+          lfs: true
       # Temporarily rename metadata file whose contents are to be rewritten
       - name: rename some files to rewrite
         run: |

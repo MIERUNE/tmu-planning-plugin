@@ -291,6 +291,11 @@ class TestLogicFetchTileUrl(unittest.TestCase):
         client_cls.assert_not_called()
 
 
+def patch_local_fallback(algorithm, available: bool):
+    """ローカルの class.mbtiles を同梱しているかを判定する"""
+    return mock.patch.object(algorithm, "has_local_fallback", return_value=available)
+
+
 class TestLogicSourceUri(unittest.TestCase):
     """データソース URI の決定（国交DPF 優先、取得できなければローカル MBTiles）"""
 
@@ -312,7 +317,7 @@ class TestLogicSourceUri(unittest.TestCase):
 
     def test_fallback_to_mbtiles_with_single_warning_when_fetch_fails(self):
         algorithm, iface, authcfg_patch, client_patch, _ = make_algorithm(tile_url=None)
-        with authcfg_patch, client_patch:
+        with authcfg_patch, client_patch, patch_local_fallback(algorithm, True):
             for class_type in ("class3", "class5", "base"):
                 uri = algorithm._get_source_uri(class_type, API_KEY)
                 self.assertEqual(uri, f"type=mbtiles&url={CLASS_MBTILES_PATH}")
@@ -324,10 +329,32 @@ class TestLogicSourceUri(unittest.TestCase):
     def test_fallback_without_api_key_is_silent(self):
         # APIキー未設定時の通知は呼び出し側がまとめて出すため、ここでは出さない
         algorithm, iface, authcfg_patch, client_patch, _ = make_algorithm(authcfg=None)
-        with authcfg_patch, client_patch:
+        with authcfg_patch, client_patch, patch_local_fallback(algorithm, True):
             uri = algorithm._get_source_uri("class3", "")
         self.assertEqual(uri, f"type=mbtiles&url={CLASS_MBTILES_PATH}")
         self.assertEqual(iface.message_bar.messages, [])
+
+    def test_no_fallback_without_local_mbtiles(self):
+        # class.mbtiles を同梱しない版（公式リポジトリ用）は、取得できなければ None
+        algorithm, iface, authcfg_patch, client_patch, _ = make_algorithm(tile_url=None)
+        with authcfg_patch, client_patch, patch_local_fallback(algorithm, False):
+            for class_type in ("class3", "class5", "base"):
+                self.assertIsNone(algorithm._get_source_uri(class_type, API_KEY))
+        # 警告は呼び出し側（ワークフロー）が出す
+        self.assertEqual(iface.message_bar.messages, [])
+
+    def test_xyz_uri_without_local_mbtiles(self):
+        # 取得できればローカルデータの有無に関係なく国交DPFのタイルを使う
+        algorithm, _, authcfg_patch, client_patch, _ = make_algorithm()
+        with authcfg_patch, client_patch, patch_local_fallback(algorithm, False):
+            self.assertIn("type=xyz", algorithm._get_source_uri("base", API_KEY))
+
+    def test_has_local_fallback_follows_file_existence(self):
+        algorithm, _, _, _, _ = make_algorithm()
+        with mock.patch.object(algorithm_module.os.path, "isfile", return_value=True):
+            self.assertTrue(algorithm.has_local_fallback())
+        with mock.patch.object(algorithm_module.os.path, "isfile", return_value=False):
+            self.assertFalse(algorithm.has_local_fallback())
 
     def test_class6_has_no_fallback(self):
         algorithm, iface, authcfg_patch, client_patch, _ = make_algorithm(tile_url=None)
@@ -337,7 +364,7 @@ class TestLogicSourceUri(unittest.TestCase):
 
     def test_clear_cache_resets_notification(self):
         algorithm, iface, authcfg_patch, client_patch, _ = make_algorithm(tile_url=None)
-        with authcfg_patch, client_patch:
+        with authcfg_patch, client_patch, patch_local_fallback(algorithm, True):
             algorithm._get_source_uri("base", API_KEY)
             algorithm.clear_tile_url_cache()
             algorithm._get_source_uri("base", API_KEY)
@@ -426,6 +453,8 @@ class TestQgisWorkflow(unittest.TestCase):
         self.iface = FakeIface()
         self.workflow = AdministrativeAreaWorkflow(self.iface)
         self.workflow.algorithm = mock.Mock()
+        # 既定はローカルデータを同梱した版（お客さん提出用）。同梱しない版のテストでは False にする
+        self.workflow.algorithm.has_local_fallback.return_value = True
         # ワークフロー内で QgsSettings から読む APIキーを固定値に差し替える
         # （テスト実行環境の保存キーに依存させない。未設定テストでは return_value を "" にする）
         self.api_key_patch = mock.patch.object(
@@ -586,6 +615,42 @@ class TestQgisWorkflow(unittest.TestCase):
 
         self.assertEqual(len(self.warnings()), 1)
         self.assertNotIn("6クラス分類", self.warnings()[0])
+
+    # --- ローカルデータを同梱しない版（公式リポジトリ用） ---
+
+    def test_without_api_key_and_local_data_skips_all_with_single_warning(self):
+        self.get_api_key.return_value = ""
+        self.workflow.algorithm.has_local_fallback.return_value = False
+
+        self.workflow.reset()
+        for class_type in ("class3", "class5", "class6", "base"):
+            self.assertFalse(self.workflow.execute(class_type, self.group))
+
+        # アルゴリズムは呼ばず、レイヤーも追加しない
+        self.workflow.algorithm.create_administrative_area_layer.assert_not_called()
+        self.assertIsNone(self.group.findGroup("行政区域"))
+        # 警告は最後の base のときに1件だけ（他のAPIと同じ「スキップします」）
+        self.assertEqual(
+            self.warnings(),
+            [
+                "国土交通DPFのAPIキーが未設定のため、行政区域データの取得をスキップします。"
+            ],
+        )
+
+    def test_fetch_failure_warns_once_per_run(self):
+        # 国交DPFから取得できないと全レイヤーで失敗するが、警告は1件にまとめる
+        self.workflow.algorithm.has_local_fallback.return_value = False
+        self.workflow.algorithm.create_administrative_area_layer.return_value = None
+
+        self.workflow.reset()
+        for class_type in ("class3", "class5", "class6", "base"):
+            self.assertFalse(self.workflow.execute(class_type, self.group))
+        self.assertEqual(self.warnings(), ["行政区域レイヤーの取得に失敗しました。"])
+
+        # 次の可視化では再度警告する
+        self.workflow.reset()
+        self.workflow.execute("base", self.group)
+        self.assertEqual(len(self.warnings()), 2)
 
 
 if __name__ == "__main__":

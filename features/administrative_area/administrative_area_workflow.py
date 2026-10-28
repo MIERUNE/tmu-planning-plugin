@@ -21,11 +21,23 @@ class AdministrativeAreaWorkflow:
         self.algorithm = AdministrativeAreaAlgorithm(iface)
         # APIキー未設定で6クラス分類をスキップしたか（base 実行時の警告に含める）
         self._class6_skipped = False
+        # レイヤー取得失敗の警告を出したか（1回の可視化で1件だけ出す）
+        self._failure_notified = False
 
     def reset(self):
         """国交DPFへの問い合わせ結果をクリアする（可視化の実行開始時に呼び出す）"""
         self.algorithm.clear_tile_url_cache()
         self._class6_skipped = False
+        self._failure_notified = False
+
+    def _no_api_key_message(self, use_local: bool) -> str:
+        """APIキー未設定時の警告文"""
+        if not use_local:
+            return "国土交通DPFのAPIキーが未設定のため、行政区域データの取得をスキップします。"
+        message = "国土交通DPFのAPIキーが未設定のため、行政区域はローカルデータを使用しました。"
+        if self._class6_skipped:
+            message += "6クラス分類はAPIキーが必要なためスキップしました。"
+        return message
 
     def execute(
         self,
@@ -42,23 +54,24 @@ class AdministrativeAreaWorkflow:
         Returns:
             bool: 成功した場合はTrue、失敗した場合はFalse
         """
-        # APIキー未設定でもローカルデータにフォールバックする（6クラス分類はローカルデータがないためスキップ）
+        # APIキー未設定時、ローカルデータを同梱していればフォールバックし、なければスキップする
+        # （6クラス分類はローカルデータがないため常にスキップ）
         api_key = get_mlit_dpf_api_key()
         if not api_key:
+            use_local = class_type != "class6" and self.algorithm.has_local_fallback()
             if class_type == "class6":
                 self._class6_skipped = True
-                return False
             # 警告は1回の可視化で最後に呼ばれる base のときにまとめて1件だけ出す
             if class_type == "base":
-                message = "国土交通DPFのAPIキーが未設定のため、行政区域はローカルデータを使用しました。"
-                if self._class6_skipped:
-                    message += "6クラス分類はAPIキーが必要なためスキップしました。"
+                message = self._no_api_key_message(use_local)
                 QgsMessageLog.logMessage(
                     message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
                 )
                 self.iface.messageBar().pushMessage(
                     "警告", message, level=Qgis.MessageLevel.Warning
                 )
+            if not use_local:
+                return False
 
         add_layers = self.algorithm.create_administrative_area_layer(
             class_type=class_type, api_key=api_key
@@ -66,15 +79,18 @@ class AdministrativeAreaWorkflow:
 
         if not add_layers:
             QgsMessageLog.logMessage(
-                "行政区域レイヤーの取得に失敗しました。",
+                f"行政区域レイヤー（{class_type}）の取得に失敗しました。",
                 PLUGIN_NAME,
                 level=Qgis.MessageLevel.Warning,
             )
-            self.iface.messageBar().pushMessage(
-                "警告",
-                "行政区域レイヤーの取得に失敗しました。",
-                level=Qgis.MessageLevel.Warning,
-            )
+            # 国交DPFから取得できない場合は全レイヤーで失敗するため、メッセージバーには1件だけ出す
+            if not self._failure_notified:
+                self.iface.messageBar().pushMessage(
+                    "警告",
+                    "行政区域レイヤーの取得に失敗しました。",
+                    level=Qgis.MessageLevel.Warning,
+                )
+                self._failure_notified = True
             return False
 
         polygon_layer, label_layer = add_layers

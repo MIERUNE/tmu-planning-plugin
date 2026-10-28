@@ -9,3 +9,5 @@ coverage.xml
 requirements.txt
 poetry.lock
 .ruff_cache
+# 行政区域のローカルデータ（お客さん提出用のみ同梱、公式リポジトリ版には含めない）
+features/administrative_area/data/class.mbtiles

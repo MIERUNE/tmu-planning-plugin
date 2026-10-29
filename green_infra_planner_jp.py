@@ -372,12 +372,11 @@ class GreenInfraPlugin:
                 municipality_code
             )
             if polygon_layer is None or not polygon_layer.isValid():
-                message = "自治体の行政区域データの取得に失敗しました。"
+                # ズームできなくても可視化自体には影響しないため、ログのみに残す
                 QgsMessageLog.logMessage(
-                    message, PLUGIN_NAME, level=Qgis.MessageLevel.Warning
-                )
-                self.iface.messageBar().pushMessage(
-                    "警告", message, level=Qgis.MessageLevel.Warning
+                    "ズーム用の自治体の行政区域データの取得に失敗しました。",
+                    PLUGIN_NAME,
+                    level=Qgis.MessageLevel.Warning,
                 )
                 return
             extent = polygon_layer.extent()

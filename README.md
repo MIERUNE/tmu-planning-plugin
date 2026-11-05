@@ -412,3 +412,9 @@ ruff check .
 # 自動フォーマット
 ruff format .
 ```
+
+---
+
+## 9. ライセンス
+
+本プラグインは [GNU General Public License v2.0 or later](LICENSE) のもとで公開しています。

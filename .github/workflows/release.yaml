@@ -5,9 +5,14 @@ on:
 
 env:
   PLUGIN_NAME: GreenInfraPlannerJP
+  # class.mbtiles は git 管理せず、このタグのドラフトリリースにアセットとして保管している
+  DATA_RELEASE_TAG: data-class-mbtiles
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      # ドラフトリリースの参照とアセットのアップロードに必要
+      contents: write
     steps:
       - uses: actions/checkout@v2
         with:
@@ -37,11 +42,25 @@ jobs:
             -ve './test_suite.py' \
             -ve './scripts' \
             -ve './uv.lock' | xargs -I src cp --parents src ${{env.PLUGIN_NAME}}
+      # 行政区域のローカルデータなし（APIのみ版）
       - name: Create Archive
         run: |
           zip -r ${{env.PLUGIN_NAME}}.zip ./${{env.PLUGIN_NAME}}
+      - name: Download local data
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download ${{env.DATA_RELEASE_TAG}} \
+            --pattern class.mbtiles \
+            --dir ${{env.PLUGIN_NAME}}/features/administrative_area/data
+      # 行政区域のローカルデータ（class.mbtiles）同梱版
+      - name: Create Archive with local data
+        run: |
+          zip -r ${{env.PLUGIN_NAME}}_with_local_data.zip ./${{env.PLUGIN_NAME}}
       - name: Upload release asset
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload ${{ github.event.release.tag_name }} ${{env.PLUGIN_NAME}}.zip#${{env.PLUGIN_NAME}}
+          gh release upload ${{ github.event.release.tag_name }} \
+            ${{env.PLUGIN_NAME}}.zip \
+            ${{env.PLUGIN_NAME}}_with_local_data.zip

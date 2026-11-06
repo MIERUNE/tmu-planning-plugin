@@ -4,8 +4,9 @@
 
 このプラグインは、国土交通データプラットフォームや各省庁のオープンデータを QGIS 上で統合的に可視化し、グリーンインフラ計画の策定を支援することを目的としています。
 
-- **主な技術**: QGIS 3, Python 3.9+, PyQGIS, `uv`
-- **連携 API**: 国土地理院, 不動産情報ライブラリ, 海しる API, e-Stat API, ハザードマップポータルサイト
+- **主な技術**: QGIS 3.44+（QGIS 4 / Qt6 対応）, Python 3.9+, PyQGIS, `uv`
+- **連携 API**: 国土地理院, 国土交通データプラットフォーム, 不動産情報ライブラリ, 海しる API, e-Stat API, ハザードマップポータルサイト, 環境ジオポータル
+- **提供者**: 東京都立大学
 
 ---
 
@@ -24,16 +25,19 @@
 
 **実装**: `administrative_area/`
 
-- 行政区域データの表示（MBTiles 形式のローカルデータを使用）
-- 3 種類の表示モードに対応:
+- 行政区域データの表示（国土交通データプラットフォーム API から取得したベクトルタイルを使用）
+- 4 種類の表示モードに対応:
 
 | モード     | 説明                             | 属性フィールド |
 | ---------- | -------------------------------- | -------------- |
 | ベース(白) | 行政区域を白色で表示             | -              |
 | class3     | 3 区分の行政区域分類で色分け表示 | `class3info`   |
 | class5     | 5 区分の行政区域分類で色分け表示 | `class5nofo`   |
+| class6     | 6 区分の行政区域分類で色分け表示 | `class`        |
 
-- データソース: ローカル MBTiles ファイル（`features/administrative_area/data/class.mbtiles`）
+- データソース: 国土交通データプラットフォーム（データセット `sip3rd_gi`）。GraphQL API でベクトルタイルの URL を取得（ズームレベル 6〜12）
+- 国土交通データプラットフォームの API キーが必要（未設定の場合は行政区域の取得をスキップ）
+- 自治体名ラベルは同梱の MBTiles ファイル（`features/administrative_area/data/labels.mbtiles`）を使用
 - ベースマップグループ内の「行政区域」サブグループに追加
 
 ### 国土交通省 不動産情報ライブラリ（MLIT Reinfolib）
@@ -78,6 +82,15 @@
 
 - 人口メッシュ（500m / 1km メッシュ単位）
 
+### 環境ジオポータル
+
+**実装**: `vegetation_map/`
+
+- 現存植生図2024 の表示（選択した市区町村の範囲を FeatureServer から取得）
+- 都道府県コードから地域ブロック（8 ブロック）のデータセットを自動で選択
+- 環境ジオポータルが公開しているスタイル設定ファイル（`veg2024style.qml`）をダウンロードして適用
+- API キー不要
+
 ---
 
 ## 3. アーキテクチャ
@@ -93,7 +106,7 @@
 │  Workflow Layer (workflows/)        │  ← 処理フローの制御・調整
 ├─────────────────────────────────────┤
 │  API Client Layer                   │  ← 外部APIとの通信
-│  (umi_shiru/, real_estate_lib/)     │
+│  (client.py / connect.py)           │
 ├─────────────────────────────────────┤
 │  Algorithm Layer (*_algorithm.py)   │  ← データ処理・レイヤー生成
 ├─────────────────────────────────────┤
@@ -126,7 +139,7 @@
 
 このプロジェクトは **Git LFS** を使用しています。クローン前にインストールしてください。
 
-```
+```bash
 # インストール（macOS）
 brew install git-lfs
 
@@ -145,19 +158,19 @@ git lfs pull
 
 QGIS にバンドルされている Python を指定して仮想環境を作成します。
 
-```
+```bash
 # macOS の場合
 uv venv --python /Applications/QGIS.app/Contents/MacOS/bin/python3 --system-site-packages
 
 # Windows の場合（QGISのバージョン/パスに応じて要調整）
-uv venv --python "C:\Program Files\QGIS 3.28.2\apps\Python39\python.exe" --system-site-packages
+uv venv --python "C:\Program Files\QGIS 3.x\apps\Python3x\python.exe" --system-site-packages
 ```
 
 _`--system-site-packages`オプションにより、QGIS の PyQGIS ライブラリ等を引き継ぎます。_
 
 ### ステップ 2: 仮想環境の有効化
 
-```
+```bash
 # macOS / Linux
 source .venv/bin/activate
 
@@ -169,7 +182,7 @@ source .venv/bin/activate
 
 型チェックやコード品質管理ツールをインストールします。
 
-```
+```bash
 uv sync
 ```
 
@@ -193,6 +206,7 @@ tmu-planning-plugin/
 ├── ui/                             # ユーザーインターフェース
 │   ├── dockwidget.py              # メインウィジェット（機能選択・実行ボタン）
 │   ├── apikey_dialog.py           # APIキー設定ダイアログ
+│   ├── config.py                  # APIキーの設定項目定義
 │   └── *.ui                       # Qt Designer UIファイル
 │
 ├── features/                       # 機能モジュール
@@ -202,11 +216,13 @@ tmu-planning-plugin/
 │   │   └── basemap_workflow.py    # ベースマップワークフロー
 │   │
 │   ├── administrative_area/       # 行政区域ポリゴン機能
-│   │   ├── administrative_area_algorithm.py  # MBTilesレイヤー生成
+│   │   ├── administrative_area_algorithm.py  # ベクトルタイルレイヤー生成
 │   │   ├── administrative_area_workflow.py    # 行政区域ワークフロー
-│   │   ├── settings.py            # class3/class5スタイル定義
-│   │   └── data/                  # ローカルデータ
-│   │       └── class.mbtiles      # 行政区域MBTilesファイル
+│   │   ├── client.py              # 国土交通データプラットフォームAPI接続
+│   │   ├── connect.py             # エンドポイント・データセットID定義
+│   │   ├── settings.py            # class3/class5/class6スタイル定義
+│   │   └── data/                  # 同梱データ
+│   │       └── labels.mbtiles     # 自治体名ラベルMBTilesファイル
 │   │
 │   ├── hazard_map_portal/         # ハザードマップポータルサイト連携
 │   │   ├── flood_hazard_area_algorithm.py  # 洪水浸水想定区域レイヤー生成
@@ -233,11 +249,21 @@ tmu-planning-plugin/
 │   │       ├── fishing_port_workflow.py   # 漁港区域データ処理
 │   │       └── port_area_workflow.py      # 港湾区域データ処理
 │   │
-│   └── estat/                     # e-Stat API連携
-│       ├── connect.py             # 統計データ接続
-│       └── population_mesh_workflow.py  # 人口メッシュ処理
+│   ├── estat/                     # e-Stat API連携
+│   │   ├── connect.py             # 統計データ接続
+│   │   └── population_mesh_workflow.py  # 人口メッシュ処理
+│   │
+│   └── vegetation_map/            # 環境ジオポータル連携
+│       ├── connect.py             # エンドポイント・データセットID定義
+│       ├── settings.py            # 都道府県→地域ブロック対応など
+│       ├── style.py               # QMLスタイルの取得・適用
+│       ├── vegetation_map_algorithm.py  # 現存植生図レイヤー生成
+│       └── vegetation_map_workflow.py   # 現存植生図ワークフロー
 │
 ├── utils/                          # 共通ユーティリティ
+│   ├── api_keys.py                # 保存済みAPIキーの取得
+│   ├── auth.py                    # APIキーの認証設定
+│   ├── settings.py                # プラグイン共通設定
 │   └── estat/                     # e-Stat関連ヘルパー
 │
 ├── scripts/                        # 開発補助スクリプト
@@ -256,6 +282,10 @@ tmu-planning-plugin/
 ## 7. 外部 API エンドポイント
 
 本プラグインが連携する主要な API エンドポイントです。
+
+#### 国土交通データプラットフォーム
+
+- 行政区域（ベクトルタイル URL の取得）: `https://data-platform.mlit.go.jp/api/v1/`（GraphQL）
 
 #### 不動産情報ライブラリ（MLIT Reinfolib）
 
@@ -281,7 +311,18 @@ tmu-planning-plugin/
 
 - 人口メッシュ
 
+#### 環境ジオポータル
+
+- 現存植生図2024（データセット情報の取得）: `https://geoportal.env.go.jp/api/v3/datasets/{dataset_id}`
+- 現存植生図2024（地物の取得）: 上記で取得した FeatureServer の `/query`
+
 ### API キーの取得方法
+
+#### 国土交通データプラットフォーム
+
+1. [国土交通データプラットフォーム](https://data-platform.mlit.go.jp/)にアクセス
+2. アカウント作成後、API 利用申請
+3. 発行されたキーをプラグイン設定ダイアログに入力
 
 #### 不動産情報ライブラリ
 
@@ -304,6 +345,10 @@ tmu-planning-plugin/
 #### ハザードマップポータルサイト
 
 - API キー不要（公開ラスタタイル）
+
+#### 環境ジオポータル
+
+- API キー不要
 
 ---
 

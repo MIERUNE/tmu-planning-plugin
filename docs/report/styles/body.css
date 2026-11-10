@@ -1,0 +1,109 @@
+/* コードブロック */
+@import url(../themes/node_modules/@vivliostyle/theme-base/css/lib/prism/base.css);
+@import url(../themes/node_modules/@vivliostyle/theme-base/css/lib/prism/theme-prism.css);
+/* @import url(../themes/packages/@vivliostyle/theme-base/css/lib/prism/theme-okaidia.css); */
+
+:root {
+  --vs-section--h1-marker-display: initial;
+  --vs-section--h1-marker-content: counter(vs-counter-chapter) ".";
+  --vs-section--h2-marker-content: counter(vs-counter-chapter) "."
+    counter(vs-counter-sec-h2);
+  --vs-section--h3-marker-content: counter(vs-counter-chapter) "."
+    counter(vs-counter-sec-h2) "." counter(vs-counter-sec-h3);
+  --vs-section--h4-marker-content: counter(vs-counter-chapter) "."
+    counter(vs-counter-sec-h2) "." counter(vs-counter-sec-h3) "."
+    counter(vs-counter-sec-h4);
+  --vs-section--h5-marker-content: counter(vs-counter-chapter) "."
+    counter(vs-counter-sec-h2) "." counter(vs-counter-sec-h3) "."
+    counter(vs-counter-sec-h4) "." counter(vs-counter-sec-h5);
+  --vs-section--h6-marker-content: counter(vs-counter-chapter) "."
+    counter(vs-counter-sec-h2) "." counter(vs-counter-sec-h3) "."
+    counter(vs-counter-sec-h4) "." counter(vs-counter-sec-h5) "."
+    counter(vs-counter-sec-h6);
+}
+
+h1 {
+  margin-bottom: 0.5em;
+  text-align: left !important;
+}
+
+section:has(> h1:first-child) {
+  counter-increment: none !important;
+}
+section > :is(h1):first-child + * {
+  counter-reset: none !important;
+}
+
+/* ページ右上のロゴ */
+@page {
+  @top-right {
+    content: "";
+    margin-right: -8pt;
+    width: 100pt;
+    height: var(--vs-page--margin-top);
+    background-image: url("../contents/images/logotype.svg");
+    background-color: rgba(255, 255, 255, 0.3);
+    background-blend-mode: lighten;
+    background-repeat: no-repeat;
+    background-position: right center;
+    background-size: contain;
+  }
+}
+
+h1 + ul,
+h2 + ul,
+h3 + ul,
+h4 + ul,
+h1 + ol,
+h2 + ol,
+h3 + ol,
+h4 + ol {
+  margin-top: 0;
+}
+
+ul,
+ol {
+  margin-top: 0 !important;
+  margin-bottom: 0.5em !important;
+}
+
+li {
+  margin-top: 0.2em;
+  margin-left: 0.5em;
+}
+
+/* 表のスタイルを強制的に適用 */
+table {
+  border-collapse: collapse !important;
+  width: 100% !important;
+  margin: 1em 0 !important;
+  border: 1px solid #000 !important;
+}
+
+table th,
+table td {
+  border: 1px solid #000 !important;
+  padding: 0.5em !important;
+  vertical-align: top !important;
+}
+
+table th {
+  background-color: #f0f0f0 !important;
+  font-weight: bold !important;
+  text-align: center !important;
+}
+
+table td {
+  text-align: left !important;
+}
+
+/* 画像を含むセルの調整 */
+table td img {
+  max-width: 100% !important;
+  height: auto !important;
+  display: block !important;
+}
+
+h2 {
+  counter-reset: vs-counter-sec-h3;
+}

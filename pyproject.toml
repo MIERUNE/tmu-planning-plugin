@@ -9,9 +9,14 @@ dependencies = []
 
 [dependency-groups]
 dev = [
+    "bandit[toml]>=1.8.6",
     "pyqt5-stubs>=5.15.6.0",
     "ruff>=0.8.2",
 ]
 
 [tool.uv]
 exclude-newer = "7 days"
+
+[tool.bandit]
+# release.yaml で除外するファイルは対象外
+exclude_dirs = [".venv", "tests", "scripts"]

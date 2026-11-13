@@ -310,7 +310,7 @@ class UmiShiruBaseAlgorithm(ABC):
                     else coordinates
                 )
                 coordinate_hash = hashlib.md5(
-                    coordinates_str.encode("utf-8")
+                    coordinates_str.encode("utf-8"), usedforsecurity=False
                 ).hexdigest()
 
                 if coordinate_hash not in seen_coordinate_hashes:

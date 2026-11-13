@@ -6,7 +6,7 @@
 MLIT_DPF_API_ENDPOINT = "https://data-platform.mlit.go.jp/api/v1/"
 
 # APIキーを付与するヘッダー名
-MLIT_DPF_API_KEY_HEADER = "apikey"
+MLIT_DPF_API_KEY_HEADER = "apikey"  # pragma: allowlist secret
 
 # QGIS認証マネージャーに登録する認証設定の名前
 MLIT_DPF_AUTHCFG_NAME = "GreenInfraPlannerJP_MLIT_DPF"

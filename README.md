@@ -284,7 +284,7 @@ tmu-planning-plugin/
 │   └── test_*.py                  # 各機能のテスト
 │
 └── imgs/                           # 画像リソース
-    └── icon.svg                   # プラグインアイコン
+    └── TMU_ico.png                # プラグインアイコン
 ```
 
 ---

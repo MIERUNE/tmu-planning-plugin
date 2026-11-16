@@ -10,7 +10,7 @@ version={{PLUGIN_VERSION}}
 supportsQt6=True
 
 #Plugin main icon
-icon=imgs/icon.svg
+icon=imgs/TMU_ico.png
 
 author=東京都立大学、MIERUNE Inc.
 email=info@mierune.co.jp

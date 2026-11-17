@@ -12,7 +12,7 @@ from ...utils.settings import PLUGIN_NAME
 UMI_SHIRU_BASE_URL = "https://api.msil.go.jp"
 
 # APIキーを付与するヘッダー名
-UMI_SHIRU_API_KEY_HEADER = "Ocp-Apim-Subscription-Key"
+UMI_SHIRU_API_KEY_HEADER = "Ocp-Apim-Subscription-Key"  # pragma: allowlist secret
 
 # QGIS認証マネージャーに登録する認証設定の名前
 UMI_SHIRU_AUTHCFG_NAME = "GreenInfraPlannerJP_UmiShiru"

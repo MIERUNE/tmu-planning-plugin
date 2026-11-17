@@ -3,7 +3,7 @@
 """
 
 # APIキーを付与するヘッダー名
-REINFOLIB_API_KEY_HEADER = "Ocp-Apim-Subscription-Key"
+REINFOLIB_API_KEY_HEADER = "Ocp-Apim-Subscription-Key"  # pragma: allowlist secret
 
 # QGIS認証マネージャーに登録する認証設定の名前
 REINFOLIB_AUTHCFG_NAME = "GreenInfraPlannerJP_Reinfolib"

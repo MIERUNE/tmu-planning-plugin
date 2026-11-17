@@ -39,6 +39,7 @@ jobs:
             -ve './.gitignore' \
             -ve './.python-version' \
             -ve './README.md' \
+            -ve './docs' \
             -ve './test_suite.py' \
             -ve './scripts' \
             -ve './uv.lock' | xargs -I src cp --parents src ${{env.PLUGIN_NAME}}

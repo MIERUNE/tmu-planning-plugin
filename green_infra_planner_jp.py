@@ -125,7 +125,7 @@ class GreenInfraPlugin:
     def initGui(self):
         # メニュー設定
         self.add_action(
-            icon_path=os.path.join(self.plugin_dir, "imgs", "icon.svg"),
+            icon_path=os.path.join(self.plugin_dir, "imgs", "TMU_ico.png"),
             text="GreenInfraPlannerJP",
             callback=self.show_dock_widget,
             parent=self.win,
